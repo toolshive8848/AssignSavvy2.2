@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detector - AssignSavvy</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Top Bar -->
+    <div class="dashboard-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">AssignSavvy</div>
+      </div>
+      <div>Content Detector</div>
+      <a href="index.html" class="btn btn-outline">Back to Home</a>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="dashboard-sidebar" id="dashboard-sidebar">
+      <!-- Navigation -->
+      <ul class="sidebar-nav">
+        <li>
+          <a href="dashboard.html" class="sidebar-nav-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="writer.html" class="sidebar-nav-item">
+            <i class="fas fa-pen"></i>
+            <span>Writer</span>
+          </a>
+        </li>
+        <li>
+          <a href="researcher.html" class="sidebar-nav-item">
+            <i class="fas fa-magnifying-glass"></i>
+            <span>Researcher</span>
+          </a>
+        </li>
+        <li>
+          <a href="detector.html" class="sidebar-nav-item active">
+            <i class="fas fa-shield-halved"></i>
+            <span>Detector</span>
+          </a>
+        </li>
+        <li>
+          <a href="prompt-engineer.html" class="sidebar-nav-item">
+            <i class="fas fa-code"></i>
+            <span>Prompt Engineer</span>
+          </a>
+        </li>
+        <li>
+          <a href="history.html" class="sidebar-nav-item">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span>History</span>
+          </a>
+        </li>
+      </ul>
+      
+      <!-- User Account Info - Bottom Corner -->
+      <div class="user-account-info">
+        <div class="user-profile-card" id="user-profile-card" style="cursor: pointer;">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="user-details">
+            <h4 id="user-name">John Doe</h4>
+            <p class="user-plan" id="user-plan">Free Plan</p>
+            <div class="user-credits">
+              <i class="fas fa-coins"></i>
+              <span id="user-credits">145/200 Credits</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="dashboard-content">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h2>Content Detector - Analyze Your Content</h2>
+      </div>
+      
+
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Input Section -->
+        <div class="card">
+          <div class="mb-6">
+            <h3><i class="fas fa-keyboard"></i> Content Analysis</h3>
+            <p class="text-gray">Enter your content below to analyze for plagiarism, AI detection, and readability.</p>
+          </div>
+          
+          <!-- Text Input Panel -->
+          <div id="text-input-panel">
+            <div class="form-group mb-4">
+              <label for="content-input">Enter your content (max 1000 words)</label>
+              <textarea id="content-input" class="form-input" rows="12" placeholder="Paste your text here to analyze..."></textarea>
+              <div class="text-right text-sm text-gray mt-1">0/1000 words</div>
+            </div>
+            
+            <div class="mb-4">
+              <h4 class="mb-2">Analysis Options</h4>
+              <div class="flex flex-col gap-2">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="plagiarism-check">
+                  <span class="checkmark"></span>
+                  Plagiarism Detection
+                </label>
+                <label class="checkbox-container">
+                  <input type="checkbox" id="ai-check">
+                  <span class="checkmark"></span>
+                  AI Content Detection
+                </label>
+                <label class="checkbox-container">
+                  <input type="checkbox" id="readability-check">
+                  <span class="checkmark"></span>
+                  Readability Analysis
+                </label>
+              </div>
+            </div>
+            
+            <button class="btn btn-primary w-full" id="analyze-text-btn">
+              <i class="fas fa-magnifying-glass"></i> Analyze Content
+            </button>
+          </div>
+          
+
+        </div>
+        
+        <!-- Results Section -->
+        <div class="card">
+          <h3 class="mb-4">Analysis Results</h3>
+          
+          <!-- Initial State -->
+          <div id="no-results" class="text-center py-12">
+            <i class="fas fa-shield-halved text-4xl text-gray mb-4"></i>
+            <h4>No Analysis Yet</h4>
+            <p class="text-gray">Enter content or upload a file to analyze</p>
+          </div>
+          
+          <!-- Results State (Hidden by default) -->
+          <div id="results-container" style="display: none;">
+            <!-- Plagiarism Results -->
+            <div class="result-section mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <h4>Plagiarism Detection</h4>
+                <span class="badge badge-warning">25% Match</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 25%;"></div>
+              </div>
+              <p class="text-sm mt-2">We found potential matches with 3 sources.</p>
+            </div>
+            
+            <!-- AI Detection Results -->
+            <div class="result-section mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <h4>AI Content Detection</h4>
+                <span class="badge badge-danger">78% AI Generated</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill bg-danger" style="width: 78%;"></div>
+              </div>
+              <p class="text-sm mt-2">This content appears to be primarily AI-generated.</p>
+            </div>
+            
+            <!-- Readability Results -->
+            <div class="result-section mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <h4>Readability Analysis</h4>
+                <div>
+                  <span class="badge badge-success">Grade 10</span>
+                  <span class="badge badge-info ml-2">Score: 65/100</span>
+                </div>
+              </div>
+              <p class="text-sm mt-2">This content is appropriate for a 10th grade reading level.</p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex gap-2 mt-6">
+              <button class="btn btn-outline" id="remove-all-btn">
+                <i class="fas fa-trash"></i> Remove All
+              </button>
+              <button class="btn btn-outline" id="analyze-again-btn">
+                <i class="fas fa-rotate"></i> Analyze Again
+              </button>
+              <button class="btn btn-primary" id="download-report-btn">
+                <i class="fas fa-file-arrow-down"></i> Download Report
+              </button>
+              <button class="btn btn-primary" id="save-results-btn">
+                <i class="fas fa-floppy-disk"></i> Save Results
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- User Profile Modal -->
+  <div id="user-profile-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>User Profile</h3>
+        <button id="close-profile-modal" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-section">
+          <div class="profile-avatar">
+            <i class="fas fa-user-circle text-6xl text-primary"></i>
+          </div>
+          <div class="profile-info">
+            <h4 id="modal-user-name">John Doe</h4>
+            <p class="text-gray" id="modal-user-email">john.doe@example.com</p>
+            <div class="plan-info">
+              <span class="plan-badge" id="modal-user-plan">Free Plan</span>
+              <div class="credits-info">
+                <i class="fas fa-coins text-orange"></i>
+                <span id="modal-user-credits">145/200 Credits</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-outline" onclick="window.location.href='auth.html'">Account Settings</button>
+          <button class="btn btn-primary" onclick="window.location.href='pricing.html'">Upgrade Plan</button>
+          <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // User profile data
+    const currentUser = {
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      plan: 'Free Plan',
+      credits: '145/200 Credits'
+    };
+
+    // Load user profile data
+    function loadUserProfile() {
+      // Update sidebar user info
+      document.getElementById('user-name').textContent = currentUser.name;
+      document.getElementById('user-plan').textContent = currentUser.plan;
+      document.getElementById('user-credits').textContent = currentUser.credits;
+      
+      // Update modal user info
+      document.getElementById('modal-user-name').textContent = currentUser.name;
+      document.getElementById('modal-user-email').textContent = currentUser.email;
+      document.getElementById('modal-user-plan').textContent = currentUser.plan;
+      document.getElementById('modal-user-credits').textContent = currentUser.credits;
+    }
+
+    // Logout function
+    function logout() {
+      // In a real app, this would clear session/tokens
+      alert('Logging out...');
+      window.location.href = 'auth.html';
+    }
+
+    // Event listeners for user profile modal
+    document.addEventListener('DOMContentLoaded', function() {
+      loadUserProfile();
+      
+      // Show modal when user profile card is clicked
+      document.getElementById('user-profile-card').addEventListener('click', function() {
+        document.getElementById('user-profile-modal').style.display = 'flex';
+      });
+      
+      // Hide modal when close button is clicked
+      document.getElementById('close-profile-modal').addEventListener('click', function() {
+        document.getElementById('user-profile-modal').style.display = 'none';
+      });
+      
+      // Hide modal when clicking outside of it
+      document.getElementById('user-profile-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.style.display = 'none';
+        }
+      });
+    });
+
+    // Sidebar toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebarToggle = document.getElementById('sidebar-toggle');
+      const sidebar = document.getElementById('dashboard-sidebar');
+      const dashboardLayout = document.querySelector('.dashboard-layout');
+      
+      // Toggle sidebar on button click
+      sidebarToggle.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          // Mobile behavior
+          sidebar.classList.toggle('sidebar-open');
+          dashboardLayout.classList.toggle('sidebar-active');
+        } else {
+          // Desktop behavior
+          dashboardLayout.classList.toggle('sidebar-collapsed');
+        }
+      });
+      
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', function(event) {
+        if (window.innerWidth <= 768) {
+          if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target) && sidebar.classList.contains('sidebar-open')) {
+            sidebar.classList.remove('sidebar-open');
+            dashboardLayout.classList.remove('sidebar-active');
+          }
+        }
+      });
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+          sidebar.classList.remove('sidebar-open');
+          dashboardLayout.classList.remove('sidebar-active');
+        } else {
+          dashboardLayout.classList.remove('sidebar-collapsed');
+        }
+      });
+    });
+  </script>
+  
+  <style>
+
+    
+    /* Checkbox Container */
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding-left: 35px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .checkbox-container input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+    
+    .checkmark {
+      position: absolute;
+      left: 0;
+      height: 20px;
+      width: 20px;
+      background-color: var(--bg-gray-100);
+      border-radius: var(--radius-sm);
+    }
+    
+    .checkbox-container:hover input ~ .checkmark {
+      background-color: var(--bg-gray-200);
+    }
+    
+    .checkbox-container input:checked ~ .checkmark {
+      background-color: var(--primary-purple);
+    }
+    
+    .checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+    }
+    
+    .checkbox-container input:checked ~ .checkmark:after {
+      display: block;
+    }
+    
+    .checkbox-container .checkmark:after {
+      left: 7px;
+      top: 3px;
+      width: 6px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    
+    /* Progress Bar */
+    .progress-bar {
+      height: 8px;
+      background-color: var(--bg-gray-100);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background-color: var(--primary-purple);
+    }
+    
+    .bg-danger {
+      background-color: var(--danger-red);
+    }
+    
+    /* Badges */
+    .badge {
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .badge-warning {
+      background-color: var(--warning-yellow-light);
+      color: var(--warning-yellow-dark);
+    }
+    
+    .badge-danger {
+      background-color: var(--danger-red-light);
+      color: var(--danger-red-dark);
+    }
+    
+    .badge-success {
+      background-color: var(--success-green-light);
+      color: var(--success-green-dark);
+    }
+    
+    .badge-info {
+      background-color: var(--info-blue-light);
+      color: var(--info-blue-dark);
+    }
+    
+    /* Result Section */
+    .result-section {
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--bg-gray-100);
+    }
+    
+    .result-section:last-child {
+      border-bottom: none;
+    }
+  </style>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // DOM elements
+      const contentInput = document.getElementById('content-input');
+      const plagiarismCheck = document.getElementById('plagiarism-check');
+      const aiCheck = document.getElementById('ai-check');
+      const readabilityCheck = document.getElementById('readability-check');
+      const analyzeBtn = document.getElementById('analyze-text-btn');
+      const removeAllBtn = document.getElementById('remove-all-btn');
+      const analyzeAgainBtn = document.getElementById('analyze-again-btn');
+      const downloadReportBtn = document.getElementById('download-report-btn');
+      const saveResultsBtn = document.getElementById('save-results-btn');
+      const noResults = document.getElementById('no-results');
+      const resultsContainer = document.getElementById('results-container');
+      
+      // Global variables
+      let currentAnalysisResults = null;
+      let currentContent = '';
+      
+      // Word count functionality
+      contentInput.addEventListener('input', function() {
+        const text = this.value.trim();
+        const wordCount = text ? text.split(/\s+/).filter(word => word.length > 0).length : 0;
+        const wordCountDisplay = this.parentElement.querySelector('.text-right');
+        wordCountDisplay.textContent = `${wordCount}/1000 words`;
+        
+        // Update analyze button state
+        analyzeBtn.disabled = wordCount < 10;
+        if (wordCount < 10) {
+          analyzeBtn.textContent = 'Minimum 10 words required';
+        } else {
+          analyzeBtn.innerHTML = '<i class="fas fa-magnifying-glass"></i> Analyze Content';
+        }
+      });
+      
+      // Set default checkboxes to checked
+      plagiarismCheck.checked = true;
+      aiCheck.checked = true;
+      readabilityCheck.checked = true;
+      
+      // TODO: Remove these mock functions once API integration is complete
+      // These functions were used for testing purposes only
+      
+      // Analyze content
+      analyzeBtn.addEventListener('click', async function() {
+        const content = contentInput.value.trim();
+        
+        if (!content || content.length < 10) {
+          alert('Please enter at least 10 words to analyze.');
+          return;
+        }
+        
+        const options = {
+          plagiarismDetection: plagiarismCheck.checked,
+          aiDetection: aiCheck.checked,
+          readabilityAnalysis: readabilityCheck.checked
+        };
+        
+        if (!options.plagiarismDetection && !options.aiDetection && !options.readabilityAnalysis) {
+          alert('Please select at least one analysis option.');
+          return;
+        }
+        
+        try {
+          analyzeBtn.disabled = true;
+          analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+          
+          // TODO: Replace with actual API call to /api/detector/analyze
+          // const response = await fetch('/api/detector/analyze', {
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          //   },
+          //   body: JSON.stringify({ 
+          //     content: content,
+          //     options: options
+          //   })
+          // });
+          // 
+          // const result = await response.json();
+          // 
+          // if (!response.ok) {
+          //   throw new Error(result.message || result.error || 'Analysis failed');
+          // }
+          // 
+          // currentAnalysisResults = result.results;
+          // currentContent = content;
+          // displayResults(result);
+          
+          alert('API integration needed. Please implement the /api/detector/analyze endpoint.');
+          
+        } catch (error) {
+          console.error('Analysis error:', error);
+          alert(`Analysis failed: ${error.message}`);
+        } finally {
+          analyzeBtn.disabled = false;
+          analyzeBtn.innerHTML = '<i class="fas fa-magnifying-glass"></i> Analyze Content';
+        }
+      });
+      
+      // Remove all detected issues using complete workflow
+      removeAllBtn.addEventListener('click', async function() {
+        if (!currentContent) {
+          alert('No content available. Please enter content first.');
+          return;
+        }
+        
+        if (!currentAnalysisResults) {
+          alert('No analysis results available. Please analyze content first.');
+          return;
+        }
+        
+        const hasIssues = (
+          (currentAnalysisResults.plagiarism && currentAnalysisResults.plagiarism.score > 30) ||
+          (currentAnalysisResults.aiContent && currentAnalysisResults.aiContent.score > 70) ||
+          (currentAnalysisResults.readability && currentAnalysisResults.readability.fleschKincaidGrade > 12)
+        );
+        
+        if (!hasIssues) {
+          alert('No significant issues detected to remove. Your content appears to be in good condition.');
+          return;
+        }
+        
+        const wordCount = currentContent.trim().split(/\s+/).filter(word => word.length > 0).length;
+        const estimatedCredits = Math.ceil(wordCount / 10); // 1:10 ratio for removal
+        
+        if (!confirm(`This will use our advanced two-cycle improvement process to remove detected issues.\n\nEstimated cost: ${estimatedCredits} credits (1 credit per 10 words)\n\nContinue?`)) {
+          return;
+        }
+        
+        try {
+          removeAllBtn.disabled = true;
+          removeAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing (Cycle 1/2)...';
+          
+          const options = {
+            plagiarismDetection: plagiarismCheck.checked,
+            aiDetection: aiCheck.checked,
+            readabilityAnalysis: readabilityCheck.checked
+          };
+          
+          // TODO: Replace with actual API call to /api/detector/workflow
+          // const response = await fetch('/api/detector/workflow', {
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          //   },
+          //   body: JSON.stringify({ 
+          //     content: currentContent,
+          //     options: options
+          //   })
+          // });
+          // 
+          // const result = await response.json();
+          // 
+          // if (!response.ok) {
+          //   throw new Error(result.message || result.error || 'Content improvement failed');
+          // }
+          // 
+          // // Update content input with final improved content
+          // contentInput.value = result.data.finalContent;
+          // contentInput.dispatchEvent(new Event('input')); // Trigger word count update
+          // 
+          // // Update current analysis results with final detection
+          // currentAnalysisResults = result.data.finalDetection;
+          // currentContent = result.data.finalContent;
+          // 
+          // // Display updated results
+          // displayResults({ results: result.data.finalDetection });
+          // 
+          // // Show improvement summary
+          // const summary = result.data.improvementSummary;
+          // let improvementMsg = `Content improved successfully!\n\n`;
+          // improvementMsg += `Cycles used: ${result.data.cyclesUsed}/2\n`;
+          // improvementMsg += `Credits used: ${result.data.totalCreditsUsed}\n\n`;
+          // 
+          // if (summary.plagiarismReduced > 0) {
+          //   improvementMsg += `Plagiarism reduced by ${summary.plagiarismReduced.toFixed(1)}%\n`;
+          // }
+          // if (summary.aiContentReduced > 0) {
+          //   improvementMsg += `AI content reduced by ${summary.aiContentReduced.toFixed(1)}%\n`;
+          // }
+          // if (summary.readabilityImproved > 0) {
+          //   improvementMsg += `Reading level improved by ${summary.readabilityImproved.toFixed(1)} grades\n`;
+          // }
+          // 
+          // alert(improvementMsg);
+          
+          alert('API integration needed. Please implement the /api/detector/workflow endpoint.');
+          
+        } catch (error) {
+          console.error('Workflow error:', error);
+          alert(`Content improvement failed: ${error.message}`);
+        } finally {
+          removeAllBtn.disabled = false;
+          removeAllBtn.innerHTML = '<i class="fas fa-trash"></i> Remove All';
+        }
+      });
+      
+      // Analyze again
+      analyzeAgainBtn.addEventListener('click', function() {
+        analyzeBtn.click();
+      });
+      
+      // Download report
+      downloadReportBtn.addEventListener('click', function() {
+        if (!currentAnalysisResults) {
+          alert('No analysis results available to download.');
+          return;
+        }
+        
+        const report = generateReport(currentAnalysisResults, currentContent);
+        downloadFile(report, 'content-analysis-report.txt', 'text/plain');
+      });
+      
+      // Save results
+      saveResultsBtn.addEventListener('click', async function() {
+        if (!currentAnalysisResults) {
+          alert('No analysis results available to save.');
+          return;
+        }
+        
+        try {
+          saveResultsBtn.disabled = true;
+          saveResultsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+          
+          // TODO: Replace with actual API call to /api/detector/save-results
+          // const response = await fetch('/api/detector/save-results', {
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          //   },
+          //   body: JSON.stringify({
+          //     content: currentContent,
+          //     results: currentAnalysisResults,
+          //     timestamp: new Date().toISOString()
+          //   })
+          // });
+          // 
+          // const result = await response.json();
+          // 
+          // if (!response.ok) {
+          //   throw new Error(result.message || result.error || 'Failed to save results');
+          // }
+          // 
+          // alert('Analysis results saved to your history successfully!');
+          
+          alert('API integration needed. Please implement the /api/detector/save-results endpoint.');
+          
+        } catch (error) {
+          console.error('Save error:', error);
+          alert(`Failed to save results: ${error.message}`);
+        } finally {
+          saveResultsBtn.disabled = false;
+          saveResultsBtn.innerHTML = '<i class="fas fa-floppy-disk"></i> Save Results';
+        }
+      });
+      
+      // Display analysis results
+      function displayResults(data) {
+        noResults.style.display = 'none';
+        resultsContainer.style.display = 'block';
+        
+        const results = data.results;
+        
+        // Update plagiarism results
+        if (results.plagiarism) {
+          updateResultSection('plagiarism', results.plagiarism);
+        }
+        
+        // Update AI detection results
+        if (results.aiContent) {
+          updateResultSection('ai', results.aiContent);
+        }
+        
+        // Update readability results
+        if (results.readability) {
+          updateResultSection('readability', results.readability);
+        }
+      }
+      
+      // Update individual result sections
+      function updateResultSection(type, data) {
+        const sections = resultsContainer.querySelectorAll('.result-section');
+        let section;
+        
+        if (type === 'plagiarism') {
+          section = sections[0];
+          const badge = section.querySelector('.badge');
+          const progressFill = section.querySelector('.progress-fill');
+          const description = section.querySelector('p');
+          
+          badge.textContent = `${data.score}% Match`;
+          badge.className = `badge ${data.score > 50 ? 'badge-danger' : data.score > 25 ? 'badge-warning' : 'badge-success'}`;
+          progressFill.style.width = `${data.score}%`;
+          progressFill.className = `progress-fill ${data.score > 50 ? 'bg-danger' : ''}`;
+          description.textContent = `Originality score: ${data.originalityScore}%. Status: ${data.status.replace('_', ' ')}.`;
+        } else if (type === 'ai') {
+          section = sections[1];
+          const badge = section.querySelector('.badge');
+          const progressFill = section.querySelector('.progress-fill');
+          const description = section.querySelector('p');
+          
+          badge.textContent = `${data.score}% AI Generated`;
+          badge.className = `badge ${data.score > 70 ? 'badge-danger' : data.score > 30 ? 'badge-warning' : 'badge-success'}`;
+          progressFill.style.width = `${data.score}%`;
+          progressFill.className = `progress-fill ${data.score > 70 ? 'bg-danger' : ''}`;
+          description.textContent = `Human score: ${data.humanScore}%. Status: ${data.status.replace('_', ' ')}.`;
+        } else if (type === 'readability') {
+          section = sections[2];
+          const badges = section.querySelectorAll('.badge');
+          const description = section.querySelector('p');
+          
+          badges[0].textContent = `Grade ${Math.round(data.fleschKincaidGrade)}`;
+          badges[1].textContent = `Score: ${Math.round(data.fleschReadingEase)}/100`;
+          description.textContent = `Reading level: ${data.readingLevel}. Flesch-Kincaid Grade: ${data.fleschKincaidGrade}.`;
+        }
+      }
+      
+      // Show no results state
+      function showNoResults() {
+        noResults.style.display = 'block';
+        resultsContainer.style.display = 'none';
+      }
+      
+      // Generate text report
+      function generateReport(results, content) {
+        let report = 'CONTENT ANALYSIS REPORT\n';
+        report += '========================\n\n';
+        report += `Analysis Date: ${new Date().toLocaleString()}\n`;
+        report += `Content Length: ${content.length} characters\n`;
+        report += `Word Count: ${content.trim().split(/\s+/).length} words\n\n`;
+        
+        if (results.plagiarism) {
+          report += 'PLAGIARISM DETECTION\n';
+          report += '-------------------\n';
+          report += `Plagiarism Score: ${results.plagiarism.score}%\n`;
+          report += `Originality Score: ${results.plagiarism.originalityScore}%\n`;
+          report += `Status: ${results.plagiarism.status.replace('_', ' ')}\n\n`;
+        }
+        
+        if (results.aiContent) {
+          report += 'AI CONTENT DETECTION\n';
+          report += '-------------------\n';
+          report += `AI Score: ${results.aiContent.score}%\n`;
+          report += `Human Score: ${results.aiContent.humanScore}%\n`;
+          report += `Status: ${results.aiContent.status.replace('_', ' ')}\n\n`;
+        }
+        
+        if (results.readability) {
+          report += 'READABILITY ANALYSIS\n';
+          report += '-------------------\n';
+          report += `Reading Level: ${results.readability.readingLevel}\n`;
+          report += `Flesch-Kincaid Grade: ${results.readability.fleschKincaidGrade}\n`;
+          report += `Flesch Reading Ease: ${results.readability.fleschReadingEase}\n\n`;
+        }
+        
+        report += 'CONTENT\n';
+        report += '-------\n';
+        report += content;
+        
+        return report;
+      }
+      
+      // Download file helper
+      function downloadFile(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    });
+  </script>
+
+
+</body>
+</html>

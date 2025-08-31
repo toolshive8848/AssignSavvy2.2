@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Writer - AssignSavvy</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+
+    
+    .writer-container {
+       display: flex;
+       flex: 1;
+       height: calc(100vh - 80px);
+       gap: 20px;
+       padding: 20px;
+     }
+     
+     .chat-section {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+       background: white;
+       border-radius: 12px;
+       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+       overflow: hidden;
+     }
+     
+     .content-panel {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+       background: white;
+       border-radius: 12px;
+       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+       overflow: hidden;
+     }
+    
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+    }
+    
+
+    
+    .message {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+    }
+    
+    .message.user {
+      flex-direction: row-reverse;
+    }
+    
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 12px;
+      font-size: 1.2rem;
+    }
+    
+    .message.user .message-avatar {
+      background: #3498db;
+      color: white;
+    }
+    
+    .message.assistant .message-avatar {
+      background: #e74c3c;
+      color: white;
+    }
+    
+    .message-content {
+      max-width: 70%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      line-height: 1.4;
+    }
+    
+    .message.user .message-content {
+      background: #3498db;
+      color: white;
+    }
+    
+    .message.assistant .message-content {
+      background: #f1f3f4;
+      color: #2c3e50;
+    }
+    
+    .message-time {
+      font-size: 0.75rem;
+      color: #95a5a6;
+      margin-top: 4px;
+    }
+    
+    .chat-input-container {
+      padding: 20px;
+      background: transparent;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .chat-input-wrapper {
+      display: flex;
+      align-items: flex-end;
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 25px;
+      padding: 8px;
+      transition: border-color 0.3s ease;
+    }
+    
+    .chat-input-wrapper:focus-within {
+      border-color: #3498db;
+    }
+    
+    .file-upload-btn {
+      background: none;
+      border: none;
+      color: #6c757d;
+      font-size: 1.2rem;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+    
+    .file-upload-btn:hover {
+      background: #e9ecef;
+      color: #3498db;
+    }
+    
+    .chat-input {
+      flex: 1;
+      border: none;
+      background: none;
+      padding: 12px 16px;
+      font-size: 1rem;
+      resize: none;
+      outline: none;
+      max-height: 120px;
+      min-height: 20px;
+    }
+    
+    .send-btn {
+      background: #3498db;
+      border: none;
+      color: white;
+      padding: 10px 12px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+    }
+    
+    .send-btn:hover:not(:disabled) {
+      background: #2980b9;
+    }
+    
+    .send-btn:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
+    
+    .content-panel {
+      width: 600px;
+      background: white;
+      border-left: 1px solid #e9ecef;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .panel-header {
+      padding: 20px;
+      border-bottom: 1px solid #e9ecef;
+      background: #f8f9fa;
+    }
+    
+    .panel-header h3 {
+      margin: 0;
+      color: #2c3e50;
+      font-size: 1.1rem;
+    }
+    
+    .panel-content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .editor-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .toolbar-btn {
+      background: none;
+      border: 1px solid #e9ecef;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #6c757d;
+      transition: all 0.3s ease;
+    }
+    
+    .toolbar-btn:hover {
+      background: #f8f9fa;
+      color: #3498db;
+    }
+    
+    .content-editor {
+      width: 100%;
+      height: 400px;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 15px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+    }
+    
+    .content-editor:focus {
+      border-color: #3498db;
+    }
+    
+    .content-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+    
+    .uploaded-files {
+      margin-top: 15px;
+    }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    
+    .file-info {
+      display: flex;
+      align-items: center;
+    }
+    
+    .file-info i {
+      margin-right: 8px;
+      color: #6c757d;
+    }
+    
+    .file-remove {
+      background: none;
+      border: none;
+      color: #dc3545;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    
+    .file-remove:hover {
+      background: #f8d7da;
+    }
+    
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .typing-indicator .message-avatar {
+      background: #e74c3c;
+      color: white;
+    }
+    
+    .typing-dots {
+      background: #f1f3f4;
+      padding: 12px 16px;
+      border-radius: 18px;
+      display: flex;
+      gap: 4px;
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: #95a5a6;
+      border-radius: 50%;
+      animation: typing 1.4s infinite;
+    }
+    
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+      0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.5;
+      }
+      30% {
+        transform: translateY(-10px);
+        opacity: 1;
+      }
+    }
+    
+    .welcome-message {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6c757d;
+    }
+    
+    .welcome-message h3 {
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    
+    .welcome-message p {
+      margin-bottom: 20px;
+    }
+    
+    .quick-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    
+    .quick-prompt {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    
+    .quick-prompt:hover {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+    
+    @media (max-width: 768px) {
+       .writer-container {
+         flex-direction: column;
+         gap: 10px;
+         padding: 10px;
+       }
+       
+       .chat-section,
+       .content-panel {
+         flex: none;
+         height: 50vh;
+       }
+      
+
+      
+      .message-content {
+        max-width: 85%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Top Bar -->
+    <div class="dashboard-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">AssignSavvy</div>
+      </div>
+      <div>AI Writer</div>
+      <a href="index.html" class="btn btn-outline">Back to Home</a>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="dashboard-sidebar" id="dashboard-sidebar">
+      <!-- Navigation -->
+      <ul class="sidebar-nav">
+        <li>
+          <a href="dashboard.html" class="sidebar-nav-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="writer.html" class="sidebar-nav-item active">
+            <i class="fas fa-pen"></i>
+            <span>Writer</span>
+          </a>
+        </li>
+        <li>
+          <a href="researcher.html" class="sidebar-nav-item">
+            <i class="fas fa-magnifying-glass"></i>
+            <span>Researcher</span>
+          </a>
+        </li>
+        <li>
+          <a href="detector.html" class="sidebar-nav-item">
+            <i class="fas fa-shield-halved"></i>
+            <span>Detector</span>
+          </a>
+        </li>
+        <li>
+          <a href="prompt-engineer.html" class="sidebar-nav-item">
+            <i class="fas fa-code"></i>
+            <span>Prompt Engineer</span>
+          </a>
+        </li>
+        <li>
+          <a href="history.html" class="sidebar-nav-item">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span>History</span>
+          </a>
+        </li>
+      </ul>
+      
+      <!-- User Account Info - Bottom Corner -->
+      <div class="user-account-info">
+        <div class="user-profile-card" id="user-profile-card" style="cursor: pointer;">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="user-details">
+            <h4 id="user-name">John Doe</h4>
+            <p class="user-plan" id="user-plan">Free Plan</p>
+            <div class="user-credits">
+              <i class="fas fa-coins"></i>
+              <span id="user-credits">145/200 Credits</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="dashboard-main">
+      <div class="writer-container">
+        
+        <!-- Chat Section -->
+        <div class="chat-section">
+          <div class="chat-messages" id="chat-messages">
+            <div class="welcome-message">
+               <p>Welcome to AI Writer!</p>
+               <p>I'm here to help you create amazing content. What would you like to write today?</p>
+              </div>
+            
+            <!-- Typing indicator -->
+            <div class="typing-indicator" id="typing-indicator">
+              <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+              </div>
+              <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="chat-input-container">
+            <div class="uploaded-files" id="uploaded-files"></div>
+            <div class="chat-input-wrapper">
+              <button class="file-upload-btn" onclick="document.getElementById('file-input').click()" title="Upload files">
+                <i class="fas fa-plus"></i>
+              </button>
+              <textarea 
+                id="chat-input" 
+                class="chat-input" 
+                placeholder="Type your writing request here... (e.g., 'Write a blog post about sustainable living')"
+                rows="1"
+              ></textarea>
+              <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+            <input type="file" id="file-input" multiple accept=".pdf,.docx,.txt" style="display: none;">
+          </div>
+        </div>
+        
+        <!-- Content Editor Panel -->
+        <div class="content-panel">
+      <div class="panel-header">
+        <h3><i class="fas fa-edit"></i> Content Editor</h3>
+      </div>
+      
+      <div class="panel-content">
+        <div class="editor-toolbar">
+          <button class="toolbar-btn" onclick="copyContent()" title="Copy">
+            <i class="fas fa-copy"></i>
+          </button>
+          <button class="toolbar-btn" onclick="downloadContent()" title="Download">
+            <i class="fas fa-download"></i>
+          </button>
+          <button class="toolbar-btn" onclick="clearEditor()" title="Clear">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+        
+        <textarea 
+          id="content-editor" 
+          class="content-editor" 
+          placeholder="Generated content will appear here. You can edit it directly..."
+        ></textarea>
+        
+        <div class="content-stats">
+          <span id="word-count">0 words</span>
+          <span id="char-count">0 characters</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+  
+  <!-- User Profile Modal -->
+  <div id="user-profile-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>User Profile</h3>
+        <button id="close-profile-modal" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-section">
+          <div class="profile-avatar">
+            <i class="fas fa-user-circle text-6xl text-primary"></i>
+          </div>
+          <div class="profile-info">
+            <h4 id="modal-user-name">John Doe</h4>
+            <p class="text-gray" id="modal-user-email">john.doe@example.com</p>
+            <div class="plan-info">
+              <span class="plan-badge" id="modal-user-plan">Free Plan</span>
+              <div class="credits-info">
+                <i class="fas fa-coins text-orange"></i>
+                <span id="modal-user-credits">145/200 Credits</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-outline" onclick="window.location.href='auth.html'">Account Settings</button>
+          <button class="btn btn-primary" onclick="window.location.href='pricing.html'">Upgrade Plan</button>
+          <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // User profile functionality
+    let currentUser = {
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      plan: 'free',
+      credits: 145,
+      maxCredits: 200
+    };
+
+    function loadUserProfile() {
+      // Update sidebar user info
+      document.getElementById('user-name').textContent = currentUser.name;
+      document.getElementById('user-plan').textContent = currentUser.plan === 'free' ? 'Free Plan' : 'Pro Plan';
+      document.getElementById('user-credits').textContent = `${currentUser.credits}/${currentUser.maxCredits} Credits`;
+      
+      // Update modal user info
+      document.getElementById('modal-user-name').textContent = currentUser.name;
+      document.getElementById('modal-user-email').textContent = currentUser.email;
+      document.getElementById('modal-user-plan').textContent = currentUser.plan === 'free' ? 'Free Plan' : 'Pro Plan';
+      document.getElementById('modal-user-credits').textContent = `${currentUser.credits}/${currentUser.maxCredits} Credits`;
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        // Clear user data
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('userData');
+        // Redirect to auth page
+        window.location.href = 'auth.html';
+      }
+    }
+
+    let uploadedFiles = [];
+    let messageHistory = [];
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load user profile data
+      loadUserProfile();
+      
+      // User profile modal functionality
+      const userProfileCard = document.getElementById('user-profile-card');
+      const userProfileModal = document.getElementById('user-profile-modal');
+      const closeProfileModal = document.getElementById('close-profile-modal');
+      
+      userProfileCard.addEventListener('click', function() {
+        userProfileModal.style.display = 'flex';
+      });
+      
+      closeProfileModal.addEventListener('click', function() {
+        userProfileModal.style.display = 'none';
+      });
+      
+      window.addEventListener('click', function(event) {
+        if (event.target === userProfileModal) {
+          userProfileModal.style.display = 'none';
+        }
+      });
+      const chatInput = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('send-btn');
+      const fileInput = document.getElementById('file-input');
+      const contentEditor = document.getElementById('content-editor');
+      const sidebarToggle = document.getElementById('sidebar-toggle');
+      
+      // Sidebar toggle functionality
+      sidebarToggle.addEventListener('click', function() {
+        const dashboardLayout = document.querySelector('.dashboard-layout');
+        dashboardLayout.classList.toggle('sidebar-collapsed');
+      });
+      
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', function(event) {
+        const sidebar = document.querySelector('.dashboard-sidebar');
+        const dashboardLayout = document.querySelector('.dashboard-layout');
+        
+        if (window.innerWidth <= 768 && 
+            !sidebar.contains(event.target) && 
+            !sidebarToggle.contains(event.target) &&
+            !dashboardLayout.classList.contains('sidebar-collapsed')) {
+          dashboardLayout.classList.add('sidebar-collapsed');
+        }
+      });
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        const dashboardLayout = document.querySelector('.dashboard-layout');
+        
+        if (window.innerWidth > 768) {
+          dashboardLayout.classList.remove('sidebar-collapsed');
+        }
+      });
+      
+      // Auto-resize chat input
+      chatInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        
+        // Enable/disable send button
+        sendBtn.disabled = !this.value.trim();
+      });
+      
+      // Send message on Enter (Shift+Enter for new line)
+      chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (!sendBtn.disabled) {
+            sendMessage();
+          }
+        }
+      });
+      
+      // File upload handling
+      fileInput.addEventListener('change', handleFileUpload);
+      
+      // Content editor stats
+      contentEditor.addEventListener('input', updateContentStats);
+    });
+    
+    function useQuickPrompt(prompt) {
+      document.getElementById('chat-input').value = prompt;
+      document.getElementById('send-btn').disabled = false;
+      document.getElementById('chat-input').focus();
+    }
+    
+    function sendMessage() {
+      const chatInput = document.getElementById('chat-input');
+      const message = chatInput.value.trim();
+      
+      if (!message) return;
+      
+      // Add user message
+      addMessage('user', message);
+      
+      // Clear input
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+      document.getElementById('send-btn').disabled = true;
+      
+      // Show typing indicator
+      showTypingIndicator();
+      
+      // Simulate AI response
+      setTimeout(() => {
+        hideTypingIndicator();
+        generateContent(message);
+      }, 2000);
+    }
+    
+    function addMessage(sender, content, timestamp = new Date()) {
+      const messagesContainer = document.getElementById('chat-messages');
+      const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+      
+      if (welcomeMessage) {
+        welcomeMessage.style.display = 'none';
+      }
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}`;
+      
+      const avatar = document.createElement('div');
+      avatar.className = 'message-avatar';
+      avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+      
+      const messageContent = document.createElement('div');
+      messageContent.className = 'message-content';
+      messageContent.innerHTML = content;
+      
+      const messageTime = document.createElement('div');
+      messageTime.className = 'message-time';
+      messageTime.textContent = timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      
+      messageDiv.appendChild(avatar);
+      const contentWrapper = document.createElement('div');
+      contentWrapper.appendChild(messageContent);
+      contentWrapper.appendChild(messageTime);
+      messageDiv.appendChild(contentWrapper);
+      
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      messageHistory.push({sender, content, timestamp});
+    }
+    
+    function showTypingIndicator() {
+      document.getElementById('typing-indicator').style.display = 'flex';
+      const messagesContainer = document.getElementById('chat-messages');
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function hideTypingIndicator() {
+      document.getElementById('typing-indicator').style.display = 'none';
+    }
+    
+    async function generateContent(prompt) {
+      try {
+        // Simulate API call
+        const response = await fetch('/api/writer/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: prompt,
+            files: uploadedFiles,
+            style: 'conversational'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to generate content');
+        }
+        
+        const data = await response.json();
+        
+        // Add AI response
+        addMessage('assistant', `I've generated content based on your request. The content has been added to the editor panel where you can review and edit it.`);
+        
+        // Update content editor
+        document.getElementById('content-editor').value = data.content;
+        updateContentStats();
+        
+      } catch (error) {
+        console.error('Error generating content:', error);
+        
+        // Fallback demo content
+        const demoContent = generateDemoContent(prompt);
+        addMessage('assistant', `I've generated content based on your request. The content has been added to the editor panel where you can review and edit it.`);
+        document.getElementById('content-editor').value = demoContent;
+        updateContentStats();
+      }
+    }
+    
+    function generateDemoContent(prompt) {
+      const templates = {
+        'essay': `# Academic Essay: The Impact of Technology on Modern Education\n\n## Introduction\n\nThe integration of technology in educational settings has fundamentally transformed the learning landscape. This essay examines the multifaceted impact of technological advancement on modern educational practices and student outcomes.\n\n## Body Paragraph 1: Enhanced Learning Opportunities\n\nTechnology has democratized access to educational resources, enabling students to engage with diverse learning materials beyond traditional textbooks. Online platforms, interactive simulations, and multimedia content have created immersive learning experiences that cater to different learning styles.\n\n## Body Paragraph 2: Challenges and Considerations\n\nDespite the benefits, the digital divide remains a significant concern, as not all students have equal access to technological resources. Additionally, the over-reliance on technology may impact critical thinking and interpersonal skills development.\n\n## Conclusion\n\nWhile technology presents both opportunities and challenges in education, its thoughtful integration can enhance learning outcomes when implemented with careful consideration of equity and pedagogical best practices.`,
+        'research': `# Research Paper: Climate Change and Agricultural Sustainability\n\n## Abstract\n\nThis research paper examines the relationship between climate change and agricultural sustainability, analyzing current challenges and potential solutions for food security in the 21st century.\n\n## Introduction\n\nClimate change poses unprecedented challenges to global agricultural systems. Rising temperatures, changing precipitation patterns, and extreme weather events threaten food production worldwide.\n\n## Literature Review\n\nRecent studies indicate that agricultural yields are declining in many regions due to climate-related factors (Smith et al., 2023). Adaptation strategies must be implemented to ensure food security for growing populations.\n\n## Methodology\n\nThis study employs a mixed-methods approach, combining quantitative analysis of agricultural data with qualitative interviews of farmers and agricultural experts.\n\n## Results and Discussion\n\nPreliminary findings suggest that sustainable farming practices can mitigate some climate impacts while maintaining productivity levels.\n\n## Conclusion\n\nAddressing climate change in agriculture requires coordinated efforts between policymakers, researchers, and farming communities.`,
+        'report': `# Laboratory Report: Enzyme Activity Analysis\n\n## Objective\n\nTo investigate the effect of temperature on enzyme activity using catalase as a model enzyme.\n\n## Materials and Methods\n\n### Materials:\n• Catalase enzyme solution\n• Hydrogen peroxide (3%)\n• Test tubes and measuring equipment\n• Water baths at various temperatures\n\n### Procedure:\n1. Prepared enzyme solutions at different temperatures (0°C, 25°C, 37°C, 60°C)\n2. Added hydrogen peroxide substrate\n3. Measured oxygen production over 5-minute intervals\n4. Recorded data and calculated reaction rates\n\n## Results\n\nOptimal enzyme activity occurred at 37°C, with decreased activity at both lower and higher temperatures. Complete denaturation was observed at 60°C.\n\n## Discussion\n\nThe results confirm the temperature-dependent nature of enzyme activity, supporting the induced-fit model of enzyme function.\n\n## Conclusion\n\nTemperature significantly affects enzyme activity, with optimal performance occurring near physiological temperatures.`,
+        'thesis': `Thesis Statement: While social media platforms have revolutionized global communication and information sharing, their unchecked proliferation has contributed to the spread of misinformation, political polarization, and mental health challenges, necessitating comprehensive regulatory frameworks that balance free expression with public welfare.\n\nSupporting Arguments:\n1. Social media has democratized information access and enabled global connectivity\n2. Misinformation spreads rapidly through algorithmic amplification\n3. Echo chambers contribute to political and social polarization\n4. Excessive social media use correlates with increased anxiety and depression\n5. Regulatory measures must protect both individual rights and collective well-being`,
+        'analysis': `# Literary Analysis: Symbolism in "The Great Gatsby"\n\n## Introduction\n\nF. Scott Fitzgerald's "The Great Gatsby" employs rich symbolism to critique the American Dream and the moral decay of 1920s society. This analysis examines key symbols and their significance within the novel's broader themes.\n\n## The Green Light\n\nThe green light at the end of Daisy's dock represents Gatsby's unattainable dreams and the broader American pursuit of happiness. Its distant, elusive nature mirrors the impossibility of recapturing the past.\n\n## The Valley of Ashes\n\nThis desolate wasteland symbolizes the moral and spiritual emptiness underlying the era's material prosperity. It serves as a stark contrast to the opulence of East and West Egg.\n\n## The Eyes of Doctor T.J. Eckleburg\n\nThe billboard's watchful eyes represent the absence of moral oversight in a godless society, witnessing the characters' moral failures without intervention.\n\n## Conclusion\n\nFitzgerald's masterful use of symbolism reveals the hollowness of the American Dream and the spiritual bankruptcy of the Jazz Age.`,
+        'review': `# Literature Review: Artificial Intelligence in Healthcare\n\n## Introduction\n\nThis literature review examines recent developments in artificial intelligence applications within healthcare settings, focusing on diagnostic accuracy, treatment optimization, and patient outcomes.\n\n## Diagnostic Applications\n\nRecent studies demonstrate AI's effectiveness in medical imaging analysis. Johnson et al. (2023) found that machine learning algorithms achieved 94% accuracy in detecting early-stage cancer, surpassing traditional diagnostic methods.\n\n## Treatment Personalization\n\nPersonalized medicine has benefited significantly from AI integration. Research by Chen and Williams (2022) indicates that AI-driven treatment recommendations improved patient outcomes by 23% compared to standard protocols.\n\n## Challenges and Limitations\n\nDespite promising results, several challenges remain. Data privacy concerns, algorithmic bias, and the need for extensive validation limit widespread implementation (Rodriguez et al., 2023).\n\n## Future Directions\n\nEmerging research focuses on explainable AI systems that provide transparent decision-making processes, addressing current limitations in clinical adoption.\n\n## Conclusion\n\nAI shows tremendous potential in healthcare, but successful implementation requires addressing ethical, technical, and regulatory challenges.`
+      };
+      
+      // Determine content type based on prompt
+      const lowerPrompt = prompt.toLowerCase();
+      if (lowerPrompt.includes('essay')) return templates.essay;
+      if (lowerPrompt.includes('research')) return templates.research;
+      if (lowerPrompt.includes('report') || lowerPrompt.includes('lab')) return templates.report;
+      if (lowerPrompt.includes('thesis')) return templates.thesis;
+      if (lowerPrompt.includes('analysis') || lowerPrompt.includes('literary')) return templates.analysis;
+      if (lowerPrompt.includes('review') || lowerPrompt.includes('literature')) return templates.review;
+      
+      // Default content
+      return `# Generated Content\n\nBased on your request: "${prompt}"\n\nThis is a sample generated content that demonstrates the AI writing capabilities. The content would be customized based on your specific requirements and writing style preferences.\n\n## Key Points\n\n• Professional tone and structure\n• Relevant to your request\n• Ready for editing and customization\n• Optimized for your target audience\n\nFeel free to edit this content directly in the editor panel to match your exact needs.`;
+    }
+    
+    function handleFileUpload(event) {
+      const files = Array.from(event.target.files);
+      const uploadedFilesContainer = document.getElementById('uploaded-files');
+      
+      files.forEach(file => {
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+          alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+          return;
+        }
+        
+        uploadedFiles.push(file);
+        
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
+          <div class="file-info">
+            <i class="fas fa-file"></i>
+            <span>${file.name}</span>
+          </div>
+          <button class="file-remove" onclick="removeFile('${file.name}')">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        
+        uploadedFilesContainer.appendChild(fileItem);
+      });
+      
+      // Clear file input
+      event.target.value = '';
+    }
+    
+    function removeFile(fileName) {
+      uploadedFiles = uploadedFiles.filter(file => file.name !== fileName);
+      
+      const uploadedFilesContainer = document.getElementById('uploaded-files');
+      const fileItems = uploadedFilesContainer.querySelectorAll('.file-item');
+      
+      fileItems.forEach(item => {
+        if (item.querySelector('span').textContent === fileName) {
+          item.remove();
+        }
+      });
+    }
+    
+    function updateContentStats() {
+      const content = document.getElementById('content-editor').value;
+      const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+      const charCount = content.length;
+      
+      document.getElementById('word-count').textContent = `${wordCount} words`;
+      document.getElementById('char-count').textContent = `${charCount} characters`;
+    }
+    
+    function copyContent() {
+      const content = document.getElementById('content-editor').value;
+      if (!content.trim()) {
+        alert('No content to copy!');
+        return;
+      }
+      
+      navigator.clipboard.writeText(content).then(() => {
+        alert('Content copied to clipboard!');
+      }).catch(() => {
+        alert('Failed to copy content. Please try again.');
+      });
+    }
+    
+    function downloadContent() {
+      const content = document.getElementById('content-editor').value;
+      if (!content.trim()) {
+        alert('No content to download!');
+        return;
+      }
+      
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ai-generated-content-${new Date().toISOString().slice(0, 10)}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    
+    function clearEditor() {
+      if (confirm('Are you sure you want to clear the editor? This action cannot be undone.')) {
+        document.getElementById('content-editor').value = '';
+        updateContentStats();
+      }
+    }
+  </script>
+
+
+</body>
+</html>

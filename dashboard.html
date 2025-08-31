@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - AssignSavvy</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Top Bar -->
+    <div class="dashboard-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">AssignSavvy</div>
+      </div>
+      <div>Dashboard</div>
+      <a href="index.html" class="btn btn-outline">Back to Home</a>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="dashboard-sidebar" id="dashboard-sidebar">
+      <!-- Navigation -->
+      <ul class="sidebar-nav">
+        <li>
+          <a href="dashboard.html" class="sidebar-nav-item active">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="writer.html" class="sidebar-nav-item">
+            <i class="fas fa-pen"></i>
+            <span>Writer</span>
+          </a>
+        </li>
+        <li>
+          <a href="researcher.html" class="sidebar-nav-item">
+            <i class="fas fa-magnifying-glass"></i>
+            <span>Researcher</span>
+          </a>
+        </li>
+        <li>
+          <a href="detector.html" class="sidebar-nav-item">
+            <i class="fas fa-shield-halved"></i>
+            <span>Detector</span>
+          </a>
+        </li>
+        <li>
+          <a href="prompt-engineer.html" class="sidebar-nav-item">
+            <i class="fas fa-code"></i>
+            <span>Prompt Engineer</span>
+          </a>
+        </li>
+        <li>
+          <a href="history.html" class="sidebar-nav-item">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span>History</span>
+          </a>
+        </li>
+      </ul>
+      
+      <!-- User Account Info - Bottom Corner -->
+      <div class="user-account-info">
+        <div class="user-profile-card" id="user-profile-card" style="cursor: pointer;">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="user-details">
+            <h4 id="user-name">John Doe</h4>
+            <p class="user-plan" id="user-plan">Free Plan</p>
+            <div class="user-credits">
+              <i class="fas fa-coins"></i>
+              <span id="user-credits">145/200 Credits</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="dashboard-content">
+      <!-- Welcome Card -->
+      <div class="card mb-6">
+        <h2>Welcome back, John!</h2>
+        <p>Ready to boost your productivity today?</p>
+        <a href="writer.html" class="btn btn-primary mt-4">Start Writing</a>
+      </div>
+      
+      <!-- Performance Cards -->
+      <h3 class="mb-4">Performance</h3>
+      <div class="dashboard-cards mb-8">
+        <div class="stat-card">
+          <div class="stat-title">Words Generated</div>
+          <div class="stat-value">12,450</div>
+          <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i> 12% from last week
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-title">Projects Completed</div>
+          <div class="stat-value">24</div>
+          <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i> 8% from last week
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-title">Credits Used</div>
+          <div class="stat-value">145/200</div>
+          <div class="stat-change negative">
+            <i class="fas fa-arrow-up"></i> 25% from last week
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-title">Time Saved</div>
+          <div class="stat-value">18h</div>
+          <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i> 15% from last week
+          </div>
+        </div>
+      </div>
+      
+      <!-- AI Tools Section -->
+      <div class="flex justify-between items-center mb-4">
+        <h3>AI Tools</h3>
+      </div>
+      
+      <div class="dashboard-cards mb-8">
+        <!-- Writer Tool -->
+        <div class="card">
+          <div class="flex justify-between items-center">
+            <div class="feature-icon">
+              <i class="fas fa-pen"></i>
+            </div>
+            <a href="writer.html" class="text-primary">
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+          <h4>AI Writer</h4>
+          <p>Generate high-quality content for your assignments.</p>
+        </div>
+        
+        <!-- Researcher Tool -->
+        <div class="card">
+          <div class="flex justify-between items-center">
+            <div class="feature-icon">
+              <i class="fas fa-magnifying-glass"></i>
+            </div>
+            <a href="researcher.html" class="text-primary">
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+          <h4>Researcher</h4>
+          <p>Find and organize sources for your research.</p>
+        </div>
+        
+        <!-- Detector Tool -->
+        <div class="card">
+          <div class="flex justify-between items-center">
+            <div class="feature-icon">
+              <i class="fas fa-shield-halved"></i>
+            </div>
+            <a href="detector.html" class="text-primary">
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+          <h4>Detector</h4>
+          <p>Check for plagiarism and AI-generated content.</p>
+        </div>
+        
+        <!-- Prompt Engineer Tool -->
+        <div class="card">
+          <div class="flex justify-between items-center">
+            <div class="feature-icon">
+              <i class="fas fa-code"></i>
+            </div>
+            <a href="prompt-engineer.html" class="text-primary">
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+          <h4>Prompt Engineer</h4>
+          <p>Optimize your AI prompts for better results.</p>
+        </div>
+      </div>
+      
+      <!-- Recent Activity -->
+      <div class="flex justify-between items-center mb-4">
+        <h3>Recent Activity</h3>
+        <a href="history.html" class="text-primary">View All</a>
+      </div>
+      
+      <div class="card">
+        <div class="flex flex-col items-center gap-4 py-8">
+          <i class="fas fa-folder-open text-gray-400 text-4xl"></i>
+          <p class="text-gray-500">No recent activity</p>
+          <p class="text-sm text-gray-400">Your recent projects will appear here</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Profile Modal -->
+  <div id="user-profile-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>User Profile</h3>
+        <button id="close-profile-modal" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-section">
+          <div class="profile-avatar">
+            <i class="fas fa-user-circle text-6xl text-primary"></i>
+          </div>
+          <div class="profile-info">
+            <h4 id="modal-user-name">John Doe</h4>
+            <p class="text-gray" id="modal-user-email">john.doe@example.com</p>
+            <div class="plan-info">
+              <span class="plan-badge" id="modal-user-plan">Free Plan</span>
+              <div class="credits-info">
+                <i class="fas fa-coins text-orange"></i>
+                <span id="modal-user-credits">145/200 Credits</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-outline" onclick="window.location.href='auth.html'">Account Settings</button>
+          <button class="btn btn-primary" onclick="window.location.href='pricing.html'">Upgrade Plan</button>
+          <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // User profile functionality
+    let currentUser = {
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      plan: 'free',
+      credits: 145,
+      maxCredits: 200
+    };
+
+    function loadUserProfile() {
+      // Update sidebar user info
+      document.getElementById('user-name').textContent = currentUser.name;
+      document.getElementById('user-plan').textContent = currentUser.plan === 'free' ? 'Free Plan' : 'Pro Plan';
+      document.getElementById('user-credits').textContent = `${currentUser.credits}/${currentUser.maxCredits} Credits`;
+      
+      // Update modal user info
+      document.getElementById('modal-user-name').textContent = currentUser.name;
+      document.getElementById('modal-user-email').textContent = currentUser.email;
+      document.getElementById('modal-user-plan').textContent = currentUser.plan === 'free' ? 'Free Plan' : 'Pro Plan';
+      document.getElementById('modal-user-credits').textContent = `${currentUser.credits}/${currentUser.maxCredits} Credits`;
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        // Clear user data
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('userData');
+        // Redirect to auth page
+        window.location.href = 'auth.html';
+      }
+    }
+
+    // Sidebar toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load user profile data
+      loadUserProfile();
+      
+      // User profile modal functionality
+      const userProfileCard = document.getElementById('user-profile-card');
+      const userProfileModal = document.getElementById('user-profile-modal');
+      const closeProfileModal = document.getElementById('close-profile-modal');
+      
+      userProfileCard.addEventListener('click', function() {
+        userProfileModal.style.display = 'flex';
+      });
+      
+      closeProfileModal.addEventListener('click', function() {
+        userProfileModal.style.display = 'none';
+      });
+      
+      window.addEventListener('click', function(event) {
+        if (event.target === userProfileModal) {
+          userProfileModal.style.display = 'none';
+        }
+      });
+      
+      const sidebarToggle = document.getElementById('sidebar-toggle');
+      const sidebar = document.getElementById('dashboard-sidebar');
+      const dashboardLayout = document.querySelector('.dashboard-layout');
+      
+      // Toggle sidebar on button click
+      sidebarToggle.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          // Mobile behavior
+          sidebar.classList.toggle('sidebar-open');
+          dashboardLayout.classList.toggle('sidebar-active');
+        } else {
+          // Desktop behavior
+          dashboardLayout.classList.toggle('sidebar-collapsed');
+        }
+      });
+      
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', function(event) {
+        if (window.innerWidth <= 768) {
+          if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target) && sidebar.classList.contains('sidebar-open')) {
+            sidebar.classList.remove('sidebar-open');
+            dashboardLayout.classList.remove('sidebar-active');
+          }
+        }
+      });
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+          sidebar.classList.remove('sidebar-open');
+          dashboardLayout.classList.remove('sidebar-active');
+        } else {
+          dashboardLayout.classList.remove('sidebar-collapsed');
+        }
+      });
+    });
+  </script>
+
+
+</body>
+</html>

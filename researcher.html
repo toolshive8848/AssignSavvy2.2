@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Researcher - AssignSavvy</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Top Bar -->
+    <div class="dashboard-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">AssignSavvy</div>
+      </div>
+      <div>Research Assistant</div>
+      <a href="index.html" class="btn btn-outline">Back to Home</a>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="dashboard-sidebar" id="dashboard-sidebar">
+      <!-- Navigation -->
+      <ul class="sidebar-nav">
+        <li>
+          <a href="dashboard.html" class="sidebar-nav-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="writer.html" class="sidebar-nav-item">
+            <i class="fas fa-pen"></i>
+            <span>Writer</span>
+          </a>
+        </li>
+        <li>
+          <a href="researcher.html" class="sidebar-nav-item active">
+            <i class="fas fa-magnifying-glass"></i>
+            <span>Researcher</span>
+          </a>
+        </li>
+        <li>
+          <a href="detector.html" class="sidebar-nav-item">
+            <i class="fas fa-shield-halved"></i>
+            <span>Detector</span>
+          </a>
+        </li>
+        <li>
+          <a href="prompt-engineer.html" class="sidebar-nav-item">
+            <i class="fas fa-code"></i>
+            <span>Prompt Engineer</span>
+          </a>
+        </li>
+        <li>
+          <a href="history.html" class="sidebar-nav-item">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span>History</span>
+          </a>
+        </li>
+      </ul>
+      
+      <!-- User Account Info - Bottom Corner -->
+      <div class="user-account-info">
+        <div class="user-profile-card" id="user-profile-card" style="cursor: pointer;">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="user-details">
+            <h4 id="user-name">John Doe</h4>
+            <p class="user-plan" id="user-plan">Free Plan</p>
+            <div class="user-credits">
+              <i class="fas fa-coins"></i>
+              <span id="user-credits">145/200 Credits</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="dashboard-main">
+      <div class="researcher-container">
+        
+        <!-- Research Section -->
+        <div class="research-section">
+          <!-- Header -->
+          <div class="section-header">
+            <h2>Research Assistant</h2>
+            <button class="btn btn-outline" id="open-history-btn">
+              <i class="fas fa-history"></i> History
+            </button>
+          </div>
+          
+          <!-- Chat Messages Area -->
+          <div class="chat-messages" id="chat-messages">
+
+            <div class="typing-indicator" id="typing-indicator" style="display: none;">
+              <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <span>Researching...</span>
+            </div>
+          </div>
+          
+          <!-- Chat Input Container -->
+          <div class="chat-input-container">
+            <!-- Research Filters (Collapsible) -->
+            <div class="research-filters" id="research-filters">
+              <button class="filter-toggle" id="filter-toggle">
+                <i class="fas fa-filter"></i> Filters
+              </button>
+              <div class="filter-options" id="filter-options" style="display: none;">
+                <select class="form-input" id="source-filter">
+                  <option>All Sources</option>
+                  <option>Academic Journals</option>
+                  <option>Books</option>
+                  <option>News Articles</option>
+                  <option>Websites</option>
+                </select>
+                <select class="form-input" id="year-filter">
+                  <option>All Years</option>
+                  <option>Last Year</option>
+                  <option>Last 5 Years</option>
+                  <option>Last 10 Years</option>
+                </select>
+                <select class="form-input" id="sort-filter">
+                  <option>Relevance</option>
+                  <option>Date (Newest)</option>
+                  <option>Date (Oldest)</option>
+                  <option>Citations (High to Low)</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="input-wrapper">
+              <textarea id="research-input" placeholder="What would you like me to research?" rows="1"></textarea>
+              <button class="send-btn" id="send-research-btn">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Results Section -->
+          <div class="results-card">
+            <div class="results-tabs">
+              <div class="tab tab-btn active" data-tab="sources-content">Sources</div>
+              <div class="tab tab-btn" data-tab="citations-content">Citations</div>
+              <div class="tab tab-btn" data-tab="notes-content">Research Notes</div>
+            </div>
+        
+        <!-- Tab Content Containers -->
+        <div class="tab-content active" id="sources-content">
+          <div class="results-container">
+            <!-- Result Item 1 -->
+            <div class="result-item">
+              <h4>Climate Change Effects on Global Agriculture</h4>
+              <p class="text-sm">Journal of Environmental Science, 2024</p>
+              <p>This comprehensive study examines the impact of climate change on agricultural systems worldwide, with a focus on crop yields, water resources, and adaptation strategies.</p>
+              <div class="flex gap-2 mt-2">
+                <span class="badge">Climate Change</span>
+                <span class="badge">Agriculture</span>
+                <span class="badge">Sustainability</span>
+              </div>
+              <div class="flex justify-between mt-4">
+                <div>
+                  <span class="text-sm text-gray">Relevance: 98%</span>
+                </div>
+                <div class="flex gap-2">
+                  <button class="btn btn-outline btn-sm">
+                    <i class="fas fa-bookmark"></i>
+                  </button>
+                  <button class="btn btn-outline btn-sm">
+                    <i class="fas fa-quote-right"></i>
+                  </button>
+                  <button class="btn btn-primary btn-sm">
+                    <i class="fas fa-file-arrow-down"></i> PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Result Item 2 -->
+            <div class="result-item">
+              <h4>Renewable Energy Transition: Challenges and Opportunities</h4>
+              <p class="text-sm">Energy Policy Review, 2023</p>
+              <p>An analysis of the global transition to renewable energy sources, examining policy frameworks, economic implications, and technological innovations driving the shift.</p>
+              <div class="flex gap-2 mt-2">
+                <span class="badge">Renewable Energy</span>
+                <span class="badge">Policy</span>
+                <span class="badge">Economics</span>
+              </div>
+              <div class="flex justify-between mt-4">
+                <div>
+                  <span class="text-sm text-gray">Relevance: 85%</span>
+                </div>
+                <div class="flex gap-2">
+                  <button class="btn btn-outline btn-sm">
+                    <i class="fas fa-bookmark"></i>
+                  </button>
+                  <button class="btn btn-outline btn-sm">
+                    <i class="fas fa-quote-right"></i>
+                  </button>
+                  <button class="btn btn-primary btn-sm">
+                    <i class="fas fa-file-arrow-down"></i> PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Result Item 3 -->
+            <div class="result-item">
+              <h4>Digital Transformation in Higher Education</h4>
+              <p class="text-sm">Journal of Educational Technology, 2024</p>
+              <p>This paper explores how digital technologies are reshaping higher education institutions, teaching methodologies, and student learning experiences.</p>
+              <div class="flex gap-2 mt-2">
+                <span class="badge">Education</span>
+                <span class="badge">Technology</span>
+                <span class="badge">Digital Transformation</span>
+              </div>
+              <div class="flex justify-between mt-4">
+                <div>
+                  <span class="text-sm text-gray">Relevance: 72%</span>
+                </div>
+                <div class="flex gap-2">
+                  <button class="btn btn-outline btn-sm">
+                    <i class="fas fa-bookmark"></i>
+                  </button>
+                  <button class="btn btn-outline btn-sm">
+                    <i class="fas fa-quote-right"></i>
+                  </button>
+                  <button class="btn btn-primary btn-sm">
+                    <i class="fas fa-file-arrow-down"></i> PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tab-content" id="citations-content">
+          <div class="results-container">
+            <div class="result-item">
+              <h4>Generated Citations</h4>
+              <div class="citation-list">
+                <div class="citation-item">
+                  <p><strong>APA:</strong> Smith, J. (2024). Climate Change Effects on Global Agriculture. <em>Journal of Environmental Science</em>, 45(3), 123-145.</p>
+                  <button class="btn btn-outline btn-sm mt-2">
+                    <i class="fas fa-copy"></i> Copy
+                  </button>
+                </div>
+                <div class="citation-item mt-4">
+                  <p><strong>MLA:</strong> Smith, John. "Climate Change Effects on Global Agriculture." <em>Journal of Environmental Science</em>, vol. 45, no. 3, 2024, pp. 123-145.</p>
+                  <button class="btn btn-outline btn-sm mt-2">
+                    <i class="fas fa-copy"></i> Copy
+                  </button>
+                </div>
+                <div class="citation-item mt-4">
+                  <p><strong>Chicago:</strong> Smith, John. "Climate Change Effects on Global Agriculture." Journal of Environmental Science 45, no. 3 (2024): 123-145.</p>
+                  <button class="btn btn-outline btn-sm mt-2">
+                    <i class="fas fa-copy"></i> Copy
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tab-content" id="notes-content">
+          <div class="results-container">
+            <div class="result-item">
+              <h4>Research Notes</h4>
+              <div class="notes-container">
+                <div class="note-item">
+                  <h5>Key Findings</h5>
+                  <ul>
+                    <li>Climate change significantly impacts crop yields globally</li>
+                    <li>Water resource management is critical for adaptation</li>
+                    <li>Sustainable farming practices show promise for mitigation</li>
+                  </ul>
+                </div>
+                <div class="note-item mt-4">
+                  <h5>Important Quotes</h5>
+                  <blockquote>
+                    "The transition to renewable energy sources represents one of the most significant challenges and opportunities of our time."
+                  </blockquote>
+                  <p class="text-sm text-gray">- Energy Policy Review, 2023</p>
+                </div>
+                <div class="note-item mt-4">
+                  <h5>Research Questions</h5>
+                  <ul>
+                    <li>How can digital transformation improve educational outcomes?</li>
+                    <li>What are the long-term effects of climate change on food security?</li>
+                    <li>Which renewable energy policies are most effective?</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+          </div>
+        </div>
+        
+
+        
+      </div>
+    </div>
+  </div>
+  
+  <!-- User Profile Modal -->
+  <div id="user-profile-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>User Profile</h3>
+        <button id="close-profile-modal" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-section">
+          <div class="profile-avatar">
+            <i class="fas fa-user-circle text-6xl text-primary"></i>
+          </div>
+          <div class="profile-info">
+            <h4 id="modal-user-name">John Doe</h4>
+            <p class="text-gray" id="modal-user-email">john.doe@example.com</p>
+            <div class="plan-info">
+              <span class="plan-badge" id="modal-user-plan">Free Plan</span>
+              <div class="credits-info">
+                <i class="fas fa-coins text-orange"></i>
+                <span id="modal-user-credits">145/200 Credits</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-outline" onclick="window.location.href='auth.html'">Account Settings</button>
+          <button class="btn btn-primary" onclick="window.location.href='pricing.html'">Upgrade Plan</button>
+          <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- History Modal -->
+  <div id="history-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Recent Research</h3>
+        <button id="close-modal-btn" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="project-list">
+          <li class="project-item">
+            <div>
+              <h4>Climate Change Research</h4>
+              <p class="text-sm text-gray">May 15, 2025 • 12 sources</p>
+            </div>
+            <button class="btn btn-outline" disabled>Open</button>
+          </li>
+          <li class="project-item">
+            <div>
+              <h4>Renewable Energy Sources</h4>
+              <p class="text-sm text-gray">May 14, 2025 • 8 sources</p>
+            </div>
+            <button class="btn btn-outline" disabled>Open</button>
+          </li>
+          <li class="project-item">
+            <div>
+              <h4>Digital Education Trends</h4>
+              <p class="text-sm text-gray">May 12, 2025 • 15 sources</p>
+            </div>
+            <button class="btn btn-outline" disabled>Open</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <style>
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: var(--radius-md);
+      width: 90%;
+      max-width: 600px;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .modal-header {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--bg-gray-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-body {
+      padding: var(--space-4);
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-gray);
+    }
+    
+    .project-list {
+      list-style: none;
+    }
+    
+    .project-item {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--bg-gray-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .project-item:last-child {
+      border-bottom: none;
+    }
+    
+    /* Researcher Layout */
+    .researcher-container {
+      height: calc(100vh - 120px);
+      padding: var(--space-6);
+    }
+    
+    .research-section {
+      width: 100%;
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--bg-gray-100);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-6);
+      overflow-y: auto;
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-6);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--bg-gray-100);
+    }
+    
+    /* Chat Interface Styles */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      background: var(--bg-gray-50);
+      border-radius: var(--radius-md);
+      min-height: 300px;
+    }
+    
+    .welcome-message {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      border-left: 4px solid var(--primary-purple);
+      margin-bottom: var(--space-4);
+    }
+    
+    .message-content h3 {
+      margin-bottom: var(--space-2);
+      color: var(--primary-purple);
+    }
+    
+    .example-queries {
+      margin-top: var(--space-3);
+    }
+    
+    .example-queries ul {
+      margin: var(--space-2) 0;
+      padding-left: var(--space-4);
+    }
+    
+    .example-queries li {
+      margin-bottom: var(--space-1);
+      color: var(--text-gray);
+    }
+    
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3);
+      background: white;
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-2);
+    }
+    
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+    }
+    
+    .typing-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary-purple);
+      animation: typing 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    
+    .chat-input-container {
+      background: white;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--bg-gray-100);
+      padding: var(--space-3);
+      display: flex;
+      align-items: flex-end;
+      gap: var(--space-3);
+    }
+    
+    .input-wrapper {
+      display: flex;
+      gap: var(--space-2);
+      align-items: flex-end;
+      flex: 1;
+    }
+    
+    #research-input {
+      flex: 1;
+      border: 1px solid var(--bg-gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      resize: none;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.4;
+      max-height: 120px;
+    }
+    
+    .send-btn {
+      background: var(--primary-purple);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      height: 40px;
+    }
+    
+    .send-btn:hover {
+      background: var(--primary-purple-dark);
+    }
+    
+    .research-filters {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .filter-toggle {
+      background: var(--bg-gray-100);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: var(--space-2) var(--space-3);
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-gray);
+      margin-bottom: var(--space-3);
+      transition: all 0.2s ease;
+    }
+    
+    .filter-toggle:hover {
+      background: var(--bg-gray-200);
+    }
+    
+    .filter-toggle.active {
+      background: var(--primary-purple);
+      color: white;
+    }
+    
+    /* Tab content styles */
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .citation-item {
+      padding: 1rem;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #3b82f6;
+    }
+    
+    .note-item {
+      padding: 1rem;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    
+    .note-item h5 {
+      margin-bottom: 0.5rem;
+      color: #374151;
+      font-weight: 600;
+    }
+    
+    .note-item ul {
+      margin: 0;
+      padding-left: 1.5rem;
+    }
+    
+    .note-item li {
+      margin-bottom: 0.5rem;
+    }
+    
+    blockquote {
+      margin: 1rem 0;
+      padding: 1rem;
+      background-color: #e5e7eb;
+      border-left: 4px solid #6b7280;
+      font-style: italic;
+    }
+    
+    .filter-options {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      background: white;
+      border: 1px solid var(--bg-gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      min-width: 400px;
+      margin-bottom: var(--space-2);
+      z-index: 10;
+    }
+    
+    .filter-options select {
+      flex: 1;
+      min-width: 120px;
+      font-size: 12px;
+      padding: var(--space-2);
+    }
+    
+    .results-card {
+      background: var(--bg-gray-50);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+    }
+    
+    .results-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--bg-gray-100);
+      margin-bottom: var(--space-4);
+    }
+    
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-4) var(--space-6);
+      border-bottom: 1px solid var(--bg-gray-100);
+    }
+    
+    .panel-toolbar {
+      display: flex;
+      gap: var(--space-2);
+    }
+    
+    .panel-content {
+      flex: 1;
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Output Display Styles */
+    .output-display {
+      flex: 1;
+      background: var(--bg-gray-50);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      min-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .output-placeholder {
+      text-align: center;
+      color: var(--text-gray);
+      padding: var(--space-6);
+    }
+    
+    .output-placeholder i {
+      color: var(--bg-gray-200);
+      margin-bottom: var(--space-4);
+    }
+    
+    .output-placeholder h4 {
+      margin-bottom: var(--space-2);
+      color: var(--text-dark);
+    }
+    
+    .output-placeholder ul {
+      text-align: left;
+      max-width: 300px;
+      margin: var(--space-3) auto;
+    }
+    
+    .notes-section {
+      border-top: 1px solid var(--bg-gray-100);
+      padding-top: var(--space-4);
+    }
+    
+    .notes-section h4 {
+      margin-bottom: var(--space-2);
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+    
+    #notes-editor {
+      width: 100%;
+      height: 120px;
+      border: 1px solid var(--bg-gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      resize: vertical;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.5;
+      background: white;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .researcher-container {
+        padding: var(--space-4);
+      }
+      
+      .research-section {
+        height: auto;
+      }
+      
+      .chat-input-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-2);
+      }
+      
+      .research-filters {
+        order: 2;
+      }
+      
+      .input-wrapper {
+        order: 1;
+      }
+      
+      .filter-options {
+        position: static;
+        min-width: auto;
+        margin-bottom: 0;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+      
+      .filter-options select {
+        width: 100%;
+      }
+    }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--bg-gray-100);
+      margin-bottom: var(--space-4);
+    }
+    
+    .tab {
+      padding: var(--space-3) var(--space-6);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .tab.active {
+      border-bottom: 2px solid var(--primary-purple);
+      color: var(--primary-purple);
+    }
+    
+    /* Results */
+    .results-container {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    
+    .result-item {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--bg-gray-100);
+    }
+    
+    .result-item:last-child {
+      border-bottom: none;
+    }
+    
+    /* Chat Messages */
+    .user-message {
+      margin-bottom: var(--space-3);
+      text-align: right;
+    }
+    
+    .user-message .message-content {
+      display: inline-block;
+      background: var(--primary-purple);
+      color: white;
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    
+    .assistant-message {
+      margin-bottom: var(--space-4);
+    }
+    
+    .assistant-message .message-content {
+      background: white;
+      border: 1px solid var(--bg-gray-100);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .research-results {
+      margin-top: var(--space-3);
+    }
+    
+    .research-results .result-item {
+      margin-bottom: var(--space-3);
+      border-left: 4px solid var(--primary-purple);
+    }
+    
+    .research-results h5 {
+      color: var(--primary-purple);
+      margin-bottom: var(--space-2);
+      font-size: 16px;
+    }
+    
+    .result-badges {
+      display: flex;
+      gap: var(--space-2);
+      margin: var(--space-2) 0;
+      flex-wrap: wrap;
+    }
+    
+    .result-badges .badge {
+      background: var(--bg-gray-100);
+      color: var(--text-gray);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+    }
+    
+    .badge {
+      background-color: var(--bg-gray-100);
+      color: var(--text-gray);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+    }
+    
+    .btn-sm {
+      padding: var(--space-1) var(--space-2);
+      font-size: 0.875rem;
+    }
+  </style>
+  
+  <script>
+    // User profile data
+    const currentUser = {
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      plan: 'Free Plan',
+      credits: '145/200 Credits'
+    };
+
+    // Load user profile data
+    function loadUserProfile() {
+      // Update sidebar user info
+      document.getElementById('user-name').textContent = currentUser.name;
+      document.getElementById('user-plan').textContent = currentUser.plan;
+      document.getElementById('user-credits').textContent = currentUser.credits;
+      
+      // Update modal user info
+      document.getElementById('modal-user-name').textContent = currentUser.name;
+      document.getElementById('modal-user-email').textContent = currentUser.email;
+      document.getElementById('modal-user-plan').textContent = currentUser.plan;
+      document.getElementById('modal-user-credits').textContent = currentUser.credits;
+    }
+
+    // Logout function
+    function logout() {
+      // In a real app, this would clear session/tokens
+      alert('Logging out...');
+      window.location.href = 'auth.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadUserProfile();
+      
+      // Show modal when user profile card is clicked
+      document.getElementById('user-profile-card').addEventListener('click', function() {
+        document.getElementById('user-profile-modal').style.display = 'flex';
+      });
+      
+      // Hide modal when close button is clicked
+      document.getElementById('close-profile-modal').addEventListener('click', function() {
+        document.getElementById('user-profile-modal').style.display = 'none';
+      });
+      
+      // Hide modal when clicking outside of it
+      document.getElementById('user-profile-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.style.display = 'none';
+        }
+      });
+      // Modal functionality
+      const openHistoryBtn = document.getElementById('open-history-btn');
+      const historyModal = document.getElementById('history-modal');
+      const closeModalBtn = document.getElementById('close-modal-btn');
+      
+      openHistoryBtn.addEventListener('click', function() {
+        historyModal.style.display = 'flex';
+      });
+      
+      closeModalBtn.addEventListener('click', function() {
+        historyModal.style.display = 'none';
+      });
+      
+      window.addEventListener('click', function(event) {
+        if (event.target === historyModal) {
+          historyModal.style.display = 'none';
+        }
+      });
+      
+      // Sidebar toggle functionality
+      const sidebarToggle = document.getElementById('sidebar-toggle');
+      const sidebar = document.getElementById('dashboard-sidebar');
+      const dashboardLayout = document.querySelector('.dashboard-layout');
+      
+      // Toggle sidebar on button click
+      sidebarToggle.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          // Mobile behavior
+          sidebar.classList.toggle('sidebar-open');
+          dashboardLayout.classList.toggle('sidebar-active');
+        } else {
+          // Desktop behavior
+          dashboardLayout.classList.toggle('sidebar-collapsed');
+        }
+      });
+      
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', function(event) {
+        if (window.innerWidth <= 768) {
+          if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target) && sidebar.classList.contains('sidebar-open')) {
+            sidebar.classList.remove('sidebar-open');
+            dashboardLayout.classList.remove('sidebar-active');
+          }
+        }
+      });
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+          sidebar.classList.remove('sidebar-open');
+          dashboardLayout.classList.remove('sidebar-active');
+        } else {
+          dashboardLayout.classList.remove('sidebar-collapsed');
+        }
+      });
+      
+      // Research functionality
+      const researchInput = document.getElementById('research-input');
+      const sendBtn = document.getElementById('send-research-btn');
+      const chatMessages = document.getElementById('chat-messages');
+      const typingIndicator = document.getElementById('typing-indicator');
+      
+      function addMessage(content, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = isUser ? 'user-message' : 'assistant-message';
+        messageDiv.innerHTML = `
+          <div class="message-content">
+            ${content}
+          </div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+      
+      function simulateResearch(query) {
+        // Show typing indicator
+        typingIndicator.style.display = 'flex';
+        
+        setTimeout(() => {
+          typingIndicator.style.display = 'none';
+          
+          // Mock research results
+          const results = `
+            <h4>Research Results for: "${query}"</h4>
+            <div class="research-results">
+              <div class="result-item">
+                <h5>Climate Change Effects on Global Agriculture</h5>
+                <p><em>Journal of Environmental Science, 2024</em></p>
+                <p>This comprehensive study examines the impact of climate change on agricultural systems worldwide, with a focus on crop yields, water resources, and adaptation strategies.</p>
+                <div class="result-badges">
+                  <span class="badge">Climate Change</span>
+                  <span class="badge">Agriculture</span>
+                  <span class="badge">Sustainability</span>
+                </div>
+                <p><strong>Relevance: 95%</strong></p>
+              </div>
+              
+              <div class="result-item">
+                <h5>Renewable Energy Transition Strategies</h5>
+                <p><em>Energy Policy Review, 2024</em></p>
+                <p>Analysis of global renewable energy adoption patterns and policy frameworks driving the transition from fossil fuels to sustainable energy sources.</p>
+                <div class="result-badges">
+                  <span class="badge">Renewable Energy</span>
+                  <span class="badge">Policy</span>
+                  <span class="badge">Sustainability</span>
+                </div>
+                <p><strong>Relevance: 88%</strong></p>
+              </div>
+              
+              <div class="result-item">
+                <h5>Digital Transformation in Higher Education</h5>
+                <p><em>Journal of Educational Technology, 2024</em></p>
+                <p>This paper explores how digital technologies are reshaping higher education institutions, teaching methodologies, and student learning experiences.</p>
+                <div class="result-badges">
+                  <span class="badge">Education</span>
+                  <span class="badge">Technology</span>
+                  <span class="badge">Digital Transformation</span>
+                </div>
+                <p><strong>Relevance: 82%</strong></p>
+              </div>
+            </div>
+          `;
+          
+          addMessage(results);
+        }, 2000);
+      }
+      
+      function handleResearchSubmit() {
+        const query = researchInput.value.trim();
+        if (query) {
+          addMessage(query, true);
+          researchInput.value = '';
+          simulateResearch(query);
+        }
+      }
+      
+      sendBtn.addEventListener('click', handleResearchSubmit);
+      
+      researchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleResearchSubmit();
+        }
+      });
+      
+      // Auto-resize textarea
+      researchInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+      });
+      
+      // Filter toggle functionality
+      const filterToggle = document.getElementById('filter-toggle');
+      const filterOptions = document.getElementById('filter-options');
+      
+      filterToggle.addEventListener('click', function() {
+        const isVisible = filterOptions.style.display === 'block';
+        filterOptions.style.display = isVisible ? 'none' : 'block';
+        
+        // Update button appearance
+        if (isVisible) {
+          filterToggle.classList.remove('active');
+        } else {
+          filterToggle.classList.add('active');
+        }
+      });
+      
+      // Filter change handlers
+      const sourceFilter = document.getElementById('source-filter');
+      const yearFilter = document.getElementById('year-filter');
+      const sortFilter = document.getElementById('sort-filter');
+      
+      [sourceFilter, yearFilter, sortFilter].forEach(filter => {
+           filter.addEventListener('change', function() {
+             console.log(`Filter changed: ${this.id} = ${this.value}`);
+             // Here you would implement actual filtering logic
+             // For now, just log the filter changes
+           });
+         });
+      
+      // Tab functionality for Sources, Citations, and Research Notes
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const targetTab = this.getAttribute('data-tab');
+          
+          // Remove active class from all tabs and contents
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+          
+          // Add active class to clicked tab
+          this.classList.add('active');
+          
+          // Show corresponding content
+          const targetContent = document.getElementById(targetTab);
+          if (targetContent) {
+            targetContent.classList.add('active');
+          }
+          
+          console.log(`Switched to tab: ${targetTab}`);
+        });
+      });
+      
+      // Initialize first tab as active
+      if (tabButtons.length > 0) {
+        tabButtons[0].click();
+      }
+      
+      // Citation copy functionality
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.citation-item button')) {
+          const button = e.target.closest('button');
+          const citationText = button.parentElement.querySelector('p').textContent;
+          
+          // Copy to clipboard
+          navigator.clipboard.writeText(citationText).then(() => {
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            button.classList.add('btn-success');
+            button.classList.remove('btn-outline');
+            
+            setTimeout(() => {
+              button.innerHTML = originalText;
+              button.classList.remove('btn-success');
+              button.classList.add('btn-outline');
+            }, 2000);
+          }).catch(() => {
+            alert('Failed to copy citation');
+          });
+        }
+      });
+      
+      // Bookmark and quote button functionality
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.result-item .btn')) {
+          const button = e.target.closest('button');
+          const icon = button.querySelector('i');
+          
+          if (icon.classList.contains('fa-bookmark')) {
+            // Toggle bookmark
+            if (icon.classList.contains('fas')) {
+              icon.classList.remove('fas');
+              icon.classList.add('far');
+              console.log('Removed bookmark');
+            } else {
+              icon.classList.remove('far');
+              icon.classList.add('fas');
+              console.log('Added bookmark');
+            }
+          } else if (icon.classList.contains('fa-quote-right')) {
+            // Handle quote action
+            const resultItem = button.closest('.result-item');
+            const title = resultItem.querySelector('h4').textContent;
+            console.log(`Quoted: ${title}`);
+            
+            // Visual feedback
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+              button.innerHTML = originalText;
+            }, 1000);
+          } else if (button.textContent.includes('PDF')) {
+            // Handle PDF download
+            const resultItem = button.closest('.result-item');
+            const title = resultItem.querySelector('h4').textContent;
+            console.log(`Downloading PDF: ${title}`);
+            
+            // Visual feedback
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+            setTimeout(() => {
+              button.innerHTML = originalText;
+            }, 2000);
+          }
+        }
+      });
+      
+      });
+  </script>
+
+
+</body>
+</html>

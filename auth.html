@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication - AssignSavvy</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./styles/main.css">
+  <style>
+    /* Additional styles for auth page */
+    .social-login {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .social-login-divider {
+      display: flex;
+      align-items: center;
+      margin: 15px 0;
+    }
+    .social-login-divider::before,
+    .social-login-divider::after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid var(--bg-gray-100);
+    }
+    .social-login-divider span {
+      padding: 0 10px;
+      color: var(--text-gray);
+      font-size: 0.9rem;
+    }
+    .social-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 10px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--bg-gray-100);
+      background-color: white;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-bottom: 10px;
+    }
+    .social-btn:hover {
+      background-color: var(--bg-gray-50);
+    }
+    .social-btn i {
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
+    .google-btn i {
+      color: #DB4437;
+    }
+    .footer {
+      padding: var(--space-8) 0;
+      background-color: var(--bg-gray-100);
+      margin-top: 50px;
+    }
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-6);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--space-4);
+    }
+    .footer-column h3 {
+      font-size: 1.2rem;
+      margin-bottom: var(--space-4);
+    }
+    .footer-links {
+      list-style: none;
+    }
+    .footer-links li {
+      margin-bottom: var(--space-2);
+    }
+    .footer-links a {
+      color: var(--text-gray);
+      font-size: 0.9rem;
+    }
+    .footer-links a:hover {
+      color: var(--primary-purple);
+    }
+    .footer-bottom {
+      text-align: center;
+      padding-top: var(--space-6);
+      margin-top: var(--space-6);
+      border-top: 1px solid var(--bg-gray-200);
+      color: var(--text-gray);
+      font-size: 0.9rem;
+    }
+    .social-icons {
+      display: flex;
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+    }
+    .social-icons a {
+      color: var(--text-gray);
+      font-size: 1.2rem;
+    }
+    .social-icons a:hover {
+      color: var(--primary-purple);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header with Navigation -->
+  <header class="header">
+    <div class="container">
+      <nav class="nav">
+        <a href="index.html" class="logo">AssignSavvy</a>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Auth Container -->
+  <div class="auth-container card">
+    <a href="index.html" class="logo text-center mb-6">AssignSavvy</a>
+    
+    <!-- Auth Tabs -->
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="login-tab">Login</div>
+      <div class="auth-tab" id="signup-tab">Sign Up</div>
+    </div>
+    
+    <!-- Login Form -->
+    <form id="login-form" class="auth-form">
+      <div class="form-group">
+        <label for="login-email" class="form-label">Email</label>
+        <input type="email" id="login-email" class="form-input" placeholder="Enter your email" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="login-password" class="form-label">Password</label>
+        <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
+      </div>
+      
+      <div class="form-group text-right">
+        <a href="#" class="text-sm">Forgot Password?</a>
+      </div>
+      
+      <button type="submit" class="btn btn-primary w-full">Log In</button>
+      
+      <!-- Social Login Options -->
+      <div class="social-login">
+        <div class="social-login-divider">
+          <span>Or continue with</span>
+        </div>
+        <button type="button" class="social-btn google-btn">
+          <i class="fab fa-google"></i> Sign in with Google
+        </button>
+      </div>
+    </form>
+    
+    <!-- Sign Up Form (Hidden by default) -->
+    <form id="signup-form" class="auth-form" style="display: none;">
+      <div class="form-group">
+        <label for="signup-name" class="form-label">Full Name</label>
+        <input type="text" id="signup-name" class="form-input" placeholder="Enter your full name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="signup-email" class="form-label">Email</label>
+        <input type="email" id="signup-email" class="form-input" placeholder="Enter your email" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="signup-password" class="form-label">Password</label>
+        <input type="password" id="signup-password" class="form-input" placeholder="Create a password" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="signup-confirm-password" class="form-label">Confirm Password</label>
+        <input type="password" id="signup-confirm-password" class="form-input" placeholder="Confirm your password" required>
+      </div>
+      
+      <div class="form-group">
+        <input type="checkbox" id="terms" required>
+        <label for="terms" class="text-sm">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+      </div>
+      
+      <button type="submit" class="btn btn-primary w-full">Sign Up</button>
+      
+      <!-- Social Login Options -->
+      <div class="social-login">
+        <div class="social-login-divider">
+          <span>Or sign up with</span>
+        </div>
+        <button type="button" class="social-btn google-btn">
+          <i class="fab fa-google"></i> Sign up with Google
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Footer Section -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-column">
+        <h3>AssignSavvy</h3>
+        <p>AI-powered tools to help students and professionals create, research, detect, and optimize content.</p>
+        <div class="social-icons">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+        
+        </div>
+      </div>
+      
+      <div class="footer-column">
+        <h3>Products</h3>
+        <ul class="footer-links">
+          <li><a href="writer.html">AI Writer</a></li>
+          <li><a href="researcher.html">Researcher</a></li>
+          <li><a href="detector.html">Detector</a></li>
+          <li><a href="prompt-engineer.html">Prompt Engineer</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column">
+        <h3>Company</h3>
+        <ul class="footer-links">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column">
+        <h3>Legal</h3>
+        <ul class="footer-links">
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; 2023 AssignSavvy. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const loginTab = document.getElementById('login-tab');
+      const signupTab = document.getElementById('signup-tab');
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      
+      loginTab.addEventListener('click', function() {
+        loginTab.classList.add('active');
+        signupTab.classList.remove('active');
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+      });
+      
+      signupTab.addEventListener('click', function() {
+        signupTab.classList.add('active');
+        loginTab.classList.remove('active');
+        signupForm.style.display = 'block';
+        loginForm.style.display = 'none';
+      });
+      
+      // Form submission handling (just prevent default for now)
+      loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        // In a real app, handle login logic here
+        window.location.href = 'dashboard.html';
+      });
+      
+      signupForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        // In a real app, handle signup logic here
+        window.location.href = 'dashboard.html';
+      });
+      
+      // Google sign-in button handling
+      const googleButtons = document.querySelectorAll('.google-btn');
+      googleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // In a real app, handle Google OAuth here
+          alert('Google authentication would be implemented here in a real application');
+        });
+      });
+    });
+  </script>
+
+
+</body>
+</html>

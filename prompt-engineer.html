@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Engineer - AssignSavvy</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Top Bar -->
+    <div class="dashboard-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">AssignSavvy</div>
+      </div>
+      <div>Prompt Engineer</div>
+      <a href="index.html" class="btn btn-outline">Back to Home</a>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="dashboard-sidebar" id="dashboard-sidebar">
+      <!-- Navigation -->
+      <ul class="sidebar-nav">
+        <li>
+          <a href="dashboard.html" class="sidebar-nav-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="writer.html" class="sidebar-nav-item">
+            <i class="fas fa-pen"></i>
+            <span>Writer</span>
+          </a>
+        </li>
+        <li>
+          <a href="researcher.html" class="sidebar-nav-item">
+            <i class="fas fa-magnifying-glass"></i>
+            <span>Researcher</span>
+          </a>
+        </li>
+        <li>
+          <a href="detector.html" class="sidebar-nav-item">
+            <i class="fas fa-shield-halved"></i>
+            <span>Detector</span>
+          </a>
+        </li>
+        <li>
+          <a href="prompt-engineer.html" class="sidebar-nav-item active">
+            <i class="fas fa-code"></i>
+            <span>Prompt Engineer</span>
+          </a>
+        </li>
+        <li>
+          <a href="history.html" class="sidebar-nav-item">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span>History</span>
+          </a>
+        </li>
+      </ul>
+      
+      <!-- User Account Info - Bottom Corner -->
+      <div class="user-account-info">
+        <div class="user-profile-card" id="user-profile-card" style="cursor: pointer;">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="user-details">
+            <h4 id="user-name">John Doe</h4>
+            <p class="user-plan" id="user-plan">Free Plan</p>
+            <div class="user-credits">
+              <i class="fas fa-coins"></i>
+              <span id="user-credits">145/200 Credits</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="dashboard-content">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h2>Prompt Engineer - Optimize Your AI Prompts</h2>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Prompt Input Section -->
+        <div class="card">
+          <h3 class="mb-4">Prompt Input</h3>
+          
+          <!-- Category Buttons -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button class="btn btn-outline btn-sm active">General</button>
+            <button class="btn btn-outline btn-sm">Academic</button>
+            <button class="btn btn-outline btn-sm">Creative</button>
+            <button class="btn btn-outline btn-sm">Technical</button>
+            <button class="btn btn-outline btn-sm">Business</button>
+          </div>
+          
+          <!-- Original Prompt Input -->
+          <div class="form-group mb-4">
+            <label for="original-prompt">Original Prompt</label>
+            <textarea id="original-prompt" class="form-input" rows="10" placeholder="Enter your prompt here..."></textarea>
+            <div class="text-right text-sm text-gray mt-1">0/15000 characters</div>
+          </div>
+          
+          <!-- Quick Templates -->
+          <div class="mb-4">
+            <h4 class="mb-2">Quick Templates</h4>
+            <div class="flex flex-wrap gap-2">
+              <button class="btn btn-outline btn-sm">Essay Structure</button>
+              <button class="btn btn-outline btn-sm">Research Question</button>
+              <button class="btn btn-outline btn-sm">Code Explanation</button>
+              <button class="btn btn-outline btn-sm">Creative Story</button>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary w-full">
+            <i class="fas fa-wand-magic-sparkles"></i> Optimize Prompt
+          </button>
+        </div>
+        
+        <!-- Optimization Info Section -->
+        <div>
+          <!-- Optimized Prompt -->
+          <div class="card mb-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3>Optimized Prompt</h3>
+              <div class="flex gap-2">
+                <button class="btn btn-icon">
+                  <i class="fas fa-copy"></i>
+                </button>
+                <button class="btn btn-icon">
+                  <i class="fas fa-download"></i>
+                </button>
+              </div>
+            </div>
+            <textarea class="form-input" rows="8" readonly>Write a comprehensive analysis of renewable energy adoption trends in developing countries over the past decade. Include statistical data on growth rates, challenges faced in implementation, successful case studies, and policy recommendations for accelerating adoption. Structure the response with clear headings, bullet points for key statistics, and conclude with the most promising areas for future growth.</textarea>
+          </div>
+          
+          <!-- Optimization Tips -->
+          <div class="card mb-6">
+            <h3 class="mb-4">Optimization Tips</h3>
+            <ul class="list-disc pl-5 space-y-2">
+              <li>Be specific about your desired output format</li>
+              <li>Provide context and background information</li>
+              <li>Break complex tasks into step-by-step instructions</li>
+              <li>Specify tone, style, and audience when relevant</li>
+              <li>Include examples of what you're looking for</li>
+            </ul>
+          </div>
+          
+          <!-- Daily Usage Statistics -->
+          <div class="card mb-6">
+            <h3 class="mb-4">Daily Usage</h3>
+            
+            <!-- Input Usage -->
+            <div class="usage-input mb-4">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium">Input Words Today</span>
+                <span class="text-sm text-gray">0/1000</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%; background-color: #27ae60"></div>
+              </div>
+            </div>
+            
+            <!-- Output Usage -->
+            <div class="usage-output">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium">Output Words Today</span>
+                <span class="text-sm text-gray">0/500</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%; background-color: #27ae60"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Quality Metrics -->
+          <div class="card mb-6">
+            <h3 class="mb-4">Quality Metrics</h3>
+            
+            <!-- Clarity Metric -->
+            <div class="mb-4">
+              <div class="flex justify-between mb-1">
+                <span>Clarity</span>
+                <span>70%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 70%;"></div>
+              </div>
+            </div>
+            
+            <!-- Specificity Metric -->
+            <div class="mb-4">
+              <div class="flex justify-between mb-1">
+                <span>Specificity</span>
+                <span>55%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 55%;"></div>
+              </div>
+            </div>
+            
+            <!-- Context Metric -->
+            <div class="mb-4">
+              <div class="flex justify-between mb-1">
+                <span>Context</span>
+                <span>40%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 40%;"></div>
+              </div>
+            </div>
+            
+            <!-- Overall Score -->
+            <div>
+              <div class="flex justify-between mb-1">
+                <span>Overall Score</span>
+                <span>55%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill bg-primary" style="width: 55%;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Optimizations -->
+          <div class="card mb-6">
+            <h3 class="mb-4">Recent Optimizations</h3>
+            <div class="space-y-4">
+              <div class="optimization-example">
+                <h5>Original: "Write about climate change"</h5>
+                <p class="text-sm text-gray">Optimized: "Write a 500-word analysis of the economic impacts of climate change on coastal communities, including specific examples from the past decade and potential mitigation strategies."</p>
+              </div>
+              <div class="optimization-example">
+                <h5>Original: "Help with math homework"</h5>
+                <p class="text-sm text-gray">Optimized: "Explain how to solve quadratic equations using the quadratic formula. Include step-by-step instructions, the formula itself, and 3 example problems with solutions."</p>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- User Profile Modal -->
+  <div id="user-profile-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>User Profile</h3>
+        <button id="close-profile-modal" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-section">
+          <div class="profile-avatar">
+            <i class="fas fa-user-circle text-6xl text-primary"></i>
+          </div>
+          <div class="profile-info">
+            <h4 id="modal-user-name">John Doe</h4>
+            <p class="text-gray" id="modal-user-email">john.doe@example.com</p>
+            <div class="plan-info">
+              <span class="plan-badge" id="modal-user-plan">Free Plan</span>
+              <div class="credits-info">
+                <i class="fas fa-coins text-orange"></i>
+                <span id="modal-user-credits">145/200 Credits</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-outline" onclick="window.location.href='auth.html'">Account Settings</button>
+          <button class="btn btn-primary" onclick="window.location.href='pricing.html'">Upgrade Plan</button>
+          <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- History Modal -->
+  <div id="history-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Prompt History</h3>
+        <button id="close-modal-btn" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="project-list">
+          <li class="project-item">
+            <div>
+              <h4>Research Paper Outline</h4>
+              <p class="text-sm text-gray">May 15, 2025 • Academic</p>
+            </div>
+            <button class="btn btn-outline">Open</button>
+          </li>
+          <li class="project-item">
+            <div>
+              <h4>Code Documentation</h4>
+              <p class="text-sm text-gray">May 14, 2025 • Technical</p>
+            </div>
+            <button class="btn btn-outline">Open</button>
+          </li>
+          <li class="project-item">
+            <div>
+              <h4>Marketing Email Sequence</h4>
+              <p class="text-sm text-gray">May 12, 2025 • Business</p>
+            </div>
+            <button class="btn btn-outline">Open</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <style>
+    /* Progress Bar */
+    .progress-bar {
+      height: 8px;
+      background-color: var(--bg-gray-100);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background-color: var(--primary-purple);
+    }
+    
+    .bg-primary {
+      background-color: var(--primary-purple);
+    }
+    
+    /* Button States */
+    .btn-sm.active {
+      background-color: var(--primary-purple);
+      color: white;
+    }
+    
+    /* Optimization Example */
+    .optimization-example {
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--bg-gray-100);
+    }
+    
+    .optimization-example:last-child {
+      border-bottom: none;
+    }
+    
+    /* Icon Button */
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-gray-100);
+      color: var(--text-gray);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-icon:hover {
+      background-color: var(--bg-gray-200);
+      color: var(--text-dark);
+    }
+    
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: var(--radius-md);
+      width: 90%;
+      max-width: 600px;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .modal-header {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--bg-gray-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-body {
+      padding: var(--space-4);
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-gray);
+    }
+    
+    .project-list {
+      list-style: none;
+    }
+    
+    .project-item {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--bg-gray-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .project-item:last-child {
+      border-bottom: none;
+    }
+    
+    /* Alert Styles */
+    .alert {
+      padding: var(--space-3);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    .alert-error {
+      background-color: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+    
+    .alert-warning {
+      background-color: #fef3c7;
+      color: #d97706;
+      border: 1px solid #fed7aa;
+    }
+    
+    .alert-info {
+      background-color: #dbeafe;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+    }
+    
+    /* Utility Classes */
+    .mt-2 {
+      margin-top: var(--space-2);
+    }
+    
+    .mb-4 {
+      margin-bottom: var(--space-4);
+    }
+    
+    .space-y-1 > * + * {
+      margin-top: var(--space-1);
+    }
+    
+    .grid {
+      display: grid;
+    }
+    
+    .grid-cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .gap-2 {
+      gap: var(--space-2);
+    }
+    
+    .gap-4 {
+      gap: var(--space-4);
+    }
+  </style>
+  
+  <script>
+    // User profile functionality
+    let currentUser = {
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      plan: 'free',
+      credits: 145,
+      maxCredits: 200
+    };
+
+    function loadUserProfile() {
+      // Update sidebar user info
+      document.getElementById('user-name').textContent = currentUser.name;
+      document.getElementById('user-plan').textContent = currentUser.plan === 'free' ? 'Free Plan' : 'Pro Plan';
+      document.getElementById('user-credits').textContent = `${currentUser.credits}/${currentUser.maxCredits} Credits`;
+      
+      // Update modal user info
+      document.getElementById('modal-user-name').textContent = currentUser.name;
+      document.getElementById('modal-user-email').textContent = currentUser.email;
+      document.getElementById('modal-user-plan').textContent = currentUser.plan === 'free' ? 'Free Plan' : 'Pro Plan';
+      document.getElementById('modal-user-credits').textContent = `${currentUser.credits}/${currentUser.maxCredits} Credits`;
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        // Clear user data
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('userData');
+        // Redirect to auth page
+        window.location.href = 'auth.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load user profile data
+      loadUserProfile();
+      
+      // User profile modal functionality
+      const userProfileCard = document.getElementById('user-profile-card');
+      const userProfileModal = document.getElementById('user-profile-modal');
+      const closeProfileModal = document.getElementById('close-profile-modal');
+      
+      userProfileCard.addEventListener('click', function() {
+        userProfileModal.style.display = 'flex';
+      });
+      
+      closeProfileModal.addEventListener('click', function() {
+        userProfileModal.style.display = 'none';
+      });
+      
+      window.addEventListener('click', function(event) {
+        if (event.target === userProfileModal) {
+          userProfileModal.style.display = 'none';
+        }
+      });
+      
+      // Global variables
+      let userCredits = currentUser.credits;
+      let selectedCategory = 'general';
+      let dailyUsage = { inputWords: 0, outputWords: 0 };
+      let userPlan = currentUser.plan;
+      let dailyLimits = { inputWords: 1000, outputWords: 500 };
+      
+      // Firebase configuration (replace with your config)
+      const firebaseConfig = {
+          // Add your Firebase config here
+      };
+      
+      // Initialize Firebase (uncomment when config is added)
+      // firebase.initializeApp(firebaseConfig);
+      // const auth = firebase.auth();
+      
+      // Character and word counter for prompt textarea
+      const originalPrompt = document.getElementById('original-prompt');
+      const charCounter = originalPrompt.nextElementSibling;
+      
+      originalPrompt.addEventListener('input', function() {
+        const currentLength = this.value.length;
+        const wordCount = this.value.trim().split(/\s+/).filter(word => word.length > 0).length;
+        charCounter.textContent = `${wordCount} words | ${currentLength} characters`;
+        
+        // Validate word count limits
+        validateWordCount(wordCount);
+        
+        // Auto-analyze on input (debounced)
+        clearTimeout(this.analyzeTimeout);
+        this.analyzeTimeout = setTimeout(() => {
+          if (this.value.trim().length > 10) {
+            analyzeFreePrompt(this.value);
+          }
+        }, 1000);
+      });
+      
+      // Load initial data
+      loadDailyUsage();
+      updateCreditsDisplay();
+      
+      // Modal functionality
+      const historyModal = document.getElementById('history-modal');
+      const closeModalBtn = document.getElementById('close-modal-btn');
+      
+      // Only add event listener if the button exists
+      const openHistoryBtn = document.getElementById('open-history-btn');
+      if (openHistoryBtn) {
+        openHistoryBtn.addEventListener('click', function() {
+          loadPromptHistory();
+          historyModal.style.display = 'flex';
+        });
+      }
+      
+      closeModalBtn.addEventListener('click', function() {
+        historyModal.style.display = 'none';
+      });
+      
+      window.addEventListener('click', function(event) {
+        if (event.target === historyModal) {
+          historyModal.style.display = 'none';
+        }
+      });
+      
+      // Category button selection
+      const categoryButtons = document.querySelectorAll('.btn-sm');
+      categoryButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          categoryButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          selectedCategory = this.textContent.toLowerCase();
+        });
+      });
+      
+      // Template button functionality
+      const templateButtons = document.querySelectorAll('.btn-outline.btn-sm');
+      templateButtons.forEach(button => {
+        if (button.textContent.includes('Essay') || button.textContent.includes('Research') || 
+            button.textContent.includes('Code') || button.textContent.includes('Creative')) {
+          button.addEventListener('click', function() {
+            const template = getTemplate(this.textContent);
+            if (template && originalPrompt) {
+              originalPrompt.value = template;
+              originalPrompt.dispatchEvent(new Event('input'));
+            }
+          });
+        }
+      });
+      
+      // Optimize button functionality
+      const optimizeBtn = document.querySelector('.btn-primary');
+      if (optimizeBtn) {
+        optimizeBtn.addEventListener('click', optimizePrompt);
+      }
+      
+      // Load initial data
+      updateCreditsDisplay();
+    });
+    
+    // API Helper functions
+    async function makeAuthenticatedRequest(url, options = {}) {
+      const token = await getCurrentUserToken();
+      return fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          ...options.headers
+        }
+      });
+    }
+    
+    async function getCurrentUserToken() {
+      // Return mock token for now - replace with actual Firebase auth
+      return 'mock-token';
+    }
+    
+    // Free prompt analysis (no authentication required)
+    async function analyzeFreePrompt(prompt) {
+      try {
+        const response = await fetch('/api/prompt/analyze-free', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ prompt })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          updateQualityMetrics(data.analysis);
+        } else {
+          console.error('Analysis failed:', data.error);
+        }
+      } catch (error) {
+        console.error('Error analyzing prompt:', error);
+      }
+    }
+    
+    // Optimize prompt with authentication
+    async function optimizePrompt() {
+      const promptTextarea = document.getElementById('original-prompt');
+      const prompt = promptTextarea?.value?.trim();
+      if (!prompt) {
+        alert('Please enter a prompt to optimize');
+        return;
+      }
+      
+      try {
+        showLoading('Optimizing your prompt...');
+        
+        const response = await makeAuthenticatedRequest('/api/prompt/optimize', {
+          method: 'POST',
+          body: JSON.stringify({ 
+            prompt, 
+            category: selectedCategory 
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          displayOptimizedPrompt(data);
+          
+          // Update daily usage if provided
+          if (data.dailyUsage) {
+            dailyUsage = data.dailyUsage;
+            updateUsageDisplay();
+          }
+          
+          updateCreditsDisplay();
+        } else {
+          if (data.limitExceeded) {
+            showUpgradeModal(data.error || 'Daily word limit exceeded. Please upgrade to continue.');
+          } else if (data.insufficientCredits) {
+            alert('Insufficient credits: ' + data.error);
+          } else if (data.requiresUpgrade) {
+            showUpgradeModal(data.error);
+          } else {
+            alert('Optimization failed: ' + data.error);
+          }
+        }
+      } catch (error) {
+        console.error('Error optimizing prompt:', error);
+        alert('Failed to optimize prompt. Please try again.');
+      } finally {
+        hideLoading();
+      }
+    }
+    
+    // Load prompt history
+    async function loadPromptHistory() {
+      try {
+        const response = await makeAuthenticatedRequest('/api/prompt/history');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayPromptHistory(data.history);
+        } else {
+          console.error('Failed to load history:', data.error);
+        }
+      } catch (error) {
+        console.error('Error loading history:', error);
+      }
+    }
+    
+    // Update quality metrics display
+    function updateQualityMetrics(analysis) {
+      const metrics = {
+        'Clarity': analysis.clarity || { score: 70 },
+        'Specificity': analysis.specificity || { score: 55 },
+        'Context': analysis.context || { score: 40 },
+        'Overall Score': analysis.overall || { score: 55 }
+      };
+      
+      Object.keys(metrics).forEach(metricName => {
+        const metricElements = document.querySelectorAll('.flex.justify-between');
+        metricElements.forEach(element => {
+          if (element.querySelector('span')?.textContent === metricName) {
+            const scoreSpan = element.querySelectorAll('span')[1];
+            const progressBar = element.nextElementSibling?.querySelector('.progress-fill');
+            
+            if (scoreSpan && progressBar) {
+              const score = metrics[metricName].score;
+              scoreSpan.textContent = `${score}%`;
+              progressBar.style.width = `${score}%`;
+              
+              // Update color based on score
+              if (score >= 80) {
+                progressBar.style.backgroundColor = '#27ae60';
+              } else if (score >= 60) {
+                progressBar.style.backgroundColor = '#f39c12';
+              } else {
+                progressBar.style.backgroundColor = '#e74c3c';
+              }
+            }
+          }
+        });
+      });
+    }
+    
+    // Display optimized prompt
+    function displayOptimizedPrompt(data) {
+      const outputArea = document.querySelector('.card:last-child textarea');
+      if (outputArea) {
+        outputArea.value = data.optimizedPrompt;
+      }
+      
+      // Show improvements in a modal or alert for now
+      if (data.improvements && data.improvements.length > 0) {
+        const improvementsText = data.improvements.join('\n• ');
+        alert(`Optimization complete!\n\nImprovements made:\n• ${improvementsText}`);
+      }
+    }
+    
+    // Display prompt history
+    function displayPromptHistory(history) {
+      const historyList = document.querySelector('.project-list');
+      if (historyList && history) {
+        let content = '';
+        
+        if (history.optimizations && history.optimizations.length > 0) {
+          history.optimizations.forEach(opt => {
+            content += `
+              <li class="project-item">
+                <div>
+                  <h4>${opt.category || 'General'} Optimization</h4>
+                  <p class="text-sm text-gray">${new Date(opt.timestamp?.toDate()).toLocaleDateString()} • ${opt.category || 'General'}</p>
+                </div>
+                <button class="btn btn-outline" onclick="loadHistoryItem('${opt.id}')">Open</button>
+              </li>
+            `;
+          });
+        } else {
+          content = '<li class="project-item"><div><p>No optimization history found.</p></div></li>';
+        }
+        
+        historyList.innerHTML = content;
+      }
+    }
+    
+    // Get template based on button text
+    function getTemplate(buttonText) {
+      const templates = {
+        'Essay Structure': 'Write a well-structured essay about [TOPIC]. Include an introduction with a clear thesis statement, three body paragraphs with supporting evidence, and a conclusion that summarizes the main points. Each paragraph should be approximately 150-200 words.',
+        'Research Question': 'Conduct research on [TOPIC] and provide a comprehensive analysis. Include current statistics, expert opinions, recent developments, and cite at least 5 credible sources. Structure the response with clear headings and bullet points for key findings.',
+        'Code Explanation': 'Explain the following code in detail: [CODE]. Break down each function, variable, and logic step. Provide comments for each major section and suggest any potential improvements or optimizations.',
+        'Creative Story': 'Write a creative story about [THEME/CHARACTER]. The story should be approximately 500 words, include dialogue, descriptive language, and have a clear beginning, middle, and end. Focus on character development and engaging plot progression.'
+      };
+      
+      return templates[buttonText] || '';
+    }
+    
+    // Utility functions
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+    
+    function showLoading(message) {
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'loading-indicator';
+      loadingDiv.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 9999;">
+          <div style="background: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <div style="margin-bottom: 10px;">⏳</div>
+            <div>${message}</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(loadingDiv);
+    }
+    
+    function hideLoading() {
+      const loadingDiv = document.getElementById('loading-indicator');
+      if (loadingDiv) {
+        document.body.removeChild(loadingDiv);
+      }
+    }
+    
+    function showUpgradeModal(message) {
+      alert(`${message}\n\nPlease upgrade your plan to continue using this feature.`);
+    }
+    
+    // Load daily usage statistics
+    async function loadDailyUsage() {
+      try {
+        const response = await makeAuthenticatedRequest('/api/prompt/usage');
+        const data = await response.json();
+        
+        if (data.success) {
+          dailyUsage = data.usage;
+          userPlan = data.plan;
+          dailyLimits = data.limits;
+          updateUsageDisplay();
+        }
+      } catch (error) {
+        console.error('Error loading daily usage:', error);
+      }
+    }
+    
+    // Update usage display in UI
+    function updateUsageDisplay() {
+      // Update input usage
+      const inputUsage = document.querySelector('.usage-input');
+      if (inputUsage) {
+        const percentage = Math.round((dailyUsage.inputWords / dailyLimits.inputWords) * 100);
+        inputUsage.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium">Input Words Today</span>
+            <span class="text-sm text-gray">${dailyUsage.inputWords}/${dailyLimits.inputWords}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${percentage}%; background-color: ${percentage > 90 ? '#e74c3c' : percentage > 70 ? '#f39c12' : '#27ae60'}"></div>
+          </div>
+        `;
+      }
+      
+      // Update output usage
+      const outputUsage = document.querySelector('.usage-output');
+      if (outputUsage) {
+        const percentage = Math.round((dailyUsage.outputWords / dailyLimits.outputWords) * 100);
+        outputUsage.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium">Output Words Today</span>
+            <span class="text-sm text-gray">${dailyUsage.outputWords}/${dailyLimits.outputWords}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${percentage}%; background-color: ${percentage > 90 ? '#e74c3c' : percentage > 70 ? '#f39c12' : '#27ae60'}"></div>
+          </div>
+        `;
+      }
+    }
+    
+    // Validate word count against limits
+    function validateWordCount(wordCount) {
+      const maxInputWords = userPlan === 'free' ? 1000 : 10000;
+      const remainingInputWords = dailyLimits.inputWords - dailyUsage.inputWords;
+      
+      const optimizeBtn = document.querySelector('.btn-primary');
+      const warningDiv = document.getElementById('word-count-warning');
+      
+      // Remove existing warning
+      if (warningDiv) {
+        warningDiv.remove();
+      }
+      
+      if (wordCount > maxInputWords) {
+        // Exceeds maximum word limit
+        const warning = document.createElement('div');
+        warning.id = 'word-count-warning';
+        warning.className = 'alert alert-error mt-2';
+        warning.innerHTML = `⚠️ Input exceeds ${maxInputWords} word limit. Please reduce your input.`;
+        originalPrompt.parentNode.appendChild(warning);
+        
+        if (optimizeBtn) optimizeBtn.disabled = true;
+      } else if (wordCount > remainingInputWords && userPlan === 'free') {
+        // Exceeds daily limit for free users
+        const warning = document.createElement('div');
+        warning.id = 'word-count-warning';
+        warning.className = 'alert alert-warning mt-2';
+        warning.innerHTML = `⚠️ This will exceed your daily limit of ${dailyLimits.inputWords} words. Please upgrade to continue.`;
+        originalPrompt.parentNode.appendChild(warning);
+        
+        if (optimizeBtn) optimizeBtn.disabled = true;
+      } else if (wordCount > remainingInputWords && userPlan === 'paid') {
+        // Will use credits for paid users
+        const creditsNeeded = Math.ceil((wordCount - remainingInputWords) / 100);
+        const warning = document.createElement('div');
+        warning.id = 'word-count-warning';
+        warning.className = 'alert alert-info mt-2';
+        warning.innerHTML = `ℹ️ This will use ${creditsNeeded} credits (${wordCount - remainingInputWords} words beyond daily limit).`;
+        originalPrompt.parentNode.appendChild(warning);
+        
+        if (optimizeBtn) optimizeBtn.disabled = false;
+      } else {
+        // Within limits
+        if (optimizeBtn) optimizeBtn.disabled = false;
+      }
+    }
+    
+    // Show upgrade modal with detailed information
+    function showUpgradeModal(message) {
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Upgrade Required</h3>
+            <button class="btn-close" onclick="this.closest('.modal').remove()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-4">${message}</p>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div class="card">
+                <h4 class="font-semibold mb-2">Free Plan</h4>
+                <ul class="text-sm text-gray space-y-1">
+                  <li>• 1,000 input words/day</li>
+                  <li>• 500 output words/day</li>
+                  <li>• Basic prompt analysis</li>
+                </ul>
+              </div>
+              <div class="card">
+                <h4 class="font-semibold mb-2">Paid Plan</h4>
+                <ul class="text-sm text-gray space-y-1">
+                  <li>• 10,000 input words/day</li>
+                  <li>• 5,000 output words/day</li>
+                  <li>• Unlimited with credits</li>
+                  <li>• Advanced features</li>
+                </ul>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-primary" onclick="window.open('/upgrade', '_blank')">Upgrade Now</button>
+              <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Maybe Later</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    async function updateCreditsDisplay() {
+      try {
+        const response = await makeAuthenticatedRequest('/api/prompt/credits');
+        const data = await response.json();
+        
+        if (data.success) {
+          const creditsElement = document.querySelector('.user-credits span');
+          if (creditsElement) {
+            creditsElement.textContent = `${data.used}/${data.total} Credits`;
+          }
+        }
+      } catch (error) {
+        console.error('Error updating credits:', error);
+      }
+    }
+    
+    function loadHistoryItem(itemId) {
+      // Load specific history item - placeholder for now
+      alert('Loading history item: ' + itemId);
+    }
+  </script>
+  
+  <script>
+    // Sidebar toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebarToggle = document.getElementById('sidebar-toggle');
+      const sidebar = document.getElementById('dashboard-sidebar');
+      const dashboardLayout = document.querySelector('.dashboard-layout');
+      
+      // Toggle sidebar on button click
+      sidebarToggle.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          // Mobile behavior
+          sidebar.classList.toggle('sidebar-open');
+          dashboardLayout.classList.toggle('sidebar-active');
+        } else {
+          // Desktop behavior
+          dashboardLayout.classList.toggle('sidebar-collapsed');
+        }
+      });
+      
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', function(event) {
+        if (window.innerWidth <= 768) {
+          if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target) && sidebar.classList.contains('sidebar-open')) {
+            sidebar.classList.remove('sidebar-open');
+            dashboardLayout.classList.remove('sidebar-active');
+          }
+        }
+      });
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+          sidebar.classList.remove('sidebar-open');
+          dashboardLayout.classList.remove('sidebar-active');
+        } else {
+          dashboardLayout.classList.remove('sidebar-collapsed');
+        }
+      });
+    });
+  </script>
+
+
+</body>
+</html>

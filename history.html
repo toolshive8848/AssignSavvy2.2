@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>History - AssignSavvy</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Top Bar -->
+    <div class="dashboard-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">AssignSavvy</div>
+      </div>
+      <div>History</div>
+      <a href="index.html" class="btn btn-outline">Back to Home</a>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="dashboard-sidebar" id="dashboard-sidebar">
+      <!-- Navigation -->
+      <ul class="sidebar-nav">
+        <li>
+          <a href="dashboard.html" class="sidebar-nav-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="writer.html" class="sidebar-nav-item">
+            <i class="fas fa-pen"></i>
+            <span>Writer</span>
+          </a>
+        </li>
+        <li>
+          <a href="researcher.html" class="sidebar-nav-item">
+            <i class="fas fa-magnifying-glass"></i>
+            <span>Researcher</span>
+          </a>
+        </li>
+        <li>
+          <a href="detector.html" class="sidebar-nav-item">
+            <i class="fas fa-shield-halved"></i>
+            <span>Detector</span>
+          </a>
+        </li>
+        <li>
+          <a href="prompt-engineer.html" class="sidebar-nav-item">
+            <i class="fas fa-code"></i>
+            <span>Prompt Engineer</span>
+          </a>
+        </li>
+        <li>
+          <a href="history.html" class="sidebar-nav-item active">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span>History</span>
+          </a>
+        </li>
+      </ul>
+      
+      <!-- User Account Info - Bottom Corner -->
+      <div class="user-account-info">
+        <div class="user-profile-card" id="user-profile-card" style="cursor: pointer;">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="user-details">
+            <h4 id="user-name">John Doe</h4>
+            <p class="user-plan" id="user-plan">Free Plan</p>
+            <div class="user-credits">
+              <i class="fas fa-coins"></i>
+              <span id="user-credits">145/200 Credits</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="dashboard-content">
+      <!-- Header -->
+      <div class="mb-6">
+        <h2>History - Track all assignments and projects</h2>
+        <p class="text-gray">View and manage all your past and current projects</p>
+      </div>
+      
+      <!-- Filter Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button class="btn btn-outline active">All Items</button>
+        <button class="btn btn-outline">Completed</button>
+        <button class="btn btn-outline">In Progress</button>
+        <button class="btn btn-outline">Failed</button>
+      </div>
+      
+      <!-- Overview Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <!-- Total Projects Card -->
+        <div class="card">
+          <h4>Total Projects</h4>
+          <div class="flex items-end justify-between">
+            <span class="text-3xl font-bold">0</span>
+            <span class="text-sm text-gray">No projects</span>
+          </div>
+        </div>
+        
+        <!-- Completed Card -->
+        <div class="card">
+          <h4>Completed</h4>
+          <div class="flex items-end justify-between">
+            <span class="text-3xl font-bold">0</span>
+            <span class="text-sm text-gray">No completed projects</span>
+          </div>
+        </div>
+        
+        <!-- In Progress Card -->
+        <div class="card">
+          <h4>In Progress</h4>
+          <div class="flex items-end justify-between">
+            <span class="text-3xl font-bold">0</span>
+            <span class="text-sm text-gray">No projects in progress</span>
+          </div>
+        </div>
+        
+        <!-- Total Words Card -->
+        <div class="card">
+          <h4>Total Words</h4>
+          <div class="flex items-end justify-between">
+            <span class="text-3xl font-bold">0</span>
+            <span class="text-sm text-gray">No words generated</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Project Table -->
+      <div class="card">
+        <div class="flex justify-between items-center mb-4">
+          <h3>Projects</h3>
+          <div class="flex items-center">
+            <div class="form-group mr-2">
+              <input type="text" class="form-input" placeholder="Search projects...">
+            </div>
+            <button class="btn btn-outline">
+              <i class="fas fa-filter"></i> Filter
+            </button>
+          </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Size</th>
+                <th>Words</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="7" class="text-center py-8">
+                  <div class="flex flex-col items-center gap-4">
+                    <i class="fas fa-folder-open text-gray-400 text-4xl"></i>
+                    <p class="text-gray-500">No history items found</p>
+                    <p class="text-sm text-gray-400">Your completed projects will appear here</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="flex justify-between items-center mt-4">
+          <div class="text-sm text-gray">
+            Showing 0 items
+          </div>
+          <div class="flex gap-1">
+            <button class="btn btn-icon" disabled>
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="btn btn-icon active">1</button>
+            <button class="btn btn-icon" disabled>
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- User Profile Modal -->
+  <div id="user-profile-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>User Profile</h3>
+        <button id="close-profile-modal" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-section">
+          <div class="profile-avatar">
+            <i class="fas fa-user-circle text-6xl text-primary"></i>
+          </div>
+          <div class="profile-info">
+            <h4 id="modal-user-name">John Doe</h4>
+            <p class="text-gray" id="modal-user-email">john.doe@example.com</p>
+            <div class="plan-info">
+              <span class="plan-badge" id="modal-user-plan">Free Plan</span>
+              <div class="credits-info">
+                <i class="fas fa-coins text-orange"></i>
+                <span id="modal-user-credits">145/200 Credits</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-outline" onclick="window.location.href='auth.html'">Account Settings</button>
+          <button class="btn btn-primary" onclick="window.location.href='pricing.html'">Upgrade Plan</button>
+          <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <style>
+    /* Table Styles */
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .table th,
+    .table td {
+      padding: var(--space-3) var(--space-4);
+      text-align: left;
+    }
+    
+    .table th {
+      background-color: var(--bg-gray-50);
+      font-weight: 500;
+    }
+    
+    .table tr {
+      border-bottom: 1px solid var(--bg-gray-100);
+    }
+    
+    .table tr:last-child {
+      border-bottom: none;
+    }
+    
+    /* Status Badge */
+    .status-badge {
+      display: inline-block;
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .status-completed {
+      background-color: var(--success-green-light);
+      color: var(--success-green-dark);
+    }
+    
+    .status-in-progress {
+      background-color: var(--info-blue-light);
+      color: var(--info-blue-dark);
+    }
+    
+    .status-failed {
+      background-color: var(--danger-red-light);
+      color: var(--danger-red-dark);
+    }
+    
+    /* Icon Button */
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-gray-100);
+      color: var(--text-gray);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-icon:hover {
+      background-color: var(--bg-gray-200);
+      color: var(--text-dark);
+    }
+    
+    .btn-icon.active {
+      background-color: var(--primary-purple);
+      color: white;
+    }
+    
+    .btn-icon:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* Text Colors */
+    .text-primary {
+      color: var(--primary-purple);
+    }
+    
+    .text-info {
+      color: var(--info-blue);
+    }
+    
+    .text-success {
+      color: var(--success-green);
+    }
+    
+    .text-warning {
+      color: var(--warning-yellow);
+    }
+    
+    .text-danger {
+      color: var(--danger-red);
+    }
+  </style>
+  
+  <script>
+    // User profile data
+    const currentUser = {
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      plan: 'Free Plan',
+      credits: '145/200 Credits'
+    };
+
+    // Load user profile data
+    function loadUserProfile() {
+      // Update sidebar user info
+      document.getElementById('user-name').textContent = currentUser.name;
+      document.getElementById('user-plan').textContent = currentUser.plan;
+      document.getElementById('user-credits').textContent = currentUser.credits;
+      
+      // Update modal user info
+      document.getElementById('modal-user-name').textContent = currentUser.name;
+      document.getElementById('modal-user-email').textContent = currentUser.email;
+      document.getElementById('modal-user-plan').textContent = currentUser.plan;
+      document.getElementById('modal-user-credits').textContent = currentUser.credits;
+    }
+
+    // Logout function
+    function logout() {
+      // In a real app, this would clear session/tokens
+      alert('Logging out...');
+      window.location.href = 'auth.html';
+    }
+
+    // Event listeners for user profile modal and sidebar
+    document.addEventListener('DOMContentLoaded', function() {
+      loadUserProfile();
+      
+      // Show modal when user profile card is clicked
+      document.getElementById('user-profile-card').addEventListener('click', function() {
+        document.getElementById('user-profile-modal').style.display = 'flex';
+      });
+      
+      // Hide modal when close button is clicked
+      document.getElementById('close-profile-modal').addEventListener('click', function() {
+        document.getElementById('user-profile-modal').style.display = 'none';
+      });
+      
+      // Hide modal when clicking outside of it
+      document.getElementById('user-profile-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.style.display = 'none';
+        }
+      });
+
+      // Sidebar functionality
+      // Sidebar toggle functionality
+      const sidebarToggle = document.getElementById('sidebar-toggle');
+      const sidebar = document.getElementById('dashboard-sidebar');
+      const dashboardLayout = document.querySelector('.dashboard-layout');
+      
+      // Toggle sidebar on button click
+      sidebarToggle.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          // Mobile behavior
+          sidebar.classList.toggle('sidebar-open');
+          dashboardLayout.classList.toggle('sidebar-active');
+        } else {
+          // Desktop behavior
+          dashboardLayout.classList.toggle('sidebar-collapsed');
+        }
+      });
+      
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', function(event) {
+        if (window.innerWidth <= 768) {
+          if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target) && sidebar.classList.contains('sidebar-open')) {
+            sidebar.classList.remove('sidebar-open');
+            dashboardLayout.classList.remove('sidebar-active');
+          }
+        }
+      });
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+          sidebar.classList.remove('sidebar-open');
+          dashboardLayout.classList.remove('sidebar-active');
+        } else {
+          dashboardLayout.classList.remove('sidebar-collapsed');
+        }
+      });
+      
+      // Filter button functionality
+      const filterButtons = document.querySelectorAll('.btn-outline');
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+    });
+  </script>
+
+
+</body>
+</html>
