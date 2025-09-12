@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { DetectorService } = require('../services/detectorService');
-const { authenticateToken } = require('../middleware/auth');
+const DetectorService = require('../services/detectorService');
+const { unifiedAuth } = require('../middleware/unifiedAuth');
+const { asyncErrorHandler } = require('../middleware/errorHandler');
+const { validateDetectorInput, handleValidationErrors } = require('../middleware/validation');
 const rateLimit = require('express-rate-limit');
 
 // Initialize detector service
@@ -27,7 +29,7 @@ router.use(detectorRateLimit);
  * @desc Analyze content for plagiarism, AI detection, and readability
  * @access Private
  */
-router.post('/analyze', authenticateToken, async (req, res) => {
+router.post('/analyze', unifiedAuth, validateDetectorInput, asyncErrorHandler(async (req, res) => {
   try {
     const { content, options = {} } = req.body;
     const userId = req.user.id;
@@ -45,9 +47,11 @@ router.post('/analyze', authenticateToken, async (req, res) => {
       });
     }
 
-    if (content.length > 50000) { // 50k character limit
+    // Check word count limit - 1000 words for all users
+    const wordCount = detectorService.calculateWordCount(content);
+    if (wordCount > 1000) {
       return res.status(400).json({
-        error: 'Content exceeds maximum length of 50,000 characters'
+        error: 'Content exceeds maximum limit of 1000 words'
       });
     }
 
@@ -96,14 +100,14 @@ router.post('/analyze', authenticateToken, async (req, res) => {
       message: 'An error occurred while analyzing the content'
     });
   }
-});
+}));
 
 /**
  * @route POST /api/detector/remove-all
  * @desc Remove detected issues from content using AI
  * @access Private
  */
-router.post('/remove-all', authenticateToken, async (req, res) => {
+router.post('/remove-all', unifiedAuth, validateDetectorInput, handleValidationErrors, asyncErrorHandler(async (req, res) => {
   try {
     const { content, detectionResults, options = {} } = req.body;
     const userId = req.user.id;
@@ -127,9 +131,11 @@ router.post('/remove-all', authenticateToken, async (req, res) => {
       });
     }
 
-    if (content.length > 50000) {
+    // Check word count limit - 1000 words for all users
+    const wordCount = detectorService.calculateWordCount(content);
+    if (wordCount > 1000) {
       return res.status(400).json({
-        error: 'Content exceeds maximum length of 50,000 characters'
+        error: 'Content exceeds maximum limit of 1000 words'
       });
     }
 
@@ -178,14 +184,14 @@ router.post('/remove-all', authenticateToken, async (req, res) => {
       message: 'An error occurred while improving the content'
     });
   }
-});
+}));
 
 /**
  * @route GET /api/detector/history
  * @desc Get detection history for the user
  * @access Private
  */
-router.get('/history', authenticateToken, async (req, res) => {
+router.get('/history', unifiedAuth, asyncErrorHandler(async (req, res) => {
   try {
     const userId = req.user.id;
     const limit = parseInt(req.query.limit) || 10;
@@ -213,14 +219,14 @@ router.get('/history', authenticateToken, async (req, res) => {
       message: 'An error occurred while retrieving your detection history'
     });
   }
-});
+}));
 
 /**
  * @route POST /api/detector/workflow
  * @desc Complete workflow: detect and remove issues with two-cycle loop
  * @access Private
  */
-router.post('/workflow', authenticateToken, async (req, res) => {
+router.post('/workflow', unifiedAuth, validateDetectorInput, handleValidationErrors, asyncErrorHandler(async (req, res) => {
   try {
     const { content, options = {} } = req.body;
     const userId = req.user.id;
@@ -238,9 +244,11 @@ router.post('/workflow', authenticateToken, async (req, res) => {
       });
     }
 
-    if (content.length > 50000) {
+    // Check word count limit - 1000 words for all users
+    const wordCount = detectorService.calculateWordCount(content);
+    if (wordCount > 1000) {
       return res.status(400).json({
-        error: 'Content exceeds maximum length of 50,000 characters'
+        error: 'Content exceeds maximum limit of 1000 words'
       });
     }
 
@@ -305,14 +313,14 @@ router.post('/workflow', authenticateToken, async (req, res) => {
       message: 'An error occurred during the detection and removal workflow'
     });
   }
-});
+}));
 
 /**
  * @route GET /api/detector/credits
  * @desc Get credit cost information for detector operations
  * @access Private
  */
-router.get('/credits', authenticateToken, async (req, res) => {
+router.get('/credits', unifiedAuth, asyncErrorHandler(async (req, res) => {
   try {
     const { wordCount } = req.query;
 
@@ -342,14 +350,14 @@ router.get('/credits', authenticateToken, async (req, res) => {
       message: 'An error occurred while calculating credit costs'
     });
   }
-});
+}));
 
 /**
  * @route POST /api/detector/validate
  * @desc Validate content before analysis (check length, format, etc.)
  * @access Private
  */
-router.post('/validate', authenticateToken, async (req, res) => {
+router.post('/validate', unifiedAuth, asyncErrorHandler(async (req, res) => {
   try {
     const { content } = req.body;
     const userId = req.user.id;
@@ -379,10 +387,10 @@ router.post('/validate', authenticateToken, async (req, res) => {
       availableCredits: userCredits
     };
 
-    // Validate content length
-    if (content.length > 50000) {
+    // Validate content length - limit to 1000 words for all users
+    if (wordCount > 1000) {
       validation.valid = false;
-      validation.issues.push('Content exceeds maximum length of 50,000 characters');
+      validation.issues.push('Content exceeds maximum limit of 1000 words');
     }
 
     if (content.trim().length === 0) {
@@ -393,12 +401,6 @@ router.post('/validate', authenticateToken, async (req, res) => {
     if (wordCount < 10) {
       validation.valid = false;
       validation.issues.push('Content must contain at least 10 words');
-    }
-
-    // Validate plan access
-    if (!userPlan.hasDetectorAccess) {
-      validation.valid = false;
-      validation.issues.push('Detector tool requires Pro or Custom plan');
     }
 
     // Validate credits for detection
@@ -419,6 +421,45 @@ router.post('/validate', authenticateToken, async (req, res) => {
       message: 'An error occurred while validating the content'
     });
   }
-});
+}));
+
+/**
+ * @route POST /api/detector/save-results
+ * @desc Save detection results to user history
+ * @access Private
+ */
+router.post('/save-results', unifiedAuth, asyncErrorHandler(async (req, res) => {
+  try {
+    const { content, results, timestamp } = req.body;
+    const userId = req.user.id;
+
+    // Validate input
+    if (!content || !results) {
+      return res.status(400).json({
+        error: 'Content and results are required'
+      });
+    }
+
+    // Save results to history
+    const savedResult = await detectorService.saveResultsToHistory(userId, {
+      content,
+      results,
+      timestamp: timestamp || new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Results saved successfully',
+      data: savedResult
+    });
+
+  } catch (error) {
+    console.error('Save results error:', error);
+    res.status(500).json({
+      error: 'Save failed',
+      message: 'An error occurred while saving the results'
+    });
+  }
+}));
 
 module.exports = router;

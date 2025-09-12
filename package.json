@@ -4,30 +4,98 @@
   "description": "Academic assignment writing platform backend",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "dev-start": "powershell -ExecutionPolicy Bypass -File ./dev-start.ps1",
+    "stop-all": "taskkill /f /im node.exe /t 2>nul || echo No Node processes found",
+    "test": "jest",
+    "validate-env": "powershell -ExecutionPolicy Bypass -File ./validate-env.ps1",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write .",
+    "db:seed": "node scripts/seed-database.js seed",
+    "db:clear": "node scripts/seed-database.js clear",
+    "db:reset": "node scripts/seed-database.js reset",
+    "db:backup": "node scripts/backup-database.js create",
+    "db:restore": "node scripts/backup-database.js restore",
+    "db:list-backups": "node scripts/backup-database.js list",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:api": "jest tests/api",
+    "test:unit": "jest tests/unit",
+    "docker:build": "docker build -t academic-writer .",
+    "docker:build-dev": "docker build -f Dockerfile.dev -t academic-writer:dev .",
+    "docker:run": "docker run -p 5000:5000 --env-file .env academic-writer",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up",
+    "docker:prod": "docker-compose up",
+    "docker:stop": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docs:generate": "node scripts/generate-docs.js",
+    "docs:serve": "node -e \"const express = require('express'); const app = express(); app.use(express.static('docs')); app.listen(3002, () => console.log('Docs server: http://localhost:3002'));\"",
+    "dev:dashboard": "node scripts/dev-dashboard.js",
+    "logs:cleanup": "node -e \"require('./utils/logger').logger.cleanupLogs(30)\""
   },
-  "keywords": ["academic", "writing", "assignments"],
+  "keywords": [
+    "academic",
+    "writing",
+    "assignments"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.19.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "morgan": "^1.10.0",
-    "sqlite3": "^5.1.7",
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5",
-    "nodemailer": "^6.9.14",
-    "axios": "^1.7.2",
-    "puppeteer": "^22.15.0",
+    "citeproc": "^2.4.63",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dompurify": "^3.0.5",
     "dotenv": "^16.4.5",
-    "stripe": "^14.21.0"
+    "express": "^4.21.0",
+    "express-rate-limit": "^8.1.0",
+    "express-validator": "^7.2.1",
+    "firebase-admin": "^12.7.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "nodemailer": "^6.9.14",
+    "puppeteer": "^23.0.0",
+    "stripe": "^16.0.0"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/node": "^20.14.11",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "eslint-plugin-security": "^2.1.1",
+    "husky": "^9.0.11",
+    "jest": "^29.7.0",
+    "jest-environment-node": "^29.7.0",
+    "lint-staged": "^15.2.2",
     "nodemon": "^3.1.4",
-    "@types/node": "^20.14.11"
+    "prettier": "^3.2.5",
+    "supertest": "^6.3.4",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "typescript-eslint": "^8.43.0",
+    "winston": "^3.11.0"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,html,css}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }

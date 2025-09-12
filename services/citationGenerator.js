@@ -1,9 +1,15 @@
-const admin = require('firebase-admin');
+const { admin, isInitialized } = require('../config/firebase');
 const SourceValidator = require('./sourceValidator');
+const { logger } = require('../utils/logger');
 
 class CitationGenerator {
   constructor() {
-    this.db = admin.firestore();
+    // Initialize Firestore only if Firebase is properly configured
+    if (isInitialized && admin) {
+      this.db = admin.firestore();
+    } else {
+      this.db = null;
+    }
     this.sourceValidator = new SourceValidator();
     
     // Citation style templates
@@ -34,14 +40,15 @@ class CitationGenerator {
       }
     };
     
-    // Field mappings for different source types
+    // Field mappings should be configured externally based on citation standards
+    // Basic fallback field mappings to ensure functionality
     this.fieldMappings = {
-      book: ['author', 'year', 'title', 'publisher', 'city', 'isbn'],
-      journal: ['author', 'year', 'title', 'journal', 'volume', 'issue', 'pages', 'doi'],
-      website: ['author', 'year', 'title', 'website', 'url', 'accessDate'],
-      government: ['agency', 'year', 'title', 'publisher', 'city'],
-      conference: ['author', 'year', 'title', 'conference', 'location', 'pages'],
-      thesis: ['author', 'year', 'title', 'degree', 'institution', 'location']
+      book: ['title', 'author', 'publisher', 'year', 'isbn'],
+      journal: ['title', 'author', 'journal', 'volume', 'issue', 'pages', 'year', 'doi'],
+      website: ['title', 'author', 'url', 'accessDate', 'publishDate'],
+      government: ['title', 'author', 'agency', 'year', 'url'],
+      conference: ['title', 'author', 'conference', 'year', 'pages'],
+      thesis: ['title', 'author', 'institution', 'year', 'type']
     };
   }
 
@@ -105,7 +112,13 @@ class CitationGenerator {
       };
       
     } catch (error) {
-      console.error('Citation generation error:', error);
+      logger.error('Citation generation error', {
+        service: 'CitationGenerator',
+        method: 'generateCitations',
+        style,
+        error: error.message,
+        stack: error.stack
+      });
       return {
         success: false,
         error: error.message
@@ -574,7 +587,12 @@ class CitationGenerator {
           throw new Error(`Unsupported export format: ${format}`);
       }
     } catch (error) {
-      console.error('Citation export error:', error);
+      logger.error('Citation export error', {
+        service: 'CitationGenerator',
+        method: 'exportCitations',
+        format,
+        error: error.message
+      });
       return {
         success: false,
         error: error.message

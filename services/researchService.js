@@ -1,15 +1,26 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const admin = require('firebase-admin');
+const { admin, isInitialized } = require('../config/firebase');
 const SourceValidator = require('./sourceValidator');
 const CitationGenerator = require('./citationGenerator');
 
 class ResearchService {
   constructor() {
-    // TODO: Add your Gemini API key here - Get from Google AI Studio (https://makersuite.google.com/app/apikey)
-    // Required for Gemini 2.5 Pro model used in research generation
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); // Add your Gemini API key
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
-    this.db = admin.firestore();
+    // Check if Gemini API key is configured
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+      this.genAI = null;
+      this.model = null;
+    } else {
+      this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
+    }
+    
+    // Initialize Firestore only if Firebase is properly configured
+    if (isInitialized && admin) {
+      this.db = admin.firestore();
+    } else {
+      this.db = null;
+    }
+    
     this.sourceValidator = new SourceValidator();
     this.citationGenerator = new CitationGenerator();
   }
@@ -25,6 +36,11 @@ class ResearchService {
    */
   async conductResearch(query, researchType = 'general', depth = 3, sources = [], userId) {
     try {
+      // Check if Gemini API is configured
+      if (!this.model || !this.genAI) {
+        throw new Error('Research service is not configured. Please contact support to enable AI-powered research.');
+      }
+      
       const researchPrompt = this.buildResearchPrompt(query, researchType, depth, sources);
       
       const result = await this.model.generateContent({
@@ -447,8 +463,8 @@ Begin your research now:
    * Calculate research credits based on depth and word count
    */
   calculateResearchCredits(wordCount, depth = 3) {
-    // Base rate: 1 credit per 10 words for research
-    const baseCredits = Math.ceil(wordCount / 10);
+    // Base rate: 1 credit per 5 words for research
+    const baseCredits = Math.ceil(wordCount / 5);
     
     // Depth multiplier
     const depthMultipliers = {
@@ -536,29 +552,25 @@ Begin your research now:
     
     // Extract key topics from query
     const keywords = query.toLowerCase().match(/\b\w{4,}\b/g) || [];
-    const commonWords = ['research', 'study', 'analysis', 'investigation', 'review'];
+    // Common words filtering should be configured externally
     
-    // Add relevant keywords as tags
+    // Basic stop words for keyword filtering
+    const stopWords = new Set([
+      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+      'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
+      'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those',
+      'research', 'study', 'analysis', 'paper', 'article', 'journal', 'academic', 'scholar'
+    ]);
+    
+    // Add relevant keywords as tags with improved filtering
     keywords.forEach(keyword => {
-      if (!commonWords.includes(keyword) && keyword.length > 3) {
+      if (keyword.length > 3 && !stopWords.has(keyword.toLowerCase())) {
         tags.push(keyword);
       }
     });
     
-    // Add domain-specific tags
-    const domains = {
-      'medical': ['health', 'medicine', 'clinical', 'patient', 'treatment'],
-      'technology': ['ai', 'software', 'computer', 'digital', 'tech'],
-      'business': ['market', 'finance', 'economy', 'business', 'company'],
-      'science': ['experiment', 'hypothesis', 'data', 'scientific', 'theory'],
-      'education': ['learning', 'student', 'education', 'academic', 'school']
-    };
-    
-    for (const [domain, domainKeywords] of Object.entries(domains)) {
-      if (domainKeywords.some(keyword => query.toLowerCase().includes(keyword))) {
-        tags.push(domain);
-      }
-    }
+    // Domain-specific tags should be configured externally
+    // Domain detection temporarily disabled - configure domain mappings externally
     
     return [...new Set(tags)].slice(0, 10); // Remove duplicates and limit to 10 tags
   }
@@ -571,10 +583,18 @@ Begin your research now:
     const terms = query.toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter(term => term.length > 2)
-      .filter(term => !['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'its', 'may', 'new', 'now', 'old', 'see', 'two', 'who', 'boy', 'did', 'man', 'way', 'she', 'use', 'her', 'many', 'oil', 'sit', 'set', 'run', 'eat', 'far', 'sea', 'eye'].includes(term));
+      .filter(term => term.length > 2);
     
-    return [...new Set(terms)].slice(0, 20); // Remove duplicates and limit to 20 terms
+    // Basic stop words filtering
+    const stopWords = new Set([
+      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+      'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
+      'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those'
+    ]);
+    
+    const filteredTerms = terms.filter(term => !stopWords.has(term));
+    
+    return [...new Set(filteredTerms)].slice(0, 20); // Remove duplicates and limit to 20 terms
   }
 
   /**

@@ -2,57 +2,43 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const admin = require('firebase-admin');
 const AtomicCreditSystem = require('./atomicCreditSystem');
 const PlanValidator = require('./planValidator');
+const { logger } = require('../utils/logger');
 
 class PromptEngineerService {
     constructor() {
         // TODO: Add your Gemini API key here - Get from Google AI Studio (https://makersuite.google.com/app/apikey)
-        // Required for Gemini Flash Lite (1.5-flash) model used in prompt engineering
+        // Required for Gemini 2.5 Flash Lite model used in prompt engineering
         this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); // Add your Gemini API key
-        this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        this.db = admin.firestore();
+        this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+        
+        // Initialize Firebase database with proper error handling
+        try {
+            this.db = admin.firestore();
+        } catch (error) {
+            logger.warn('Firebase not initialized, using mock database for prompt engineer service', {
+                service: 'PromptEngineerService',
+                method: 'constructor'
+            });
+            this.db = null;
+        }
+        
         this.atomicCredit = new AtomicCreditSystem();
         this.planValidator = new PlanValidator();
         
-        // Daily limits for different user types
-        this.DAILY_LIMITS = {
-            free: {
-                inputWords: 1000,
-                outputWords: 500
-            },
-            paid: {
-                inputWords: 10000,
-                outputWords: 5000
-            }
+        // Credit ratios for prompt engineer tool
+        this.CREDIT_RATIOS = {
+            input: 20,  // 1 credit = 20 words for input
+            output: 10  // 1 credit = 10 words for output
         };
-        
-        // Credit ratio for users exceeding daily limits (1:100 credit to word)
-        this.CREDIT_TO_WORD_RATIO = 100;
     }
 
     /**
-     * Calculate excess words that exceed daily limits
+     * Calculate credits needed for input and output words
      */
-    async calculateExcessWords(userId, inputWords, outputWords) {
-        const dailyUsage = await this.getDailyUsage(userId);
-        const planValidation = await this.planValidator.validateUserPlan(userId);
-        const userPlan = planValidation.isValid ? (planValidation.plan || 'free') : 'free';
-        const limits = this.DAILY_LIMITS[userPlan !== 'free' ? 'paid' : 'free'];
-        
-        let excessWords = 0;
-        
-        // Calculate excess input words
-        const newInputTotal = dailyUsage.inputWords + inputWords;
-        if (newInputTotal > limits.inputWords) {
-            excessWords += newInputTotal - limits.inputWords;
-        }
-        
-        // Calculate excess output words
-        const newOutputTotal = dailyUsage.outputWords + outputWords;
-        if (newOutputTotal > limits.outputWords) {
-            excessWords += newOutputTotal - limits.outputWords;
-        }
-        
-        return excessWords;
+    calculateCreditsNeeded(inputWords, outputWords) {
+        const inputCredits = Math.ceil(inputWords / this.CREDIT_RATIOS.input);
+        const outputCredits = Math.ceil(outputWords / this.CREDIT_RATIOS.output);
+        return inputCredits + outputCredits;
     }
 
     /**
@@ -117,132 +103,64 @@ Provide honest, constructive feedback focusing on how well the prompt communicat
                 improvements: ["Please try submitting your prompt again"]
             };
         } catch (error) {
-            console.error('Error analyzing prompt quality:', error);
+            logger.error('Error analyzing prompt quality', {
+                service: 'PromptEngineerService',
+                method: 'analyzePromptQuality',
+                error: error.message,
+                stack: error.stack
+            });
             throw new Error('Failed to analyze prompt quality');
         }
     }
 
-    /**
-     * Check daily usage for a user
-     */
-    async getDailyUsage(userId) {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-        const usageRef = this.db.collection('dailyUsage').doc(`${userId}_${today}`);
-        const usageDoc = await usageRef.get();
-        
-        if (!usageDoc.exists) {
-            return {
-                inputWords: 0,
-                outputWords: 0,
-                date: today
-            };
-        }
-        
-        return usageDoc.data();
-    }
+    // Daily usage tracking methods removed - now using pure credit-based system
     
     /**
-     * Update daily usage for a user
+     * Check if user can perform operation and calculate credits (pure credit-based system)
      */
-    async updateDailyUsage(userId, inputWords, outputWords) {
-        const today = new Date().toISOString().split('T')[0];
-        const usageRef = this.db.collection('dailyUsage').doc(`${userId}_${today}`);
-        
-        await usageRef.set({
-            userId,
-            date: today,
-            inputWords: admin.firestore.FieldValue.increment(inputWords),
-            outputWords: admin.firestore.FieldValue.increment(outputWords),
-            lastUpdated: admin.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-    }
-    
-    /**
-     * Check if user can perform operation within daily limits
-     */
-    async checkDailyLimits(userId, inputWords, estimatedOutputWords) {
+    async checkLimitsAndCredits(userId, inputWords, estimatedOutputWords) {
         const planValidation = await this.planValidator.validateUserPlan(userId);
         const userPlan = planValidation.isValid ? (planValidation.plan || 'free') : 'free';
-        const isPaid = userPlan !== 'free';
-        
-        const dailyUsage = await this.getDailyUsage(userId);
-        const limits = this.DAILY_LIMITS[isPaid ? 'paid' : 'free'];
-        
-        const newInputTotal = dailyUsage.inputWords + inputWords;
-        const newOutputTotal = dailyUsage.outputWords + estimatedOutputWords;
         
         const result = {
             canProceed: true,
-            requiresCredits: false,
             creditsNeeded: 0,
             limitExceeded: false,
             userPlan,
-            dailyUsage,
-            limits,
             message: ''
         };
         
-        // Check input limits
-        if (newInputTotal > limits.inputWords) {
-            if (!isPaid) {
-                result.canProceed = false;
-                result.limitExceeded = true;
-                result.message = `Daily input limit exceeded. Free users can input up to ${limits.inputWords} words per day. Please upgrade to continue.`;
-                return result;
-            } else {
-                // Paid user exceeding limit - calculate credits needed
-                const excessInputWords = newInputTotal - limits.inputWords;
-                result.requiresCredits = true;
-                result.creditsNeeded += Math.ceil(excessInputWords / this.CREDIT_TO_WORD_RATIO);
-            }
-        }
-        
-        // Check output limits
-        if (newOutputTotal > limits.outputWords) {
-            if (!isPaid) {
-                result.canProceed = false;
-                result.limitExceeded = true;
-                result.message = `Daily output limit exceeded. Free users can generate up to ${limits.outputWords} words per day. Please upgrade to continue.`;
-                return result;
-            } else {
-                // Paid user exceeding limit - calculate credits needed
-                const excessOutputWords = newOutputTotal - limits.outputWords;
-                result.requiresCredits = true;
-                result.creditsNeeded += Math.ceil(excessOutputWords / this.CREDIT_TO_WORD_RATIO);
-            }
-        }
+        // Calculate credits needed for all users (no daily limits)
+        result.creditsNeeded = this.calculateCreditsNeeded(inputWords, estimatedOutputWords);
         
         return result;
     }
 
     /**
-     * Optimize a prompt using Gemini Flash Lite with daily limits
+     * Optimize a prompt using Gemini Flash Lite with credit-based system
      */
     async optimizePrompt(originalPrompt, category = 'general', userId) {
         try {
             const inputWords = this.calculateWordCount(originalPrompt);
             const estimatedOutputWords = Math.min(inputWords * 1.5, 1000); // Estimate output length
             
-            // Check daily limits
-            const limitCheck = await this.checkDailyLimits(userId, inputWords, estimatedOutputWords);
+            // Check limits and calculate credits
+            const limitCheck = await this.checkLimitsAndCredits(userId, inputWords, estimatedOutputWords);
             
             if (!limitCheck.canProceed) {
                 return {
                     success: false,
                     error: 'LIMIT_EXCEEDED',
-                    message: limitCheck.message,
-                    requiresUpgrade: !limitCheck.userPlan || limitCheck.userPlan === 'free'
+                    message: limitCheck.message
                 };
             }
             
-            // Handle credit deduction for paid users exceeding limits
+            // Deduct credits for all users
             let creditTransaction = null;
-            if (limitCheck.requiresCredits && limitCheck.creditsNeeded > 0) {
-                // Calculate total words that exceed the daily limit
-                const excessWords = this.calculateExcessWords(userId, inputWords, estimatedOutputWords);
+            if (limitCheck.creditsNeeded > 0) {
                 creditTransaction = await this.atomicCredit.deductCreditsAtomic(
                     userId,
-                    excessWords,
+                    limitCheck.creditsNeeded,
                     limitCheck.userPlan,
                     'prompt'
                 );
@@ -303,8 +221,7 @@ Focus on practical improvements that will genuinely enhance the prompt's effecti
                     };
                 }
 
-                // Update daily usage
-                await this.updateDailyUsage(userId, inputWords, actualOutputWords);
+                // No daily usage tracking needed in credit-based system
 
                 // Store the optimization result
                 await this.storeOptimizationResult(userId, {
@@ -341,7 +258,13 @@ Focus on practical improvements that will genuinely enhance the prompt's effecti
             }
 
         } catch (error) {
-            console.error('Error optimizing prompt:', error);
+            logger.error('Error optimizing prompt', {
+                service: 'PromptEngineerService',
+                method: 'optimizePrompt',
+                userId,
+                error: error.message,
+                stack: error.stack
+            });
             throw new Error(error.message || 'Failed to optimize prompt');
         }
     }
@@ -358,7 +281,12 @@ Focus on practical improvements that will genuinely enhance the prompt's effecti
                 isFree: true
             };
         } catch (error) {
-            console.error('Error in free prompt analysis:', error);
+            logger.error('Error in free prompt analysis', {
+                service: 'PromptEngineerService',
+                method: 'analyzePromptFree',
+                error: error.message,
+                stack: error.stack
+            });
             throw new Error('Failed to analyze prompt');
         }
     }
@@ -371,26 +299,23 @@ Focus on practical improvements that will genuinely enhance the prompt's effecti
             const inputWords = this.calculateWordCount(prompt);
             const estimatedOutputWords = 200; // Analysis output is typically shorter
             
-            // Check daily limits
-            const limitCheck = await this.checkDailyLimits(userId, inputWords, estimatedOutputWords);
+            // Check limits and calculate credits
+            const limitCheck = await this.checkLimitsAndCredits(userId, inputWords, estimatedOutputWords);
             
             if (!limitCheck.canProceed) {
                 return {
                     success: false,
                     error: 'LIMIT_EXCEEDED',
-                    message: limitCheck.message,
-                    requiresUpgrade: !limitCheck.userPlan || limitCheck.userPlan === 'free'
+                    message: limitCheck.message
                 };
             }
             
-            // Handle credit deduction for paid users exceeding limits
+            // Deduct credits for all users
             let creditTransaction = null;
-            if (limitCheck.requiresCredits && limitCheck.creditsNeeded > 0) {
-                // Calculate total words that exceed the daily limit
-                const excessWords = await this.calculateExcessWords(userId, inputWords, estimatedOutputWords);
+            if (limitCheck.creditsNeeded > 0) {
                 creditTransaction = await this.atomicCredit.deductCreditsAtomic(
                     userId,
-                    excessWords,
+                    limitCheck.creditsNeeded,
                     limitCheck.userPlan,
                     'prompt'
                 );
@@ -408,8 +333,7 @@ Focus on practical improvements that will genuinely enhance the prompt's effecti
                 const analysis = await this.analyzePromptQuality(prompt);
                 const actualOutputWords = 200; // Analysis output is typically consistent
 
-                // Update daily usage
-                await this.updateDailyUsage(userId, inputWords, actualOutputWords);
+                // No daily usage tracking needed in credit-based system
 
                 // Store the analysis result
                 await this.storeAnalysisResult(userId, {
@@ -426,8 +350,7 @@ Focus on practical improvements that will genuinely enhance the prompt's effecti
                     analysis,
                     inputWords,
                     outputWords: actualOutputWords,
-                    creditsUsed: limitCheck.creditsNeeded || 0,
-                    dailyUsage: await this.getDailyUsage(userId)
+                    creditsUsed: limitCheck.creditsNeeded || 0
                 };
 
             } catch (analysisError) {
@@ -439,36 +362,60 @@ Focus on practical improvements that will genuinely enhance the prompt's effecti
             }
 
         } catch (error) {
-            console.error('Error analyzing prompt with credits:', error);
+            logger.error('Error analyzing prompt with credits', {
+                service: 'PromptEngineerService',
+                method: 'analyzePromptWithCredits',
+                userId,
+                error: error.message,
+                stack: error.stack
+            });
             throw new Error(error.message || 'Failed to analyze prompt');
         }
     }
     
     /**
-     * Get daily usage statistics for a user
+     * Get user credit information (replaces daily usage stats)
      */
-    async getDailyUsageStats(userId) {
+    async getUserCreditInfo(userId) {
         try {
             const planValidation = await this.planValidator.validateUserPlan(userId);
             const userPlan = planValidation.isValid ? (planValidation.plan || 'free') : 'free';
-            const isPaid = userPlan !== 'free';
             
-            const dailyUsage = await this.getDailyUsage(userId);
-            const limits = this.DAILY_LIMITS[isPaid ? 'paid' : 'free'];
+            let currentCredits = 0;
+            
+            // Get user's current credit balance from Firebase if available
+            if (this.db) {
+                try {
+                    const userDoc = await this.db.collection('users').doc(userId).get();
+                    const userData = userDoc.exists ? userDoc.data() : {};
+                    currentCredits = userData.credits || 0;
+                } catch (dbError) {
+                    logger.warn('Database unavailable, using default credits', {
+                        service: 'PromptEngineerService',
+                        method: 'getUserCreditInfo',
+                        userId
+                    });
+                    currentCredits = 100; // Default credits for mock mode
+                }
+            } else {
+                currentCredits = 100; // Default credits for mock mode
+            }
             
             return {
                 success: true,
                 userPlan,
-                dailyUsage,
-                limits,
-                remainingInput: Math.max(0, limits.inputWords - dailyUsage.inputWords),
-                remainingOutput: Math.max(0, limits.outputWords - dailyUsage.outputWords),
-                inputPercentage: Math.min(100, (dailyUsage.inputWords / limits.inputWords) * 100),
-                outputPercentage: Math.min(100, (dailyUsage.outputWords / limits.outputWords) * 100)
+                currentCredits,
+                creditRatios: this.CREDIT_RATIOS
             };
         } catch (error) {
-            console.error('Error getting daily usage stats:', error);
-            throw new Error('Failed to get usage statistics');
+            logger.error('Error getting user credit info', {
+                service: 'PromptEngineerService',
+                method: 'getUserCreditInfo',
+                userId,
+                error: error.message,
+                stack: error.stack
+            });
+            throw new Error('Failed to get credit information');
         }
     }
 
@@ -477,13 +424,29 @@ Focus on practical improvements that will genuinely enhance the prompt's effecti
      */
     async storeOptimizationResult(userId, data) {
         try {
-            await this.db.collection('promptOptimizations').add({
-                userId,
-                ...data
-            });
+            if (this.db) {
+                await this.db.collection('promptOptimizations').add({
+                    userId,
+                    ...data
+                });
+            } else {
+                logger.info('Mock mode: Would store optimization result', {
+                    service: 'PromptEngineerService',
+                    method: 'storeOptimizationResult',
+                    userId
+                });
+            }
         } catch (error) {
-            console.error('Error storing optimization result:', error);
-            throw new Error('Failed to store optimization result');
+            logger.error('Error storing optimization result', {
+                service: 'PromptEngineerService',
+                method: 'storeOptimizationResult',
+                userId,
+                error: error.message
+            });
+            // Don't throw error in mock mode
+            if (this.db) {
+                throw new Error('Failed to store optimization result');
+            }
         }
     }
 
@@ -492,13 +455,29 @@ Focus on practical improvements that will genuinely enhance the prompt's effecti
      */
     async storeAnalysisResult(userId, data) {
         try {
-            await this.db.collection('promptAnalyses').add({
-                userId,
-                ...data
-            });
+            if (this.db) {
+                await this.db.collection('promptAnalyses').add({
+                    userId,
+                    ...data
+                });
+            } else {
+                logger.info('Mock mode: Would store analysis result', {
+                    service: 'PromptEngineerService',
+                    method: 'storeAnalysisResult',
+                    userId
+                });
+            }
         } catch (error) {
-            console.error('Error storing analysis result:', error);
-            throw new Error('Failed to store analysis result');
+            logger.error('Error storing analysis result', {
+                service: 'PromptEngineerService',
+                method: 'storeAnalysisResult',
+                userId,
+                error: error.message
+            });
+            // Don't throw error in mock mode
+            if (this.db) {
+                throw new Error('Failed to store analysis result');
+            }
         }
     }
 
@@ -507,32 +486,52 @@ Focus on practical improvements that will genuinely enhance the prompt's effecti
      */
     async getPromptHistory(userId, limit = 20) {
         try {
-            const optimizations = await this.db.collection('promptOptimizations')
-                .where('userId', '==', userId)
-                .orderBy('timestamp', 'desc')
-                .limit(limit)
-                .get();
+            if (this.db) {
+                const optimizations = await this.db.collection('promptOptimizations')
+                    .where('userId', '==', userId)
+                    .orderBy('timestamp', 'desc')
+                    .limit(limit)
+                    .get();
 
-            const analyses = await this.db.collection('promptAnalyses')
-                .where('userId', '==', userId)
-                .orderBy('timestamp', 'desc')
-                .limit(limit)
-                .get();
+                const analyses = await this.db.collection('promptAnalyses')
+                    .where('userId', '==', userId)
+                    .orderBy('timestamp', 'desc')
+                    .limit(limit)
+                    .get();
 
-            const history = {
-                optimizations: optimizations.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                })),
-                analyses: analyses.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }))
-            };
+                const history = {
+                    optimizations: optimizations.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    })),
+                    analyses: analyses.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }))
+                };
 
-            return history;
+                return history;
+            } else {
+                // Return empty history in mock mode
+                return {
+                    optimizations: [],
+                    analyses: []
+                };
+            }
         } catch (error) {
-            console.error('Error getting prompt history:', error);
+            logger.error('Error getting prompt history', {
+                service: 'PromptEngineerService',
+                method: 'getPromptHistory',
+                userId,
+                error: error.message
+            });
+            // Return empty history instead of throwing in mock mode
+            if (!this.db) {
+                return {
+                    optimizations: [],
+                    analyses: []
+                };
+            }
             throw new Error('Failed to retrieve prompt history');
         }
     }

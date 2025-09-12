@@ -2,79 +2,25 @@ const admin = require('firebase-admin');
 
 class SourceValidator {
   constructor() {
-    this.db = admin.firestore();
+    // Initialize Firestore only if Firebase is properly configured
+    try {
+      this.db = admin.firestore();
+    } catch (error) {
+      console.log('⚠️  Firebase not initialized, using mock database for source validator');
+      this.db = null;
+    }
     
-    // Trusted domain patterns
-    this.trustedDomains = [
-      // Academic and Research
-      'pubmed.ncbi.nlm.nih.gov',
-      'scholar.google.com',
-      'jstor.org',
-      'researchgate.net',
-      'arxiv.org',
-      'nature.com',
-      'science.org',
-      'sciencedirect.com',
-      'springer.com',
-      'wiley.com',
-      'ieee.org',
-      'acm.org',
-      
-      // Government and Official
-      '.gov',
-      '.edu',
-      'who.int',
-      'un.org',
-      'worldbank.org',
-      'imf.org',
-      
-      // News and Media (Tier 1)
-      'reuters.com',
-      'bbc.com',
-      'ap.org',
-      'npr.org',
-      'pbs.org',
-      'economist.com',
-      'ft.com',
-      
-      // Professional Organizations
-      'ama-assn.org',
-      'apa.org',
-      'ieee.org'
-    ];
+    // TODO: Load these from external configuration
+    // Trusted domains should be loaded from external config
+    this.trustedDomains = [];
     
-    // Source type patterns
+    // Source patterns should be loaded from external config
     this.sourcePatterns = {
-      academic: [
-        /doi:\s*10\./i,
-        /pubmed/i,
-        /journal/i,
-        /proceedings/i,
-        /conference/i,
-        /university/i,
-        /research/i
-      ],
-      government: [
-        /\.gov/i,
-        /official/i,
-        /department/i,
-        /ministry/i,
-        /bureau/i
-      ],
-      news: [
-        /news/i,
-        /times/i,
-        /post/i,
-        /herald/i,
-        /tribune/i,
-        /guardian/i
-      ],
-      book: [
-        /isbn/i,
-        /publisher/i,
-        /edition/i,
-        /press/i
-      ]
+      // Fallback patterns - should be replaced with external config
+      academic: /\.(edu|ac\.[a-z]{2}|org)$/i,
+      government: /\.(gov|mil)$/i,
+      news: /\.(com|net|org)$/i,
+      commercial: /\.(com|biz|info)$/i
     };
   }
 
@@ -244,16 +190,8 @@ class SourceValidator {
       };
     }
     
-    // Check for established news sources
-    const newsIndicators = ['reuters', 'bbc', 'associated press', 'npr'];
-    for (const indicator of newsIndicators) {
-      if (lowerCitation.includes(indicator)) {
-        return {
-          reliability: 'medium',
-          reason: `Established news source: ${indicator}`
-        };
-      }
-    }
+    // News source indicators should be configured externally
+    // Established news source detection temporarily disabled
     
     // Default to medium for unknown sources
     return {
@@ -398,18 +336,28 @@ class SourceValidator {
    * Extract date from citation
    */
   extractDate(citation) {
+    // TODO: Load date patterns from external configuration
+    // Enhanced fallback date patterns
     const datePatterns = [
-      /\((\d{4})\)/,  // (2023)
-      /\b(\d{4})\b/,  // 2023
-      /(\d{1,2}\/\d{1,2}\/\d{4})/,  // MM/DD/YYYY
-      /(\d{4}-\d{2}-\d{2})/  // YYYY-MM-DD
+        // ISO format: 2023-12-25, 2023/12/25
+        /\b(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})\b/,
+        // US format: 12/25/2023, 12-25-2023
+        /\b(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})\b/,
+        // European format: 25.12.2023, 25/12/2023
+        /\b(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})\b/,
+        // Month name formats: December 25, 2023
+        /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),?\s+(\d{4})\b/i,
+        // Short month: Dec 25, 2023
+        /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2}),?\s+(\d{4})\b/i,
+        // Year only as fallback
+        /\b(19|20)\d{2}\b/
     ];
     
     for (const pattern of datePatterns) {
-      const match = citation.match(pattern);
-      if (match) {
-        return match[1];
-      }
+        const match = citation.match(pattern);
+        if (match) {
+            return match[0];
+        }
     }
     
     return null;

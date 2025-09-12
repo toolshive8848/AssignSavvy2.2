@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { CSL } = require('citeproc');
 const admin = require('firebase-admin');
+const { logger } = require('../utils/logger');
 
 class ZoteroCSLProcessor {
   constructor() {
@@ -12,7 +13,17 @@ class ZoteroCSLProcessor {
     // TODO: Add your Zotero API key here if using Zotero Web API - Get from https://www.zotero.org/settings/keys
     // Optional: For direct Zotero library integration
     this.zoteroApiKey = process.env.ZOTERO_API_KEY; // Add your Zotero API key (optional)
-    this.db = admin.firestore();
+    
+    // Handle Firebase initialization in mock mode
+    try {
+      this.db = admin.firestore();
+    } catch (error) {
+      logger.warn('Firebase not initialized, using mock database for Zotero CSL', {
+        service: 'ZoteroCSLProcessor',
+        method: 'constructor'
+      });
+      this.db = null;
+    }
     
     // Common citation styles
     this.citationStyles = {
@@ -65,7 +76,12 @@ class ZoteroCSLProcessor {
       };
       
     } catch (error) {
-      console.error('Citation processing error:', error);
+      logger.error('Citation processing error', {
+        service: 'ZoteroCSLProcessor',
+        method: 'processCitations',
+        style,
+        error: error.message
+      });
       return {
         requiresCitations: false,
         processedContent: content,
@@ -110,7 +126,11 @@ class ZoteroCSLProcessor {
       const response = result.response.text();
       return JSON.parse(response.replace(/```json\n?|```/g, ''));
     } catch (error) {
-      console.error('Citation analysis error:', error);
+      logger.error('Citation analysis error', {
+        service: 'ZoteroCSLProcessor',
+        method: 'analyzeCitationRequirements',
+        error: error.message
+      });
       return { requiresCitations: false, citationPoints: [], sourceTypes: [], estimatedCount: 0 };
     }
   }
@@ -159,7 +179,11 @@ class ZoteroCSLProcessor {
       
       return bibliographicData;
     } catch (error) {
-      console.error('Bibliographic generation error:', error);
+      logger.error('Bibliographic generation error', {
+        service: 'ZoteroCSLProcessor',
+        method: 'generateBibliographicData',
+        error: error.message
+      });
       return [];
     }
   }
@@ -190,7 +214,11 @@ class ZoteroCSLProcessor {
       };
       
     } catch (error) {
-      console.error('Citation formatting error:', error);
+      logger.error('Citation formatting error', {
+        service: 'ZoteroCSLProcessor',
+        method: 'formatCitations',
+        error: error.message
+      });
       return { inTextCitations: [], bibliography: [] };
     }
   }
@@ -271,7 +299,11 @@ class ZoteroCSLProcessor {
       const result = await this.model.generateContent(prompt);
       return result.response.text().replace(/```\n?|```/g, '');
     } catch (error) {
-      console.error('Citation insertion error:', error);
+      logger.error('Citation insertion error', {
+        service: 'ZoteroCSLProcessor',
+        method: 'insertInTextCitations',
+        error: error.message
+      });
       return content;
     }
   }
@@ -306,7 +338,11 @@ class ZoteroCSLProcessor {
       
       await this.db.collection('citations').add(citationDoc);
     } catch (error) {
-      console.error('Citation storage error:', error);
+      logger.error('Citation storage error', {
+        service: 'ZoteroCSLProcessor',
+        method: 'storeCitationData',
+        error: error.message
+      });
     }
   }
 
@@ -333,7 +369,11 @@ class ZoteroCSLProcessor {
       
       return [];
     } catch (error) {
-      console.error('Citation retrieval error:', error);
+      logger.error('Citation retrieval error', {
+        service: 'ZoteroCSLProcessor',
+        method: 'getExistingCitations',
+        error: error.message
+      });
       return [];
     }
   }

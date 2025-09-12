@@ -58,7 +58,6 @@ router.post('/optimize', verifyToken, async (req, res) => {
         if (!result.success && result.error === 'LIMIT_EXCEEDED') {
             return res.status(429).json({
                 error: result.message,
-                requiresUpgrade: result.requiresUpgrade,
                 limitExceeded: true
             });
         }
@@ -67,7 +66,6 @@ router.post('/optimize', verifyToken, async (req, res) => {
         if (!result.success && result.error === 'INSUFFICIENT_CREDITS') {
             return res.status(402).json({
                 error: result.message,
-                requiresUpgrade: false,
                 insufficientCredits: true
             });
         }
@@ -77,10 +75,10 @@ router.post('/optimize', verifyToken, async (req, res) => {
     } catch (error) {
         console.error('Prompt optimization error:', error);
         
-        if (error.message.includes('insufficient credits') || error.message.includes('plan')) {
+        if (error.message.includes('insufficient credits')) {
             return res.status(402).json({ 
                 error: error.message,
-                requiresUpgrade: true 
+                insufficientCredits: true 
             });
         }
         
@@ -117,7 +115,6 @@ router.post('/analyze', verifyToken, async (req, res) => {
         if (!result.success && result.error === 'LIMIT_EXCEEDED') {
             return res.status(429).json({
                 error: result.message,
-                requiresUpgrade: result.requiresUpgrade,
                 limitExceeded: true
             });
         }
@@ -126,7 +123,6 @@ router.post('/analyze', verifyToken, async (req, res) => {
         if (!result.success && result.error === 'INSUFFICIENT_CREDITS') {
             return res.status(402).json({
                 error: result.message,
-                requiresUpgrade: false,
                 insufficientCredits: true
             });
         }
@@ -136,10 +132,10 @@ router.post('/analyze', verifyToken, async (req, res) => {
     } catch (error) {
         console.error('Prompt analysis error:', error);
         
-        if (error.message.includes('insufficient credits') || error.message.includes('plan')) {
+        if (error.message.includes('insufficient credits')) {
             return res.status(402).json({ 
                 error: error.message,
-                requiresUpgrade: true 
+                insufficientCredits: true 
             });
         }
         
@@ -231,16 +227,17 @@ router.get('/validate', verifyToken, async (req, res) => {
     }
 });
 
-// Get daily usage statistics
-router.get('/usage', verifyToken, async (req, res) => {
+// Get user credit information endpoint
+router.get('/credit-info', verifyToken, async (req, res) => {
     try {
         const userId = req.user.uid;
-        const result = await promptService.getDailyUsageStats(userId);
-        res.json(result);
+        const creditInfo = await promptService.getUserCreditInfo(userId);
+        
+        res.json(creditInfo);
     } catch (error) {
-        console.error('Daily usage stats error:', error);
+        console.error('Get credit info error:', error);
         res.status(500).json({ 
-            error: error.message || 'Failed to get usage statistics' 
+            error: 'Failed to retrieve credit information' 
         });
     }
 });

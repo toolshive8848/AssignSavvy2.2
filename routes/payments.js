@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { admin, db } = require('../config/firebase');
 
 /**
  * Payment Routes for Stripe Integration
@@ -13,9 +12,7 @@ const path = require('path');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY); // Add your Stripe secret key
 const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY; // Add your Stripe publishable key
 
-// Database connection
-const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '..', 'database.db');
-const db = new sqlite3.Database(dbPath);
+// Firebase database reference is imported above
 
 /**
  * Create Payment Intent for Credit Purchase
@@ -52,46 +49,82 @@ router.post('/create-payment-intent', async (req, res) => {
 });
 
 /**
- * Create Subscription for Pro Plan
- * POST /api/payments/create-subscription
+ * Create Checkout Session for Credit Purchase
+ * POST /api/payments/create-checkout-session
  */
-router.post('/create-subscription', async (req, res) => {
+router.post('/create-checkout-session', async (req, res) => {
     try {
-        const { userId, priceId, paymentMethodId } = req.body;
+        const { amount, credits, userId, planType = 'credit_purchase' } = req.body;
         
-        if (!userId || !priceId || !paymentMethodId) {
+        if (!amount || !credits || !userId) {
             return res.status(400).json({
-                error: 'Missing required fields: userId, priceId, paymentMethodId'
+                error: 'Missing required fields: amount, credits, userId'
             });
         }
 
-        // Create customer if doesn't exist
-        const customer = await stripe.customers.create({
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: `${credits} Credits`,
+                        description: `Purchase ${credits} credits for your account`
+                    },
+                    unit_amount: Math.round(amount * 100) // Convert to cents
+                },
+                quantity: 1
+            }],
+            mode: 'payment',
+            success_url: `${req.headers.origin}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${req.headers.origin}/payment.html?cancelled=true`,
             metadata: {
-                userId: userId.toString()
+                userId: userId.toString(),
+                credits: credits.toString(),
+                type: planType
             }
         });
 
-        // Attach payment method to customer
-        await stripe.paymentMethods.attach(paymentMethodId, {
-            customer: customer.id
-        });
-
-        // Create subscription
-        const subscription = await stripe.subscriptions.create({
-            customer: customer.id,
-            items: [{ price: priceId }],
-            default_payment_method: paymentMethodId,
-            expand: ['latest_invoice.payment_intent']
-        });
-
-        res.json({
-            subscriptionId: subscription.id,
-            clientSecret: subscription.latest_invoice.payment_intent.client_secret
-        });
+        res.json({ url: session.url, sessionId: session.id });
     } catch (error) {
-        console.error('Error creating subscription:', error);
-        res.status(500).json({ error: 'Failed to create subscription' });
+        console.error('Error creating checkout session:', error);
+        res.status(500).json({ error: 'Failed to create checkout session' });
+    }
+});
+
+/**
+ * Create Subscription Checkout Session for Pro Plan
+ * POST /api/payments/create-subscription-checkout
+ */
+router.post('/create-subscription-checkout', async (req, res) => {
+    try {
+        const { userId, priceId, planName } = req.body;
+        
+        if (!userId || !priceId) {
+            return res.status(400).json({
+                error: 'Missing required fields: userId, priceId'
+            });
+        }
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price: priceId,
+                quantity: 1
+            }],
+            mode: 'subscription',
+            success_url: `${req.headers.origin}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${req.headers.origin}/payment.html?cancelled=true`,
+            metadata: {
+                userId: userId.toString(),
+                planName: planName || 'Pro Plan'
+            }
+        });
+
+        res.json({ url: session.url, sessionId: session.id });
+    } catch (error) {
+        console.error('Error creating subscription checkout:', error);
+        res.status(500).json({ error: 'Failed to create subscription checkout' });
     }
 });
 
@@ -114,6 +147,11 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
     // Handle the event
     switch (event.type) {
+        case 'checkout.session.completed':
+            const session = event.data.object;
+            await handleCheckoutSessionCompleted(session);
+            break;
+            
         case 'payment_intent.succeeded':
             const paymentIntent = event.data.object;
             await handleSuccessfulPayment(paymentIntent);
@@ -153,19 +191,22 @@ router.get('/config', (req, res) => {
 router.get('/history/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const db = req.app.locals.db;
         
-        db.all(
-            'SELECT * FROM payments WHERE user_id = ? ORDER BY created_at DESC LIMIT 50',
-            [userId],
-            (err, payments) => {
-                if (err) {
-                    console.error('Error fetching payment history:', err);
-                    return res.status(500).json({ error: 'Failed to fetch payment history' });
-                }
-                res.json({ payments });
-            }
-        );
+        const paymentsSnapshot = await db.collection('payments')
+            .where('userId', '==', userId)
+            .orderBy('createdAt', 'desc')
+            .limit(50)
+            .get();
+        
+        const payments = [];
+        paymentsSnapshot.forEach(doc => {
+            payments.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        res.json({ payments });
     } catch (error) {
         console.error('Error in payment history:', error);
         res.status(500).json({ error: 'Failed to fetch payment history' });
@@ -174,45 +215,121 @@ router.get('/history/:userId', async (req, res) => {
 
 // Helper Functions
 
+async function handleCheckoutSessionCompleted(session) {
+    try {
+        const { userId, credits, type, planName } = session.metadata;
+        
+        if (session.mode === 'payment' && credits) {
+            // Handle credit purchase
+            const creditsToAdd = parseInt(credits);
+            
+            const batch = db.batch();
+            
+            // Get user reference
+            const userRef = db.collection('users').doc(userId);
+            const userDoc = await userRef.get();
+            
+            if (!userDoc.exists) {
+                throw new Error('User not found');
+            }
+            
+            const userData = userDoc.data();
+            const currentCredits = userData.credits || 0;
+            
+            // Update user credits
+            batch.update(userRef, {
+                credits: currentCredits + creditsToAdd,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Record payment in database
+            const paymentRef = db.collection('payments').doc();
+            batch.set(paymentRef, {
+                userId: userId,
+                amount: session.amount_total / 100,
+                currency: session.currency,
+                status: 'completed',
+                stripeSessionId: session.id,
+                credits: creditsToAdd,
+                type: 'credit_purchase',
+                createdAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+            
+            await batch.commit();
+            console.log(`Successfully added ${creditsToAdd} credits to user ${userId} via checkout session`);
+            
+        } else if (session.mode === 'subscription') {
+            // Handle subscription
+            const userRef = db.collection('users').doc(userId);
+            await userRef.update({
+                subscriptionId: session.subscription,
+                subscriptionStatus: 'active',
+                customerId: session.customer,
+                planName: planName || 'Pro Plan',
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Record subscription payment
+            const paymentRef = db.collection('payments').doc();
+            await paymentRef.set({
+                userId: userId,
+                amount: session.amount_total / 100,
+                currency: session.currency,
+                status: 'completed',
+                stripeSessionId: session.id,
+                subscriptionId: session.subscription,
+                type: 'subscription',
+                planName: planName || 'Pro Plan',
+                createdAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+            
+            console.log(`Subscription activated for user ${userId} via checkout session`);
+        }
+        
+    } catch (error) {
+        console.error('Error handling checkout session completion:', error);
+    }
+}
+
 async function handleSuccessfulPayment(paymentIntent) {
     try {
         const { userId, credits } = paymentIntent.metadata;
         const creditsToAdd = parseInt(credits);
-        const userIdInt = parseInt(userId);
         
-        // Add credits to user account
-        await new Promise((resolve, reject) => {
-            db.run(
-                'UPDATE users SET credits = credits + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                [creditsToAdd, userIdInt],
-                function(err) {
-                    if (err) {
-                        console.error('Error updating user credits:', err);
-                        reject(err);
-                        return;
-                    }
-                    console.log(`Successfully added ${creditsToAdd} credits to user ${userIdInt}`);
-                    resolve();
-                }
-            );
+        const batch = db.batch();
+        
+        // Get user reference
+        const userRef = db.collection('users').doc(userId);
+        const userDoc = await userRef.get();
+        
+        if (!userDoc.exists) {
+            throw new Error('User not found');
+        }
+        
+        const userData = userDoc.data();
+        const currentCredits = userData.credits || 0;
+        
+        // Update user credits
+        batch.update(userRef, {
+            credits: currentCredits + creditsToAdd,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });
         
         // Record payment in database
-        await new Promise((resolve, reject) => {
-            db.run(
-                'INSERT INTO payments (user_id, amount, currency, status, stripe_payment_intent_id, created_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
-                [userIdInt, paymentIntent.amount / 100, paymentIntent.currency, 'completed', paymentIntent.id],
-                function(err) {
-                    if (err) {
-                        console.error('Error recording payment:', err);
-                        reject(err);
-                        return;
-                    }
-                    console.log(`Payment recorded for user ${userIdInt}: ${paymentIntent.amount / 100} ${paymentIntent.currency}`);
-                    resolve();
-                }
-            );
+        const paymentRef = db.collection('payments').doc();
+        batch.set(paymentRef, {
+            userId: userId,
+            amount: paymentIntent.amount / 100,
+            currency: paymentIntent.currency,
+            status: 'completed',
+            stripePaymentIntentId: paymentIntent.id,
+            credits: creditsToAdd,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
+        
+        await batch.commit();
+        console.log(`Successfully added ${creditsToAdd} credits to user ${userId}`);
+        console.log(`Payment recorded for user ${userId}: ${paymentIntent.amount / 100} ${paymentIntent.currency}`);
         
     } catch (error) {
         console.error('Error handling successful payment:', error);
@@ -222,9 +339,22 @@ async function handleSuccessfulPayment(paymentIntent) {
 async function handleSuccessfulSubscription(invoice) {
     try {
         const customerId = invoice.customer;
+        const subscriptionId = invoice.subscription;
         
-        // Update user's subscription status
-        console.log(`Subscription payment succeeded for customer ${customerId}`);
+        // Get customer to find userId
+        const customer = await stripe.customers.retrieve(customerId);
+        const userId = customer.metadata.userId;
+        
+        if (userId) {
+            const userRef = db.collection('users').doc(userId);
+            await userRef.update({
+                subscriptionId: subscriptionId,
+                subscriptionStatus: 'active',
+                customerId: customerId,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+            console.log(`Subscription activated for user ${userId}`);
+        }
         
     } catch (error) {
         console.error('Error handling successful subscription:', error);
@@ -234,8 +364,22 @@ async function handleSuccessfulSubscription(invoice) {
 async function handleCancelledSubscription(subscription) {
     try {
         const customerId = subscription.customer;
+        const subscriptionId = subscription.id;
         
-        // Update user's subscription status to cancelled
+        // Find user by subscription ID and update status
+        const usersSnapshot = await db.collection('users')
+            .where('subscriptionId', '==', subscriptionId)
+            .get();
+        
+        const batch = db.batch();
+        usersSnapshot.forEach(doc => {
+            batch.update(doc.ref, {
+                subscriptionStatus: 'cancelled',
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+        });
+        
+        await batch.commit();
         console.log(`Subscription cancelled for customer ${customerId}`);
         
     } catch (error) {

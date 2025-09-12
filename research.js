@@ -3,7 +3,9 @@ const ResearchService = require('./services/researchService');
 const AtomicCreditSystem = require('./services/atomicCreditSystem');
 const PlanValidator = require('./services/planValidator');
 const PDFGenerator = require('./services/pdfGenerator');
-const { authenticateToken } = require('./auth');
+const { unifiedAuth } = require('./middleware/unifiedAuth');
+const { asyncErrorHandler } = require('./middleware/errorHandler');
+const { validateResearchInput, handleValidationErrors } = require('./middleware/validation');
 
 const router = express.Router();
 
@@ -17,7 +19,7 @@ const pdfGenerator = new PDFGenerator();
  * POST /api/research/query
  * Conduct deep research using Gemini 2.5 Pro
  */
-router.post('/query', authenticateToken, async (req, res) => {
+router.post('/query', unifiedAuth, validateResearchInput, asyncErrorHandler(async (req, res) => {
   try {
     const { 
       query, 
@@ -210,13 +212,13 @@ router.post('/query', authenticateToken, async (req, res) => {
       details: error.message
     });
   }
-});
+}));
 
 /**
  * GET /api/research/history
  * Get user's research history
  */
-router.get('/history', authenticateToken, async (req, res) => {
+router.get('/history', unifiedAuth, asyncErrorHandler(async (req, res) => {
   try {
     const { limit = 20, offset = 0 } = req.query;
     
@@ -249,13 +251,13 @@ router.get('/history', authenticateToken, async (req, res) => {
       details: error.message
     });
   }
-});
+}));
 
 /**
  * GET /api/research/:id
  * Get specific research by ID
  */
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', unifiedAuth, asyncErrorHandler(async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -296,13 +298,13 @@ router.get('/:id', authenticateToken, async (req, res) => {
       details: error.message
     });
   }
-});
+}));
 
 /**
  * DELETE /api/research/:id
  * Delete specific research from history
  */
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', unifiedAuth, asyncErrorHandler(async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -347,13 +349,13 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       details: error.message
     });
   }
-});
+}));
 
 /**
  * POST /api/research/export/:id
  * Export research results in various formats
  */
-router.post('/export/:id', authenticateToken, async (req, res) => {
+router.post('/export/:id', unifiedAuth, asyncErrorHandler(async (req, res) => {
   try {
     const { id } = req.params;
     const { format = 'json' } = req.body;
@@ -458,7 +460,7 @@ router.post('/export/:id', authenticateToken, async (req, res) => {
       details: error.message
     });
   }
-});
+}));
 
 /**
  * Helper function to format research as plain text
@@ -602,7 +604,7 @@ function formatBibliography(research) {
  * POST /api/research/validate-sources
  * Validate and score research sources
  */
-router.post('/validate-sources', authenticateToken, async (req, res) => {
+router.post('/validate-sources', unifiedAuth, asyncErrorHandler(async (req, res) => {
   try {
     const { sources } = req.body;
 
@@ -681,13 +683,13 @@ router.post('/validate-sources', authenticateToken, async (req, res) => {
       details: error.message
     });
   }
-});
+}));
 
 /**
  * POST /api/research/generate-citations
  * Generate formatted citations from sources
  */
-router.post('/generate-citations', authenticateToken, async (req, res) => {
+router.post('/generate-citations', unifiedAuth, asyncErrorHandler(async (req, res) => {
   try {
     const { sources, format = 'apa' } = req.body;
 
@@ -775,6 +777,105 @@ router.post('/generate-citations', authenticateToken, async (req, res) => {
       details: error.message
     });
   }
-});
+}));
+
+/**
+ * POST /api/research/bookmark
+ * Bookmark a research source
+ */
+router.post('/bookmark', unifiedAuth, asyncErrorHandler(async (req, res) => {
+  try {
+    const { sourceId } = req.body;
+    
+    if (!sourceId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Source ID is required'
+      });
+    }
+
+    // Save bookmark to user's collection
+    await researchService.db.collection('user_bookmarks').add({
+      userId: req.user.id,
+      sourceId,
+      createdAt: new Date()
+    });
+
+    res.json({
+      success: true,
+      message: 'Source bookmarked successfully'
+    });
+
+  } catch (error) {
+    console.error('Bookmark error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to bookmark source'
+    });
+  }
+}));
+
+/**
+ * GET /api/research/quote/:sourceId
+ * Get a formatted quote from a source
+ */
+router.get('/quote/:sourceId', unifiedAuth, asyncErrorHandler(async (req, res) => {
+  try {
+    const { sourceId } = req.params;
+    
+    if (!sourceId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Source ID is required'
+      });
+    }
+
+    // Generate a quote (this would typically fetch from the source)
+    const quote = `"This is a sample quote from source ${sourceId}" - Research Source`;
+
+    res.json({
+      success: true,
+      quote
+    });
+
+  } catch (error) {
+    console.error('Quote error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get quote'
+    });
+  }
+}));
+
+/**
+ * GET /api/research/pdf/:sourceId
+ * Generate PDF for a source
+ */
+router.get('/pdf/:sourceId', unifiedAuth, asyncErrorHandler(async (req, res) => {
+  try {
+    const { sourceId } = req.params;
+    
+    if (!sourceId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Source ID is required'
+      });
+    }
+
+    // Generate PDF (placeholder implementation)
+    const pdfBuffer = await pdfGenerator.generateSourcePDF(sourceId);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="source-${sourceId}.pdf"`);
+    res.send(pdfBuffer);
+
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate PDF'
+    });
+  }
+}));
 
 module.exports = router;

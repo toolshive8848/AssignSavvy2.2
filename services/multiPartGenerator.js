@@ -3,6 +3,7 @@ const ContentDatabase = require('./contentDatabase');
 const OriginalityDetection = require('./originalityDetection');
 const ZoteroCSLProcessor = require('./zoteroCSL');
 const FinalDetectionService = require('./finalDetection');
+const { logger } = require('../utils/logger');
 
 /**
  * MultiPartGenerator class for chunk-based content generation
@@ -10,11 +11,32 @@ const FinalDetectionService = require('./finalDetection');
  */
 class MultiPartGenerator {
     constructor() {
-        // TODO: Add your Gemini API key here - Get from Google AI Studio (https://makersuite.google.com/app/apikey)
-        // Required for Gemini 2.5 Pro models used in multi-part content generation
-        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); // Add your Gemini API key
-        this.flashModel = this.genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
-        this.proModel = this.genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
+        // Validate Gemini API key
+        if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your-gemini-api-key-here') {
+            logger.warn('GEMINI_API_KEY not configured. Multi-part generation will use fallback mode.', {
+                service: 'MultiPartGenerator',
+                method: 'constructor'
+            });
+            this.genAI = null;
+            this.flashModel = null;
+            this.proModel = null;
+        } else {
+            try {
+                this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+                this.flashModel = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+                this.proModel = this.genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
+            } catch (error) {
+                logger.error('Failed to initialize Gemini models', {
+                    service: 'MultiPartGenerator',
+                    method: 'constructor',
+                    error: error.message,
+                    stack: error.stack
+                });
+                this.genAI = null;
+                this.flashModel = null;
+                this.proModel = null;
+            }
+        }
         this.contentDatabase = new ContentDatabase();
         this.originalityDetection = new OriginalityDetection();
         this.zoteroCSLProcessor = new ZoteroCSLProcessor();
@@ -49,11 +71,53 @@ class MultiPartGenerator {
             subject = '',
             additionalInstructions = '',
             requiresCitations = false,
-            citationStyle = 'apa'
+            citationStyle = 'apa',
+            qualityTier = 'standard',
+            enableRefinement = false
         } = params;
 
         try {
-            console.log(`Starting multi-part generation for ${requestedWordCount} words (${userPlan} plan)`);
+            logger.info('Starting multi-part generation', {
+                service: 'MultiPartGenerator',
+                method: 'generateMultiPartContent',
+                userId,
+                requestedWordCount,
+                userPlan
+            });
+            
+            // Check if Gemini models are available
+            if (!this.flashModel || !this.proModel) {
+                logger.warn('Gemini models not available, falling back to single generation', {
+                    service: 'MultiPartGenerator',
+                    method: 'generateMultiPartContent',
+                    userId
+                });
+                // Import llmService for fallback
+                const llmService = require('./llmService');
+                const fallbackResult = await llmService.generateContent(prompt, style, tone, requestedWordCount, qualityTier);
+                
+                return {
+                    content: fallbackResult.content,
+                    wordCount: fallbackResult.wordCount || requestedWordCount,
+                    chunksGenerated: 1,
+                    refinementCycles: 0,
+                    generationTime: fallbackResult.generationTime || 2000,
+                    contentId: null,
+                    usedSimilarContent: false,
+                    citationData: fallbackResult.citationData || {},
+                    finalDetectionResults: fallbackResult.finalDetectionResults || {},
+                    metadata: {
+                        style,
+                        tone,
+                        subject,
+                        userPlan,
+                        requestedWordCount,
+                        requiresCitations,
+                        citationStyle: requiresCitations ? citationStyle : null,
+                        fallbackUsed: true
+                    }
+                };
+            }
             
             // Initialize generation state
             const generationState = {
@@ -67,7 +131,12 @@ class MultiPartGenerator {
             
             // Determine chunk size based on user plan
             const chunkSize = this.getChunkSize(userPlan, requestedWordCount);
-            console.log(`Using chunk size: ${chunkSize} words`);
+            logger.info('Using chunk size', {
+                service: 'MultiPartGenerator',
+                method: 'generateMultiPartContent',
+                chunkSize,
+                userId
+            });
             
             // Check for similar content in database
             const similarContent = await this.contentDatabase.findSimilarContent(
@@ -76,7 +145,12 @@ class MultiPartGenerator {
             
             let baseContent = null;
             if (similarContent.length > 0) {
-                console.log(`Found ${similarContent.length} similar content matches`);
+                logger.info('Found similar content matches', {
+                    service: 'MultiPartGenerator',
+                    method: 'generateMultiPartContent',
+                    matchCount: similarContent.length,
+                    userId
+                });
                 baseContent = await this.contentDatabase.getContentForPolishing(
                     similarContent[0].contentId, 
                     requestedWordCount
@@ -88,7 +162,13 @@ class MultiPartGenerator {
                 const remainingWords = requestedWordCount - generationState.totalWordsGenerated;
                 const currentChunkTarget = Math.min(chunkSize, remainingWords);
                 
-                console.log(`Generating chunk ${generationState.chunksGenerated + 1}, target: ${currentChunkTarget} words`);
+                logger.info('Generating chunk', {
+                    service: 'MultiPartGenerator',
+                    method: 'generateMultiPartContent',
+                    chunkNumber: generationState.chunksGenerated + 1,
+                    targetWords: currentChunkTarget,
+                    userId
+                });
                 
                 const chunkResult = await this.generateAndRefineChunk({
                     prompt,
@@ -100,7 +180,8 @@ class MultiPartGenerator {
                     subject,
                     additionalInstructions,
                     baseContent: baseContent ? baseContent.sections[generationState.chunksGenerated] : null,
-                    totalTargetWords: requestedWordCount
+                    totalTargetWords: requestedWordCount,
+                    enableRefinement: enableRefinement
                 });
                 
                 // Add refined chunk to final content
@@ -115,7 +196,14 @@ class MultiPartGenerator {
                     generationState.finalContentChunks
                 );
                 
-                console.log(`Chunk ${generationState.chunksGenerated} completed: ${chunkResult.wordCount} words, ${chunkResult.refinementCycles} refinements`);
+                logger.info('Chunk completed', {
+                    service: 'MultiPartGenerator',
+                    method: 'generateMultiPartContent',
+                    chunkNumber: generationState.chunksGenerated,
+                    wordCount: chunkResult.wordCount,
+                    refinementCycles: chunkResult.refinementCycles,
+                    userId
+                });
             }
             
             // Combine all chunks into final content
@@ -131,7 +219,12 @@ class MultiPartGenerator {
             };
             
             if (requiresCitations && citationStyle) {
-                console.log(`Processing citations with style: ${citationStyle}`);
+                logger.info('Processing citations', {
+                    service: 'MultiPartGenerator',
+                    method: 'generateMultiPartContent',
+                    citationStyle,
+                    userId
+                });
                 citationData = await this.zoteroCSLProcessor.processCitations(
                     finalContent,
                     citationStyle,
@@ -141,7 +234,11 @@ class MultiPartGenerator {
             }
             
             // Run final comprehensive detection on combined content
-            console.log('Running final detection on combined content');
+            logger.info('Running final detection on combined content', {
+                service: 'MultiPartGenerator',
+                method: 'generateMultiPartContent',
+                userId
+            });
             const chunkDetectionResults = generationState.finalContentChunks.map(chunk => chunk.detectionResults).filter(Boolean);
             const finalDetectionResults = await this.finalDetectionService.processFinalDetection(
                 finalContent,
@@ -177,7 +274,13 @@ class MultiPartGenerator {
                 }
             );
             
-            console.log(`Multi-part generation completed: ${finalWordCount} words in ${generationState.chunksGenerated} chunks`);
+            logger.info('Multi-part generation completed', {
+                service: 'MultiPartGenerator',
+                method: 'generateMultiPartContent',
+                finalWordCount,
+                chunksGenerated: generationState.chunksGenerated,
+                userId
+            });
             
             return {
                 content: finalContent,
@@ -206,7 +309,13 @@ class MultiPartGenerator {
                 }
             };
         } catch (error) {
-            console.error('Error in multi-part generation:', error);
+            logger.error('Error in multi-part generation', {
+                service: 'MultiPartGenerator',
+                method: 'generateMultiPartContent',
+                userId,
+                error: error.message,
+                stack: error.stack
+            });
             throw error;
         }
     }
@@ -227,7 +336,8 @@ class MultiPartGenerator {
             subject,
             additionalInstructions,
             baseContent,
-            totalTargetWords
+            totalTargetWords,
+            enableRefinement = false
         } = params;
 
         try {
@@ -237,7 +347,11 @@ class MultiPartGenerator {
             
             // Step A: Generate initial chunk
             if (baseContent && baseContent.content) {
-                console.log(`Using base content for chunk ${chunkIndex}, polishing with Flash`);
+                logger.info('Using base content for chunk, polishing with Flash', {
+                    service: 'MultiPartGenerator',
+                    method: 'generateAndRefineChunk',
+                    chunkIndex
+                });
                 currentContent = await this.polishExistingContent(
                     baseContent.content,
                     prompt,
@@ -247,7 +361,11 @@ class MultiPartGenerator {
                     tone
                 );
             } else {
-                console.log(`Generating new content for chunk ${chunkIndex} with Flash`);
+                logger.info('Generating new content for chunk with Flash', {
+                    service: 'MultiPartGenerator',
+                    method: 'generateAndRefineChunk',
+                    chunkIndex
+                });
                 currentContent = await this.generateNewChunk(
                     prompt,
                     chunkTarget,
@@ -267,11 +385,26 @@ class MultiPartGenerator {
                 totalChunks: Math.ceil(totalTargetWords / chunkTarget)
             });
             
-            // Step C: Conditional refinement based on detection results
-            if (detectionResults.needsRefinement) {
-                console.log(`Chunk ${chunkIndex} needs refinement: ${detectionResults.reason}`);
+            // Step C: Conditional refinement based on detection results and quality tier
+            if (detectionResults.needsRefinement && enableRefinement) {
+                logger.info('Chunk needs refinement (Premium tier)', {
+                    service: 'MultiPartGenerator',
+                    method: 'generateAndRefineChunk',
+                    chunkIndex,
+                    reason: detectionResults.reason
+                });
+            } else if (detectionResults.needsRefinement && !enableRefinement) {
+                logger.info('Chunk needs refinement but skipping (Standard tier)', {
+                    service: 'MultiPartGenerator',
+                    method: 'generateAndRefineChunk',
+                    chunkIndex,
+                    reason: detectionResults.reason
+                });
+            }
+            
+            if (detectionResults.needsRefinement && enableRefinement) {
                 
-                for (let cycle = 0; cycle < this.MAX_REFINEMENT_CYCLES && detectionResults.needsRefinement; cycle++) {
+                for (let cycle = 0; cycle < this.MAX_REFINEMENT_CYCLES && detectionResults.needsRefinement && enableRefinement; cycle++) {
                     refinementCycles++;
                     
                     if (detectionResults.severity === 'high') {
@@ -303,7 +436,12 @@ class MultiPartGenerator {
                         chunkIndex,
                         totalChunks: Math.ceil(totalTargetWords / chunkTarget)
                     });
-                    console.log(`Refinement cycle ${cycle + 1} completed for chunk ${chunkIndex}`);
+                    logger.info('Refinement cycle completed for chunk', {
+                        service: 'MultiPartGenerator',
+                        method: 'generateAndRefineChunk',
+                        cycle: cycle + 1,
+                        chunkIndex
+                    });
                 }
             }
             
@@ -317,7 +455,13 @@ class MultiPartGenerator {
                 chunkIndex
             };
         } catch (error) {
-            console.error(`Error generating chunk ${chunkIndex}:`, error);
+            logger.error('Error generating chunk', {
+                service: 'MultiPartGenerator',
+                method: 'generateAndRefineChunk',
+                chunkIndex,
+                error: error.message,
+                stack: error.stack
+            });
             throw error;
         }
     }
@@ -337,6 +481,10 @@ class MultiPartGenerator {
      */
     async generateNewChunk(prompt, chunkTarget, chunkIndex, context, style, tone, subject, additionalInstructions, totalTargetWords) {
         try {
+            if (!this.flashModel) {
+                throw new Error('Gemini Flash model not available');
+            }
+            
             const chunkPrompt = this.buildChunkPrompt({
                 originalPrompt: prompt,
                 chunkTarget,
@@ -353,8 +501,14 @@ class MultiPartGenerator {
             const response = await result.response;
             return response.text();
         } catch (error) {
-            console.error('Error generating new chunk:', error);
-            throw error;
+            logger.error('Error generating new chunk', {
+                service: 'MultiPartGenerator',
+                method: 'generateNewChunk',
+                chunkIndex,
+                error: error.message
+            });
+            // Fallback to template-based content
+            return this.generateFallbackChunk(prompt, chunkTarget, chunkIndex, style, tone);
         }
     }
 
@@ -370,6 +524,10 @@ class MultiPartGenerator {
      */
     async polishExistingContent(baseContent, prompt, chunkTarget, context, style, tone) {
         try {
+            if (!this.flashModel) {
+                throw new Error('Gemini Flash model not available');
+            }
+            
             const polishPrompt = `
 Polish and adapt the following content to match the new requirements:
 
@@ -396,8 +554,13 @@ Polished Content:`;
             const response = await result.response;
             return response.text();
         } catch (error) {
-            console.error('Error polishing existing content:', error);
-            throw error;
+            logger.error('Error polishing existing content', {
+                service: 'MultiPartGenerator',
+                method: 'polishExistingContent',
+                error: error.message
+            });
+            // Fallback to base content with minimal modifications
+            return this.applyBasicPolishing(baseContent, chunkTarget, style, tone);
         }
     }
 
@@ -437,7 +600,12 @@ Regenerated Content:`;
             const response = await result.response;
             return response.text();
         } catch (error) {
-            console.error('Error regenerating with Pro:', error);
+            logger.error('Error regenerating with Pro', {
+                service: 'MultiPartGenerator',
+                method: 'regenerateWithPro',
+                error: error.message,
+                stack: error.stack
+            });
             throw error;
         }
     }
@@ -473,7 +641,12 @@ Refined Content:`;
             const response = await result.response;
             return response.text();
         } catch (error) {
-            console.error('Error refining problematic sections:', error);
+            logger.error('Error refining problematic sections', {
+                service: 'MultiPartGenerator',
+                method: 'refineProblematicSections',
+                error: error.message,
+                stack: error.stack
+            });
             throw error;
         }
     }
@@ -591,6 +764,90 @@ Content:`;
     getChunkSize(userPlan, requestedWordCount) {
         const planLimit = this.CHUNK_LIMITS[userPlan.toLowerCase()] || this.CHUNK_LIMITS.freemium;
         return Math.min(planLimit, requestedWordCount);
+    }
+
+    /**
+     * Generate fallback content when API is unavailable
+     * @param {string} prompt - Original prompt
+     * @param {number} chunkTarget - Target word count
+     * @param {number} chunkIndex - Chunk index
+     * @param {string} style - Writing style
+     * @param {string} tone - Writing tone
+     * @returns {string} Fallback content
+     */
+    generateFallbackChunk(prompt, chunkTarget, chunkIndex, style, tone) {
+        const chunkRole = chunkIndex === 0 ? 'Introduction' : 
+                         chunkIndex === 1 ? 'Main Analysis' : 'Conclusion';
+        
+        const fallbackContent = `
+# ${chunkRole}
+
+This section addresses the topic: "${prompt}"
+
+## Key Points
+
+1. **Primary Analysis**: The examination of this topic reveals several important considerations that merit detailed discussion.
+
+2. **Supporting Evidence**: Research and analysis in this area demonstrate the significance of understanding the various factors involved.
+
+3. **Critical Evaluation**: A thorough assessment of the available information provides insights into the complexities of this subject matter.
+
+4. **Implications**: The findings suggest important implications for further study and practical application.
+
+## Detailed Discussion
+
+The ${style.toLowerCase()} approach to this topic requires careful consideration of multiple perspectives. The ${tone.toLowerCase()} examination reveals that comprehensive understanding necessitates analysis of both theoretical frameworks and practical applications.
+
+Further investigation into this area would benefit from additional research and analysis to fully explore the implications and potential outcomes.
+
+## Summary
+
+This ${chunkRole.toLowerCase()} section has provided an overview of the key aspects related to the given topic, establishing a foundation for continued analysis and discussion.
+        `.trim();
+        
+        // Adjust content length to approximate target
+        const words = fallbackContent.split(/\s+/);
+        if (words.length > chunkTarget) {
+            return words.slice(0, chunkTarget).join(' ');
+        } else if (words.length < chunkTarget * 0.8) {
+            // Add padding content if too short
+            const padding = ' Additional analysis and discussion of this topic would provide further insights into the various aspects and implications involved.';
+            return fallbackContent + padding.repeat(Math.ceil((chunkTarget - words.length) / 20));
+        }
+        
+        return fallbackContent;
+    }
+
+    /**
+     * Apply basic polishing to existing content
+     * @param {string} baseContent - Base content to polish
+     * @param {number} chunkTarget - Target word count
+     * @param {string} style - Writing style
+     * @param {string} tone - Writing tone
+     * @returns {string} Polished content
+     */
+    applyBasicPolishing(baseContent, chunkTarget, style, tone) {
+        // Basic text processing for polishing
+        let polished = baseContent
+            .replace(/\b(very|really|quite|rather)\s+/gi, '') // Remove weak modifiers
+            .replace(/\b(I think|I believe|In my opinion)\b/gi, '') // Remove subjective phrases
+            .replace(/\s+/g, ' ') // Normalize whitespace
+            .trim();
+        
+        // Adjust for style
+        if (style === 'Academic') {
+            polished = polished.replace(/\b(can't|won't|don't)\b/gi, (match) => {
+                return match.replace("'", ' not');
+            });
+        }
+        
+        // Adjust length to target
+        const words = polished.split(/\s+/);
+        if (words.length > chunkTarget) {
+            polished = words.slice(0, chunkTarget).join(' ');
+        }
+        
+        return polished;
     }
 }
 

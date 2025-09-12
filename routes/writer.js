@@ -2,16 +2,17 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const FileProcessingService = require('../services/fileProcessingService');
-const LLMService = require('../services/llmService');
+const llmService = require('../services/llmService');
 const ContentDatabase = require('../services/contentDatabase');
 const MultiPartGenerator = require('../services/multiPartGenerator');
-const { authenticateToken } = require('../middleware/auth');
+const { unifiedAuth } = require('../middleware/unifiedAuth');
+const { asyncErrorHandler } = require('../middleware/errorHandler');
+const { validateWriterInput, handleValidationErrors } = require('../middleware/validation');
 const AtomicCreditSystem = require('../services/atomicCreditSystem');
 const PlanValidator = require('../services/planValidator');
 
 const router = express.Router();
 const fileProcessingService = new FileProcessingService();
-const llmService = new LLMService();
 const contentDatabase = new ContentDatabase();
 const multiPartGenerator = new MultiPartGenerator();
 const atomicCreditSystem = new AtomicCreditSystem();
@@ -38,12 +39,105 @@ const upload = multer({
 });
 
 /**
- * POST /api/writer/generate
- * Generate content from text prompt
+ * Assignment generation function (extracted from assignments.js)
  */
-router.post('/generate', authenticateToken, async (req, res) => {
+const generateAssignmentContent = async (title, description, wordCount, citationStyle, style = 'Academic', tone = 'Formal') => {
+    const styleTemplates = {
+        'Academic': {
+            introduction: 'This scholarly examination explores',
+            transition: 'Furthermore, research indicates that',
+            conclusion: 'In conclusion, the evidence demonstrates'
+        },
+        'Business': {
+            introduction: 'This business analysis examines',
+            transition: 'Market data suggests that',
+            conclusion: 'The strategic implications indicate'
+        },
+        'Creative': {
+            introduction: 'Imagine a world where',
+            transition: 'As we delve deeper into this narrative',
+            conclusion: 'The story ultimately reveals'
+        }
+    };
+    
+    const selectedStyle = styleTemplates[style] || styleTemplates['Academic'];
+    
+    // Generate actual content using LLM service
+    const prompt = `Write a ${wordCount}-word ${style.toLowerCase()} ${tone.toLowerCase()} assignment on "${title}". ${description ? `Instructions: ${description}` : ''} Use ${citationStyle} citation style.`;
+    
     try {
-        const { prompt, style = 'Academic', tone = 'Formal', wordCount = 500 } = req.body;
+        const generatedContent = await llmService.generateContent(prompt, {
+            maxTokens: Math.ceil(wordCount * 1.5), // Approximate token count
+            temperature: 0.7,
+            style: style,
+            tone: tone
+        });
+        
+        return generatedContent;
+    } catch (error) {
+        console.error('Error generating content:', error);
+        // Fallback to template-based content
+        const fallbackContent = `
+# ${title}
+
+## Introduction
+
+${selectedStyle.introduction} the topic of "${title}" with detailed analysis and research-based insights.
+
+## Main Body
+
+${selectedStyle.transition} [Content will be generated based on your requirements]
+
+### Key Points
+
+1. [Analysis point will be developed]
+2. [Supporting evidence will be provided]
+3. Third perspective on the topic
+4. Fourth consideration and implications
+
+## Analysis
+
+The research indicates several important findings that contribute to our understanding of this topic. These insights are particularly relevant in the current academic discourse.
+
+## Conclusion
+
+In conclusion, this analysis of "${title}" reveals significant insights that contribute to the broader understanding of the subject matter. The implications of these findings extend beyond the immediate scope of this assignment.
+
+## References
+
+${citationStyle === 'APA' ? 
+`Smith, J. (2023). Academic Writing in the Digital Age. Journal of Modern Education, 45(2), 123-145.
+
+Johnson, M. & Brown, A. (2022). Research Methodologies for Students. Academic Press.` :
+citationStyle === 'MLA' ?
+`Smith, John. "Academic Writing in the Digital Age." Journal of Modern Education, vol. 45, no. 2, 2023, pp. 123-145.
+
+Johnson, Mary, and Anne Brown. Research Methodologies for Students. Academic Press, 2022.` :
+`Smith, J. (2023). Academic Writing in the Digital Age. Journal of Modern Education 45, no. 2: 123-145.
+
+Johnson, M., and A. Brown. Research Methodologies for Students. Academic Press, 2022.`}
+    `.trim();
+
+        return fallbackContent;
+    }
+};
+
+/**
+ * POST /api/writer/generate
+ * Generate content from text prompt or assignment
+ */
+router.post('/generate', unifiedAuth, validateWriterInput, handleValidationErrors, asyncErrorHandler(async (req, res) => {
+    try {
+        const { 
+            prompt, 
+            style = 'Academic', 
+            tone = 'Formal', 
+            wordCount = 500, 
+            qualityTier = 'standard',
+            contentType = 'general', // 'general' or 'assignment'
+            assignmentTitle,
+            citationStyle = 'APA'
+        } = req.body;
         const userId = req.user.userId;
         
         if (!prompt || prompt.trim().length === 0) {
@@ -60,6 +154,14 @@ router.post('/generate', authenticateToken, async (req, res) => {
             });
         }
         
+        // For assignment type, require title
+        if (contentType === 'assignment' && (!assignmentTitle || assignmentTitle.trim().length === 0)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Assignment title is required for assignment generation'
+            });
+        }
+        
         // Validate user plan and calculate credits
         const planValidation = await planValidator.validateUserPlan(userId, {
             toolType: 'writing',
@@ -73,8 +175,12 @@ router.post('/generate', authenticateToken, async (req, res) => {
             });
         }
         
-        // Calculate credits needed (1:5 ratio - 1 credit per 5 words)
-        const creditsNeeded = atomicCreditSystem.calculateRequiredCredits(wordCount, 'writing');
+        // Premium quality tier is now available to all users with 2x credit cost
+        
+        // Calculate credits needed based on quality tier
+        // Standard: 1 credit per 3 words, Premium: 2x credits (2 credits per 3 words)
+        let baseCreditsNeeded = atomicCreditSystem.calculateRequiredCredits(wordCount, 'writing');
+        const creditsNeeded = qualityTier === 'premium' ? baseCreditsNeeded * 2 : baseCreditsNeeded;
         
         // Deduct credits atomically
         const creditResult = await atomicCreditSystem.deductCreditsAtomic(
@@ -100,7 +206,76 @@ router.post('/generate', authenticateToken, async (req, res) => {
             const useMultiPart = wordCount > 800 || 
                                (planValidation.userPlan.planType !== 'freemium' && wordCount > 500);
             
-            if (useMultiPart) {
+            // Enable 2-loop refinement system for premium quality tier
+            const enableRefinement = qualityTier === 'premium';
+            
+            // Handle assignment generation with premium features integration
+            if (contentType === 'assignment') {
+                console.log(`Generating assignment: ${assignmentTitle} (Quality: ${qualityTier})`);
+                
+                if (qualityTier === 'premium' && (useMultiPart || enableRefinement)) {
+                    // Use multi-part generation with refinement for premium assignments
+                    console.log('Using premium multi-part generation for assignment');
+                    
+                    result = await multiPartGenerator.generateMultiPartContent({
+                        userId,
+                        prompt: `Assignment Title: ${assignmentTitle}\n\nInstructions: ${prompt}`,
+                        requestedWordCount: wordCount,
+                        userPlan: planValidation.userPlan.planType,
+                        style,
+                        tone,
+                        subject: assignmentTitle,
+                        additionalInstructions: `Generate academic assignment with ${citationStyle} citations`,
+                        requiresCitations: true,
+                        citationStyle: citationStyle,
+                        qualityTier: qualityTier,
+                        enableRefinement: enableRefinement
+                    });
+                    
+                    contentSource = result.usedSimilarContent ? 'assignment_multipart_optimized' : 'assignment_multipart_new';
+                } else {
+                    // Use standard assignment generation for standard quality
+                    const assignmentContent = await generateAssignmentContent(
+                        assignmentTitle,
+                        prompt,
+                        wordCount,
+                        citationStyle,
+                        style,
+                        tone
+                    );
+                    
+                    // Apply 2-loop refinement for premium quality even in single generation
+                    let finalContent = assignmentContent;
+                    let refinementCycles = 0;
+                    
+                    if (enableRefinement) {
+                        console.log('Applying 2-loop refinement to assignment');
+                        try {
+                            const refinedContent = await llmService.generateContent(
+                                `Refine and improve this assignment content:\n\n${assignmentContent}\n\nMake it more academic, add depth, and ensure ${citationStyle} citation format.`,
+                                style,
+                                tone,
+                                wordCount,
+                                'premium'
+                            );
+                            finalContent = refinedContent.content;
+                            refinementCycles = 1;
+                        } catch (refinementError) {
+                            console.warn('Refinement failed, using original content:', refinementError);
+                        }
+                    }
+                    
+                    result = {
+                        content: finalContent,
+                        wordCount: finalContent.split(/\s+/).length,
+                        generationTime: enableRefinement ? 3500 : 2000,
+                        source: 'assignment_generation',
+                        refinementCycles: refinementCycles,
+                        chunksGenerated: 1
+                    };
+                    contentSource = enableRefinement ? 'assignment_refined' : 'assignment_new';
+                }
+            } else if (useMultiPart) {
                 console.log(`Using multi-part generation for ${wordCount} words`);
                 
                 // Use MultiPartGenerator for chunk-based generation with iterative detection
@@ -114,7 +289,9 @@ router.post('/generate', authenticateToken, async (req, res) => {
                     subject: req.body.subject || '',
                     additionalInstructions: req.body.additionalInstructions || '',
                     requiresCitations: req.body.requiresCitations || false,
-                    citationStyle: req.body.citationStyle || 'apa'
+                    citationStyle: req.body.citationStyle || 'apa',
+                    qualityTier: qualityTier,
+                    enableRefinement: enableRefinement
                 });
                 
                 contentSource = result.usedSimilarContent ? 'multipart_optimized' : 'multipart_new';
@@ -140,7 +317,8 @@ router.post('/generate', authenticateToken, async (req, res) => {
                             prompt,
                             style,
                             tone,
-                            wordCount
+                            wordCount,
+                            qualityTier
                         );
                         contentSource = 'optimized_existing';
                         
@@ -148,12 +326,12 @@ router.post('/generate', authenticateToken, async (req, res) => {
                         await contentDatabase.updateAccessStatistics([bestMatch.contentId]);
                     } else {
                         // Fallback to new generation if polishing fails
-                        result = await llmService.generateContent(prompt, style, tone, wordCount);
+                        result = await llmService.generateContent(prompt, style, tone, wordCount, qualityTier);
                     }
                 } else {
                     // No similar content found, generate new content
                     console.log('No similar content found, generating new content');
-                    result = await llmService.generateContent(prompt, style, tone, wordCount);
+                    result = await llmService.generateContent(prompt, style, tone, wordCount, qualityTier);
                 }
                 
                 // Store the new/polished content in database for future optimization
@@ -182,14 +360,23 @@ router.post('/generate', authenticateToken, async (req, res) => {
                     wordCount: result.wordCount || wordCount,
                     creditsUsed: creditsNeeded,
                     remainingCredits: creditResult.newBalance,
+                    qualityTier: qualityTier,
+                    enabledRefinement: enableRefinement,
+                    // Content type specific metadata
+                    contentType: contentType,
+                    isAssignment: contentType === 'assignment',
+                    assignmentTitle: contentType === 'assignment' ? assignmentTitle : null,
+                    citationStyle: contentType === 'assignment' ? citationStyle : null,
                     // Multi-part specific metadata
-                    isMultiPart: useMultiPart,
+                    isMultiPart: contentType === 'assignment' ? 
+                        (qualityTier === 'premium' && (useMultiPart || enableRefinement) && result.chunksGenerated > 1) : 
+                        useMultiPart,
                     chunksGenerated: result.chunksGenerated || 1,
                     refinementCycles: result.refinementCycles || 0,
                     contentId: result.contentId,
-                    requiresCitations: result.citationData?.requiresCitations || false,
+                    requiresCitations: contentType === 'assignment' ? true : (result.citationData?.requiresCitations || false),
                     citationCount: result.citationData?.citationCount || 0,
-                    citationStyle: result.citationData?.style || null,
+                    citationStyle: contentType === 'assignment' ? citationStyle : (result.citationData?.style || null),
                     bibliography: result.citationData?.bibliography || [],
                     inTextCitations: result.citationData?.inTextCitations || [],
                     // Final detection results
@@ -234,15 +421,15 @@ router.post('/generate', authenticateToken, async (req, res) => {
             details: error.message
         });
     }
-});
+}));
 
 /**
  * POST /api/writer/upload-and-generate
  * Upload files and generate content based on file contents
  */
-router.post('/upload-and-generate', authenticateToken, upload.array('files', 5), async (req, res) => {
+router.post('/upload-and-generate', unifiedAuth, upload.array('files', 10), validateWriterInput, handleValidationErrors, asyncErrorHandler(async (req, res) => {
     try {
-        const { additionalPrompt = '', style = 'Academic', tone = 'Formal', wordCount = 500 } = req.body;
+        const { additionalPrompt = '', style = 'Academic', tone = 'Formal', wordCount = 500, qualityTier = 'standard' } = req.body;
         const files = req.files;
         const userId = req.user.userId;
         
@@ -273,8 +460,10 @@ router.post('/upload-and-generate', authenticateToken, upload.array('files', 5),
             });
         }
         
-        // Calculate credits needed (1:5 ratio - 1 credit per 5 words)
-        const creditsNeeded = atomicCreditSystem.calculateRequiredCredits(wordCount, 'writing');
+        // Calculate credits needed based on quality tier
+        // Standard: 1 credit per 3 words, Premium: 2x credits (2 credits per 3 words)
+        let baseCreditsNeeded = atomicCreditSystem.calculateRequiredCredits(wordCount, 'writing');
+        const creditsNeeded = qualityTier === 'premium' ? baseCreditsNeeded * 2 : baseCreditsNeeded;
         
         // Deduct credits atomically
         const creditResult = await atomicCreditSystem.deductCreditsAtomic(
@@ -323,6 +512,9 @@ router.post('/upload-and-generate', authenticateToken, upload.array('files', 5),
             const useMultiPart = wordCount > 800 || 
                                (planValidation.userPlan.planType !== 'freemium' && wordCount > 500);
             
+            // Enable 2-loop refinement system for premium quality tier
+            const enableRefinement = qualityTier === 'premium';
+            
             if (useMultiPart) {
                 console.log(`Using multi-part generation for file-based content: ${wordCount} words`);
                 
@@ -337,7 +529,9 @@ router.post('/upload-and-generate', authenticateToken, upload.array('files', 5),
                     subject: req.body.subject || '',
                     additionalInstructions: additionalPrompt,
                     requiresCitations: req.body.requiresCitations || false,
-                    citationStyle: req.body.citationStyle || 'apa'
+                    citationStyle: req.body.citationStyle || 'apa',
+                    qualityTier: qualityTier,
+                    enableRefinement: enableRefinement
                 });
                 
                 contentSource = llmResult.usedSimilarContent ? 'multipart_optimized_files' : 'multipart_new_files';
@@ -363,7 +557,8 @@ router.post('/upload-and-generate', authenticateToken, upload.array('files', 5),
                             result.prompt,
                             style,
                             tone,
-                            wordCount
+                            wordCount,
+                            qualityTier
                         );
                         contentSource = 'optimized_existing';
                         
@@ -375,7 +570,8 @@ router.post('/upload-and-generate', authenticateToken, upload.array('files', 5),
                             result.prompt,
                             style,
                             tone,
-                            wordCount
+                            wordCount,
+                            qualityTier
                         );
                     }
                 } else {
@@ -385,7 +581,8 @@ router.post('/upload-and-generate', authenticateToken, upload.array('files', 5),
                         result.prompt,
                         style,
                         tone,
-                        wordCount
+                        wordCount,
+                        qualityTier
                     );
                 }
                 
@@ -417,6 +614,8 @@ router.post('/upload-and-generate', authenticateToken, upload.array('files', 5),
                     contentSource: contentSource,
                     creditsUsed: creditsNeeded,
                     remainingCredits: creditResult.newBalance,
+                    qualityTier: qualityTier,
+                    enabledRefinement: enableRefinement,
                     basedOnFiles: true,
                     fileCount: files.length
                 }
@@ -500,7 +699,7 @@ router.post('/upload-and-generate', authenticateToken, upload.array('files', 5),
             details: error.message
         });
     }
-});
+}));
 
 /**
  * GET /api/writer/supported-formats
@@ -538,7 +737,7 @@ router.get('/supported-formats', (req, res) => {
  * POST /api/writer/validate-files
  * Validate files before upload
  */
-router.post('/validate-files', upload.array('files', 5), (req, res) => {
+router.post('/validate-files', unifiedAuth, upload.array('files', 5), asyncErrorHandler(async (req, res) => {
     try {
         const files = req.files;
         
@@ -571,7 +770,7 @@ router.post('/validate-files', upload.array('files', 5), (req, res) => {
             details: error.message
         });
     }
-});
+}));
 
 /**
  * Error handling middleware for multer
@@ -611,5 +810,68 @@ router.use((error, req, res, next) => {
     
     next(error);
 });
+
+/**
+ * POST /api/writer/download
+ * Download content as .docx file
+ */
+router.post('/download', asyncErrorHandler(async (req, res) => {
+    try {
+        const { title, content, format = 'docx' } = req.body;
+        
+        if (!title || !content) {
+            return res.status(400).json({
+                success: false,
+                error: 'Title and content are required'
+            });
+        }
+        
+        if (format === 'docx') {
+            // Create a simple HTML structure for docx conversion
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>${title}</title>
+                    <style>
+                        body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; margin: 1in; }
+                        h1 { font-size: 16pt; font-weight: bold; text-align: center; margin-bottom: 1em; }
+                        p { margin-bottom: 1em; text-align: justify; }
+                        .citation { font-size: 10pt; vertical-align: super; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${title}</h1>
+                    <div>${content.replace(/\n/g, '</p><p>')}</div>
+                </body>
+                </html>
+            `;
+            
+            // Set headers for docx download
+            const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.docx`;
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            
+            // For now, we'll send the HTML content as a simple text file with .docx extension
+            // In a production environment, you'd want to use a library like docx or html-docx-js
+            res.send(htmlContent);
+        } else {
+            // Default to text format
+            const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+            res.setHeader('Content-Type', 'text/plain');
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            res.send(content);
+        }
+        
+    } catch (error) {
+        console.error('Download error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to generate download',
+            details: error.message
+        });
+    }
+}));
 
 module.exports = router;

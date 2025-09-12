@@ -1,9 +1,19 @@
 const admin = require('firebase-admin');
 const { v4: uuidv4 } = require('uuid');
+const { logger } = require('../utils/logger');
 
 class ContentHistoryService {
   constructor() {
-    this.db = admin.firestore();
+    // Handle Firebase initialization in mock mode
+    try {
+      this.db = admin.firestore();
+    } catch (error) {
+      logger.warn('Firebase not initialized, using mock database for content history', {
+        service: 'ContentHistory',
+        method: 'constructor'
+      });
+      this.db = null;
+    }
   }
 
   /**
@@ -14,6 +24,20 @@ class ContentHistoryService {
    */
   async saveContentToHistory(userId, contentData) {
     try {
+      // Handle mock mode
+      if (!this.db) {
+        logger.info('Mock: Would save content to history for user', {
+          service: 'ContentHistory',
+          method: 'saveContentToHistory',
+          userId
+        });
+        return {
+          success: true,
+          contentId: 'mock-content-' + Date.now(),
+          message: 'Content saved to history (mock mode)'
+        };
+      }
+      
       const contentId = uuidv4();
       const timestamp = admin.firestore.FieldValue.serverTimestamp();
       
@@ -101,7 +125,13 @@ class ContentHistoryService {
       };
       
     } catch (error) {
-      console.error('Content history save error:', error);
+      logger.error('Content history save error', {
+        service: 'ContentHistory',
+        method: 'saveContentToHistory',
+        userId,
+        error: error.message,
+        stack: error.stack
+      });
       throw new Error(`Failed to save content to history: ${error.message}`);
     }
   }
@@ -193,7 +223,12 @@ class ContentHistoryService {
       };
       
     } catch (error) {
-      console.error('Content history retrieval error:', error);
+      logger.error('Content history retrieval error', {
+        service: 'ContentHistory',
+        method: 'getUserContentHistory',
+        userId,
+        error: error.message
+      });
       throw new Error(`Failed to retrieve content history: ${error.message}`);
     }
   }
@@ -235,7 +270,13 @@ class ContentHistoryService {
       };
       
     } catch (error) {
-      console.error('Content retrieval error:', error);
+      logger.error('Content retrieval error', {
+        service: 'ContentHistory',
+        method: 'getContentById',
+        userId,
+        contentId,
+        error: error.message
+      });
       throw new Error(`Failed to retrieve content: ${error.message}`);
     }
   }
@@ -283,7 +324,13 @@ class ContentHistoryService {
       };
       
     } catch (error) {
-      console.error('Content update error:', error);
+      logger.error('Content update error', {
+        service: 'ContentHistory',
+        method: 'updateContent',
+        userId,
+        contentId,
+        error: error.message
+      });
       throw new Error(`Failed to update content: ${error.message}`);
     }
   }
@@ -317,7 +364,13 @@ class ContentHistoryService {
       };
       
     } catch (error) {
-      console.error('Content deletion error:', error);
+      logger.error('Content deletion error', {
+        service: 'ContentHistory',
+        method: 'deleteContent',
+        userId,
+        contentId,
+        error: error.message
+      });
       throw new Error(`Failed to delete content: ${error.message}`);
     }
   }
@@ -346,7 +399,12 @@ class ContentHistoryService {
       return statsDoc.data();
       
     } catch (error) {
-      console.error('Statistics retrieval error:', error);
+      logger.error('Statistics retrieval error', {
+        service: 'ContentHistory',
+        method: 'getUserStatistics',
+        userId,
+        error: error.message
+      });
       return {};
     }
   }
@@ -406,7 +464,12 @@ class ContentHistoryService {
       });
       
     } catch (error) {
-      console.error('Statistics update error:', error);
+      logger.error('Statistics update error', {
+        service: 'ContentHistory',
+        method: 'updateUserStatistics',
+        userId,
+        error: error.message
+      });
     }
   }
 
@@ -421,7 +484,12 @@ class ContentHistoryService {
         lastViewedAt: admin.firestore.FieldValue.serverTimestamp()
       });
     } catch (error) {
-      console.error('View statistics update error:', error);
+      logger.error('View statistics update error', {
+        service: 'ContentHistory',
+        method: 'updateViewStatistics',
+        contentId,
+        error: error.message
+      });
     }
   }
 

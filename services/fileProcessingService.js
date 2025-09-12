@@ -129,7 +129,8 @@ class FileProcessingService {
         // const data = await pdfParse(file.buffer);
         // return data.text;
         
-        return `[PDF Content Extracted from ${file.originalname}]\n\nThis is simulated PDF content extraction. The document contains:\n\n- Executive summary and key findings\n- Detailed analysis and methodology\n- Supporting data and references\n- Conclusions and recommendations\n\nNote: In production, this would contain the actual extracted text from the PDF file using a PDF parsing library.`;
+        // TODO: Implement actual PDF parsing using pdf-parse library
+        throw new Error('PDF extraction requires backend integration with pdf-parse library');
     }
 
     /**
@@ -145,7 +146,8 @@ class FileProcessingService {
         // const result = await mammoth.extractRawText({buffer: file.buffer});
         // return result.value;
         
-        return `[DOCX Content Extracted from ${file.originalname}]\n\nThis is simulated DOCX content extraction. The document contains:\n\n- Structured headings and paragraphs\n- Formatted text and bullet points\n- Tables and data sections\n- References and citations\n\nNote: In production, this would contain the actual extracted text from the DOCX file using a document parsing library.`;
+        // TODO: Implement actual DOCX parsing using mammoth library
+        throw new Error('DOCX extraction requires backend integration with mammoth library');
     }
 
     /**
@@ -253,7 +255,8 @@ class FileProcessingService {
         const fileNames = extractedContent.map(f => f.filename).join(', ');
         const fileTypes = [...new Set(extractedContent.map(f => f.type))].join(', ');
         
-        return `# Comprehensive Analysis Based on Uploaded Documents\n\n## Executive Summary\n\nThis analysis synthesizes information from ${extractedContent.length} uploaded document(s): ${fileNames}. The documents (${fileTypes}) provide valuable insights that have been processed and analyzed to generate this comprehensive content.\n\n## Key Findings\n\nBased on the uploaded materials, several important themes and insights emerge:\n\n### Primary Insights\n- The documents reveal significant patterns and trends relevant to the subject matter\n- Cross-referencing the materials shows consistent themes and supporting evidence\n- The analysis indicates opportunities for further development and implementation\n\n### Supporting Evidence\n- Document analysis shows strong correlation between stated objectives and outcomes\n- The materials provide comprehensive coverage of the topic with detailed explanations\n- Multiple perspectives are presented, offering a well-rounded view of the subject\n\n## Detailed Analysis\n\n### Methodology and Approach\nThe uploaded documents demonstrate a systematic approach to the subject matter. The analysis reveals:\n\n1. **Structured Framework**: The materials follow a logical progression of ideas\n2. **Evidence-Based Conclusions**: Claims are supported by relevant data and examples\n3. **Comprehensive Coverage**: Multiple aspects of the topic are addressed thoroughly\n\n### Implementation Considerations\nBased on the document analysis, several implementation factors should be considered:\n\n- **Resource Requirements**: The materials indicate specific resource needs\n- **Timeline Considerations**: Suggested timelines and milestones are outlined\n- **Risk Assessment**: Potential challenges and mitigation strategies are identified\n\n## Recommendations\n\nBased on the comprehensive analysis of the uploaded documents:\n\n1. **Immediate Actions**: Prioritize the most critical elements identified in the materials\n2. **Medium-term Goals**: Develop strategies for addressing secondary objectives\n3. **Long-term Vision**: Align activities with the overarching goals presented\n\n## Conclusion\n\nThe uploaded documents provide a solid foundation for understanding and advancing the subject matter. The analysis reveals both opportunities and challenges, with clear pathways for moving forward. The synthesized information offers actionable insights that can guide decision-making and implementation efforts.\n\n---\n\n*This content was generated based on analysis of uploaded documents: ${fileNames}*`;
+        // TODO: Replace with actual Gemini API integration
+        throw new Error('Content generation requires backend integration with Gemini API service');
     }
 
     /**

@@ -3,6 +3,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const admin = require('firebase-admin');
 const AtomicCreditSystem = require('./atomicCreditSystem');
 const PlanValidator = require('./planValidator');
+const { logger } = require('../utils/logger');
 
 class DetectorService {
   constructor() {
@@ -17,7 +18,17 @@ class DetectorService {
     this.genAI = new GoogleGenerativeAI(this.geminiApiKey);
     this.atomicCredit = new AtomicCreditSystem();
     this.planValidator = new PlanValidator();
-    this.db = admin.firestore();
+    
+    // Initialize Firebase database with proper error handling
+    try {
+      this.db = admin.firestore();
+    } catch (error) {
+      logger.warn('Firebase not initialized, using mock database for detector service', {
+        service: 'DetectorService',
+        error: error.message
+      });
+      this.db = null;
+    }
     
     // Credit costs - now handled by AtomicCreditSystem
     // Detection: 50 credits per 1000 words
@@ -121,7 +132,14 @@ class DetectorService {
       }
 
     } catch (error) {
-      console.error('Content analysis error:', error);
+      logger.error('Content analysis failed', {
+        service: 'DetectorService',
+        method: 'analyzeContent',
+        userId,
+        wordCount: this.calculateWordCount(content),
+        error: error.message,
+        stack: error.stack
+      });
       throw new Error(`Analysis failed: ${error.message}`);
     }
   }
@@ -130,6 +148,11 @@ class DetectorService {
    * Detect plagiarism using Originality.ai
    */
   async detectPlagiarism(content) {
+    // Check if API key is configured
+    if (!this.originalityApiKey || this.originalityApiKey === 'your_originality_api_key') {
+      throw new Error('Plagiarism detection service is not configured. Please contact support to enable this feature.');
+    }
+
     try {
       const response = await axios.post(
         `${this.originalityBaseUrl}/scan/plagiarism`,
@@ -156,7 +179,12 @@ class DetectorService {
         status: result.score.original > 0.7 ? 'low_risk' : result.score.original > 0.4 ? 'medium_risk' : 'high_risk'
       };
     } catch (error) {
-      console.error('Plagiarism detection error:', error);
+      logger.error('Plagiarism detection failed', {
+        service: 'DetectorService',
+        method: 'detectPlagiarism',
+        error: error.message,
+        hasApiKey: !!this.originalityApiKey
+      });
       throw new Error('Plagiarism detection failed');
     }
   }
@@ -165,6 +193,11 @@ class DetectorService {
    * Detect AI-generated content using Originality.ai
    */
   async detectAIContent(content) {
+    // Check if API key is configured
+    if (!this.originalityApiKey || this.originalityApiKey === 'your_originality_api_key') {
+      throw new Error('AI content detection service is not configured. Please contact support to enable this feature.');
+    }
+
     try {
       const response = await axios.post(
         `${this.originalityBaseUrl}/scan/ai`,
@@ -190,7 +223,12 @@ class DetectorService {
         status: result.score.ai < 0.3 ? 'likely_human' : result.score.ai < 0.7 ? 'mixed' : 'likely_ai'
       };
     } catch (error) {
-      console.error('AI detection error:', error);
+      logger.error('AI detection failed', {
+        service: 'DetectorService',
+        method: 'detectAIContent',
+        error: error.message,
+        hasApiKey: !!this.originalityApiKey
+      });
       throw new Error('AI content detection failed');
     }
   }
@@ -225,7 +263,12 @@ class DetectorService {
         readingLevel: this.getReadingLevel(result.readability?.averageGradeLevel || 0)
       };
     } catch (error) {
-      console.error('Readability analysis error:', error);
+      logger.error('Readability analysis failed', {
+        service: 'DetectorService',
+        method: 'analyzeReadability',
+        error: error.message,
+        contentLength: content.length
+      });
       // Return basic readability metrics if API fails
       return this.calculateBasicReadability(content);
     }
@@ -303,9 +346,9 @@ class DetectorService {
       // Deduct credits atomically for content generation
       const creditResult = await this.atomicCredit.deductCreditsAtomic(
         userId,
-        wordCount, // Pass word count for 1:10 ratio
+        creditsNeeded, // Pass credits needed for generation
         planValidation.userPlan.planType,
-        'detector' // Use detector generation ratio (1:10)
+        'detector'
       );
 
       if (!creditResult.success) {
@@ -351,7 +394,14 @@ class DetectorService {
       }
 
     } catch (error) {
-      console.error('Content removal error:', error);
+      logger.error('Content removal failed', {
+        service: 'DetectorService',
+        method: 'removeDetectedIssues',
+        userId,
+        wordCount: this.calculateWordCount(content),
+        error: error.message,
+        stack: error.stack
+      });
       throw new Error(`Content improvement failed: ${error.message}`);
     }
   }
@@ -391,13 +441,25 @@ class DetectorService {
    */
   async storeDetectorResult(data) {
     try {
+      if (!this.db) {
+        logger.warn('Firebase not available, skipping detector result storage', {
+          service: 'DetectorService',
+          method: 'storeDetectorResult'
+        });
+        return 'mock-id-' + Date.now();
+      }
       const docRef = await this.db.collection('detectorResults').add({
         ...data,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
       return docRef.id;
     } catch (error) {
-      console.error('Error storing detector result:', error);
+      logger.error('Failed to store detector result', {
+        service: 'DetectorService',
+        method: 'storeDetectorResult',
+        userId: data.userId,
+        error: error.message
+      });
       throw error;
     }
   }
@@ -407,13 +469,25 @@ class DetectorService {
    */
   async storeDetectorRemoval(data) {
     try {
+      if (!this.db) {
+        logger.warn('Firebase not available, skipping detector removal storage', {
+          service: 'DetectorService',
+          method: 'storeDetectorRemoval'
+        });
+        return 'mock-id-' + Date.now();
+      }
       const docRef = await this.db.collection('detectorRemovals').add({
         ...data,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
       return docRef.id;
     } catch (error) {
-      console.error('Error storing detector removal:', error);
+      logger.error('Failed to store detector removal', {
+        service: 'DetectorService',
+        method: 'storeDetectorRemoval',
+        userId: data.userId,
+        error: error.message
+      });
       throw error;
     }
   }
@@ -424,7 +498,7 @@ class DetectorService {
    */
   async detectAndRemoveWorkflow(userId, content, options = {}) {
     try {
-      // Step 1: Initial detection (charges 50 credits per 1000 words)
+      // Step 1: Initial detection (charges 100 credits per 1000 words - 1:10 ratio)
       const initialDetection = await this.analyzeContent(userId, content, options);
       
       if (!this.hasDetectedIssues(initialDetection.results)) {
@@ -452,12 +526,12 @@ class DetectorService {
         throw new Error(planValidation.error || 'Plan validation failed');
       }
 
-      // Deduct credits for the entire removal process (1:10 ratio)
+      // Deduct credits for the entire removal process (1:5 ratio)
       const removalCreditResult = await this.atomicCredit.deductCreditsAtomic(
         userId,
-        detectedWordCount, // Pass detected word count for 1:10 ratio
+        generationCredits, // Pass credits needed for generation
         planValidation.userPlan.planType,
-        'detector' // Use detector generation ratio
+        'detector'
       );
 
       if (!removalCreditResult.success) {
@@ -524,7 +598,14 @@ class DetectorService {
       }
 
     } catch (error) {
-      console.error('Detect and remove workflow error:', error);
+      logger.error('Detect and remove workflow failed', {
+        service: 'DetectorService',
+        method: 'detectAndRemoveWorkflow',
+        userId,
+        contentLength: content.length,
+        error: error.message,
+        stack: error.stack
+      });
       throw new Error(`Workflow failed: ${error.message}`);
     }
   }
@@ -606,13 +687,25 @@ class DetectorService {
    */
   async storeWorkflowResult(data) {
     try {
+      if (!this.db) {
+        logger.warn('Firebase not available, skipping workflow result storage', {
+          service: 'DetectorService',
+          method: 'storeWorkflowResult'
+        });
+        return 'mock-id-' + Date.now();
+      }
       const docRef = await this.db.collection('detectorWorkflows').add({
         ...data,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
       return docRef.id;
     } catch (error) {
-      console.error('Error storing workflow result:', error);
+      logger.error('Failed to store workflow result', {
+        service: 'DetectorService',
+        method: 'storeWorkflowResult',
+        userId: data.userId,
+        error: error.message
+      });
       throw error;
     }
   }
@@ -622,6 +715,13 @@ class DetectorService {
    */
   async getDetectionHistory(userId, limit = 10) {
     try {
+      if (!this.db) {
+        logger.warn('Firebase not available, returning empty detection history', {
+          service: 'DetectorService',
+          method: 'getDetectionHistory'
+        });
+        return [];
+      }
       const snapshot = await this.db.collection('detectorResults')
         .where('userId', '==', userId)
         .orderBy('createdAt', 'desc')
@@ -633,10 +733,15 @@ class DetectorService {
         ...doc.data()
       }));
     } catch (error) {
-      console.error('Error fetching detection history:', error);
+      logger.error('Failed to fetch detection history', {
+        service: 'DetectorService',
+        method: 'getDetectionHistory',
+        userId,
+        error: error.message
+      });
       throw new Error('Failed to fetch detection history');
     }
   }
 }
 
-module.exports = { DetectorService };
+module.exports = DetectorService;

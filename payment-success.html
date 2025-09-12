@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - AI Research Assistant</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-light: #718096;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7fafc;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--success-gradient);
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            background: var(--success-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: successPulse 2s ease-in-out infinite;
+        }
+
+        .success-icon svg {
+            width: 40px;
+            height: 40px;
+            color: white;
+        }
+
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .success-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        .success-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .payment-details {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .payment-details h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .credits-info {
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .credits-info h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .credits-info p {
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: var(--text-light);
+            margin-top: 20px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 640px) {
+            .success-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            .success-title {
+                font-size: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+
+        <h1 class="success-title">Payment Successful!</h1>
+        <p class="success-subtitle">
+            Thank you for your purchase. Your payment has been processed successfully and your credits have been added to your account.
+        </p>
+
+        <div class="payment-details">
+            <h3>Payment Details</h3>
+            <div class="detail-row">
+                <span class="detail-label">Plan:</span>
+                <span class="detail-value" id="plan-name">Pro Plan</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Credits Added:</span>
+                <span class="detail-value" id="credits-amount">2,000 credits</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Amount Paid:</span>
+                <span class="detail-value" id="amount-paid">$9.99</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Payment ID:</span>
+                <span class="detail-value" id="payment-id">Loading...</span>
+            </div>
+        </div>
+
+        <div class="credits-info">
+            <h4>🎉 Credits Added Successfully</h4>
+            <p>Your new credits are now available in your account and ready to use for AI research assistance, document analysis, and more!</p>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            Updating your account...
+        </div>
+
+        <div class="action-buttons">
+            <a href="dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+            <a href="payment.html" class="btn btn-secondary">Buy More Credits</a>
+        </div>
+    </div>
+
+    <script>
+        // Extract payment details from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentIntentId = urlParams.get('payment_intent');
+        const planType = urlParams.get('plan') || 'pro';
+
+        // Plan configurations
+        const planConfigs = {
+            pro: {
+                name: 'Pro Plan',
+                credits: '2,000 credits',
+                amount: '$9.99'
+            },
+            custom: {
+                name: 'Custom Plan',
+                credits: '3,300 credits',
+                amount: '$15.00'
+            }
+        };
+
+        // Update page content based on plan
+        function updatePaymentDetails() {
+            const config = planConfigs[planType] || planConfigs.pro;
+            
+            document.getElementById('plan-name').textContent = config.name;
+            document.getElementById('credits-amount').textContent = config.credits;
+            document.getElementById('amount-paid').textContent = config.amount;
+            
+            if (paymentIntentId) {
+                document.getElementById('payment-id').textContent = paymentIntentId;
+            } else {
+                document.getElementById('payment-id').textContent = 'N/A';
+            }
+        }
+
+        // Simulate account update (in real implementation, this would be handled by webhook)
+        function simulateAccountUpdate() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            
+            setTimeout(() => {
+                loading.style.display = 'none';
+                // In real implementation, you might want to verify the payment status
+                // and update the user's credit balance via API call
+            }, 2000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePaymentDetails();
+            
+            // Only simulate update if we have a payment intent ID
+            if (paymentIntentId) {
+                simulateAccountUpdate();
+            }
+        });
+
+        // Optional: Verify payment status with backend
+        async function verifyPaymentStatus() {
+            if (!paymentIntentId) return;
+            
+            try {
+                const response = await fetch(`/api/payments/verify/${paymentIntentId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Payment verified:', data);
+                    // Update UI based on verification result
+                }
+            } catch (error) {
+                console.error('Payment verification failed:', error);
+            }
+        }
+
+        // Call verification if needed
+        // verifyPaymentStatus();
+    </script>
+</body>
+</html>

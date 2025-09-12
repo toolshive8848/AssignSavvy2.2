@@ -50,6 +50,8 @@ The server will start on `http://localhost:5000` (or your configured PORT).
 
 ### Available Tools (All Unlocked)
 - **AI Writer**: Generate academic content with multiple AI models
+  - **Standard Generation**: Fast content generation with standard quality (available for all users)
+  - **Premium Generation**: Enhanced quality with 2-loop refinement system (Pro/Custom plans only, 2x credits)
 - **Researcher**: AI-powered research and citation generation
 - **Detector**: Plagiarism and AI content detection
 - **Prompt Engineer**: Optimize prompts for better AI responses
@@ -68,7 +70,8 @@ The server will start on `http://localhost:5000` (or your configured PORT).
 - `GET /api/auth/profile` - Get user profile
 
 ### Tools
-- `POST /api/writer/generate` - Generate content
+- `POST /api/writer/generate` - Generate content (supports `qualityTier`: 'standard' or 'premium')
+- `POST /api/writer/upload-and-generate` - Generate content from uploaded files (supports `qualityTier`)
 - `POST /api/research/search` - Research topics
 - `POST /api/detector/check` - Check for plagiarism/AI content
 - `POST /api/prompt/optimize` - Optimize prompts
@@ -103,10 +106,11 @@ See `.env.example` for all available configuration options:
 - **Custom Plans**: Configurable credit rates
 
 ### Tool Credit Costs
-- Writing: 1 credit per word
-- Research: 2 credits per word
-- Detection: 1.5 credits per word
-- Prompt Engineering: 0.5 credits per word
+- **Writing (Standard)**: 1 credit per 3 words (available for all users)
+- **Writing (Premium)**: 2 credits per 3 words (Pro/Custom plans only, includes 2-loop refinement system)
+- **Research**: 1 credit per 5 words
+- **Detection**: 1 credit per 5 words
+- **Prompt Engineering**: 0.5 credits per word
 
 ## Production Deployment
 

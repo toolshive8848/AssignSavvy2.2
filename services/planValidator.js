@@ -1,5 +1,6 @@
 const db = require('../database/db');
 const UsageTracker = require('./usageTracker');
+const { logger } = require('../utils/logger');
 
 /**
  * PlanValidator class handles user plan validation and freemium restrictions
@@ -90,10 +91,61 @@ class PlanValidator {
             };
 
         } catch (error) {
-            console.error('Error validating request:', error);
+            logger.error('Error validating request', {
+                service: 'PlanValidator',
+                method: 'validateRequest',
+                userId,
+                error: error.message
+            });
             return {
                 isValid: false,
                 error: 'Validation failed',
+                errorCode: 'VALIDATION_ERROR',
+                details: error.message
+            };
+        }
+    }
+
+    /**
+     * Validate user plan for specific tool access
+     * @param {number} userId - User ID
+     * @param {Object} options - Validation options
+     * @returns {Object} Validation result
+     */
+    async validateUserPlan(userId, options = {}) {
+        try {
+            const userPlan = await this.getUserPlan(userId);
+            if (!userPlan) {
+                return {
+                    isValid: false,
+                    error: 'User plan not found',
+                    errorCode: 'PLAN_NOT_FOUND'
+                };
+            }
+
+            // Add hasDetectorAccess property based on plan type
+            // Now all users have detector access with the new requirements
+            userPlan.hasDetectorAccess = true;
+            
+            // Add hasResearcherAccess property based on plan type
+            // Now all users have researcher access with credit-based system
+            userPlan.hasResearcherAccess = true;
+
+            return {
+                isValid: true,
+                userPlan
+            };
+
+        } catch (error) {
+            logger.error('Error validating user plan', {
+                service: 'PlanValidator',
+                method: 'validateUserPlan',
+                userId,
+                error: error.message
+            });
+            return {
+                isValid: false,
+                error: 'Plan validation failed',
                 errorCode: 'VALIDATION_ERROR',
                 details: error.message
             };
@@ -213,7 +265,12 @@ class PlanValidator {
             };
             
         } catch (error) {
-            console.error('Error validating monthly limits:', error);
+            logger.error('Error validating monthly limits', {
+                service: 'PlanValidator',
+                method: 'validateMonthlyLimits',
+                userId,
+                error: error.message
+            });
             return {
                 isValid: false,
                 error: 'Failed to validate monthly limits',
@@ -256,7 +313,12 @@ class PlanValidator {
             };
             
         } catch (error) {
-            console.error('Error validating credit availability:', error);
+            logger.error('Error validating credit availability', {
+                service: 'PlanValidator',
+                method: 'validateCreditAvailability',
+                userId,
+                error: error.message
+            });
             return {
                 isValid: false,
                 error: 'Failed to validate credit availability',
@@ -298,7 +360,12 @@ class PlanValidator {
             };
             
         } catch (error) {
-            console.error('Error getting user plan:', error);
+            logger.error('Error getting user plan', {
+                service: 'PlanValidator',
+                method: 'getUserPlan',
+                userId,
+                error: error.message
+            });
             throw error;
         }
     }
@@ -313,7 +380,12 @@ class PlanValidator {
         try {
             return await this.usageTracker.getMonthlyUsage(userId, month);
         } catch (error) {
-            console.error('Error getting monthly usage:', error);
+            logger.error('Error getting monthly usage', {
+                service: 'PlanValidator',
+                method: 'getMonthlyUsage',
+                userId,
+                error: error.message
+            });
             throw error;
         }
     }
@@ -342,7 +414,12 @@ class PlanValidator {
             };
             
         } catch (error) {
-            console.error('Error getting user credits:', error);
+            logger.error('Error getting user credits', {
+                service: 'PlanValidator',
+                method: 'getUserCredits',
+                userId,
+                error: error.message
+            });
             throw error;
         }
     }
@@ -357,10 +434,10 @@ class PlanValidator {
     estimateCreditsNeeded(wordCount, planType, toolType = 'writing') {
         // Credit ratios for different tools (purely credit-based, no plan multipliers)
         const ratios = {
-            writing: 5,              // 1 credit per 5 words for Writer/Assignments
-            research: 10,            // 1 credit per 10 words for Research Tool
+            writing: 3,              // 1 credit per 3 words for Writer/Assignments
+            research: 5,             // 1 credit per 5 words for Research Tool
             detector_detection: 0.05, // 50 credits per 1000 words for Detector Detection
-            detector_generation: 10,  // 1 credit per 10 words for Detector Generation
+            detector_generation: 5,   // 1 credit per 5 words for Detector Generation
             prompt_engineer: 100     // 1 credit per 100 words for Prompt Engineer
         };
         
@@ -409,7 +486,12 @@ class PlanValidator {
         try {
             return await this.usageTracker.recordUsage(userId, wordsGenerated, creditsUsed, metadata);
         } catch (error) {
-            console.error('Error recording usage:', error);
+            logger.error('Error recording usage', {
+                service: 'PlanValidator',
+                method: 'recordUsage',
+                userId,
+                error: error.message
+            });
             throw error;
         }
     }
@@ -424,7 +506,12 @@ class PlanValidator {
         try {
             return await this.usageTracker.getUserUsageHistory(userId, months);
         } catch (error) {
-            console.error('Error getting usage history:', error);
+            logger.error('Error getting usage history', {
+                service: 'PlanValidator',
+                method: 'getUserUsageHistory',
+                userId,
+                error: error.message
+            });
             throw error;
         }
     }

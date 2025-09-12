@@ -68,13 +68,11 @@ class ContentValidator {
             validation.issues.push('Content is too short (minimum 50 characters)');
         }
 
-        // Check for placeholder text
-        const placeholders = ['[placeholder]', '[content]', '[insert]', 'lorem ipsum'];
-        const hasPlaceholders = placeholders.some(placeholder => 
-            content.toLowerCase().includes(placeholder)
-        );
-        
-        if (hasPlaceholders) {
+        // Basic placeholder detection with fallback patterns
+        if (content.toLowerCase().includes('[placeholder]') || 
+            content.toLowerCase().includes('todo:') ||
+            content.toLowerCase().includes('tbd') ||
+            content.toLowerCase().includes('xxx')) {
             validation.isValid = false;
             validation.issues.push('Content contains placeholder text');
         }
@@ -180,7 +178,12 @@ class ContentValidator {
 
         // Formal tone checks
         if (tone === 'Formal') {
-            const informalWords = ['gonna', 'wanna', 'kinda', 'sorta', 'yeah', 'ok', 'okay'];
+            // Basic fallback informal words to ensure functionality
+            const informalWords = [
+                'gonna', 'wanna', 'gotta', 'kinda', 'sorta', 'dunno', 'yeah', 'nah',
+                'ok', 'okay', 'cool', 'awesome', 'super', 'really', 'very', 'pretty',
+                'stuff', 'things', 'guys', 'folks', 'basically', 'literally', 'actually'
+            ];
             const hasInformalWords = informalWords.some(word => 
                 content.toLowerCase().includes(word)
             );
@@ -265,6 +268,37 @@ class ContentValidator {
             const syllableCount = word.match(/[aeiouy]+/g)?.length || 1;
             return total + Math.max(1, syllableCount);
         }, 0);
+    }
+
+    /**
+     * Detect placeholder content in text
+     * @param {string} content - Content to check
+     * @returns {Object} Placeholder detection results
+     */
+    detectPlaceholders(content) {
+        const placeholderPatterns = [
+            /\[placeholder\]/gi,
+            /\[.*?\]/g,
+            /TODO:/gi,
+            /TBD/gi,
+            /XXX/gi,
+            /\{\{.*?\}\}/g,
+            /<.*?>/g
+        ];
+        
+        const foundPlaceholders = [];
+        placeholderPatterns.forEach(pattern => {
+            const matches = content.match(pattern);
+            if (matches) {
+                foundPlaceholders.push(...matches);
+            }
+        });
+        
+        return {
+            hasPlaceholders: foundPlaceholders.length > 0,
+            placeholders: foundPlaceholders,
+            count: foundPlaceholders.length
+        };
     }
 
     /**

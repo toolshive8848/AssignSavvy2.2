@@ -1,4 +1,5 @@
-const admin = require('firebase-admin');
+const { admin, db, isInitialized } = require('../config/firebase');
+const { logger } = require('../utils/logger');
 
 /**
  * AtomicCreditSystem class for handling credit calculations and atomic Firestore transactions
@@ -6,13 +7,14 @@ const admin = require('firebase-admin');
  */
 class AtomicCreditSystem {
     constructor() {
-        this.db = admin.firestore();
+        this.db = isInitialized ? db : null;
+        this.isInitialized = isInitialized;
         this.CREDIT_RATIOS = {
-            writing: 5,    // 1 credit per 5 words for writing/assignments
-            research: 10,  // 1 credit per 10 words for research
-            detector: 50,  // 50 credits per 1000 words for detection
-            detector_generation: 10, // 1 credit per 10 words for detector generation
-            prompt: 100    // 1 credit per 100 words for prompt engineer (after daily limit)
+            writing: 3,    // 1 credit per 3 words for writing/assignments
+            research: 5,   // 1 credit per 5 words for research
+            detector: 10,  // 1 credit per 10 words for detection
+            detector_generation: 5 // 1 credit per 5 words for detector generation/removal
+            // prompt engineering uses its own credit calculation in promptEngineerService
         };
         this.MAX_RETRY_ATTEMPTS = 3;
         this.RETRY_DELAY_MS = 100;
@@ -33,14 +35,28 @@ class AtomicCreditSystem {
         // Special handling for detector tool
         if (toolType === 'detector') {
             if (operation === 'detection') {
-                // 50 credits per 1000 words for detection
-                const requiredCredits = Math.ceil((requestedAmount / 1000) * this.CREDIT_RATIOS.detector);
-                console.log(`Credit calculation: ${requestedAmount} words = ${requiredCredits} credits (detector detection: 50 credits per 1000 words)`);
+                // 1 credit per 10 words for detection
+                const requiredCredits = Math.ceil(requestedAmount / this.CREDIT_RATIOS.detector);
+                logger.debug('Credit calculation for detector detection', {
+                    service: 'AtomicCreditSystem',
+                    toolType,
+                    operation,
+                    requestedAmount,
+                    requiredCredits,
+                    ratio: '1:10'
+                });
                 return requiredCredits;
             } else if (operation === 'generation') {
-                // 1 credit per 10 words for generation
+                // 1 credit per 5 words for generation/removal
                 const requiredCredits = Math.ceil(requestedAmount / this.CREDIT_RATIOS.detector_generation);
-                console.log(`Credit calculation: ${requestedAmount} words = ${requiredCredits} credits (detector generation: 1 credit per 10 words)`);
+                logger.debug('Credit calculation for detector generation', {
+                    service: 'AtomicCreditSystem',
+                    toolType,
+                    operation,
+                    requestedAmount,
+                    requiredCredits,
+                    ratio: '1:5'
+                });
                 return requiredCredits;
             }
         }
@@ -48,7 +64,13 @@ class AtomicCreditSystem {
         // For other tools, calculate credits from word count
         const ratio = this.CREDIT_RATIOS[toolType] || this.CREDIT_RATIOS.writing;
         const requiredCredits = Math.ceil(requestedAmount / ratio);
-        console.log(`Credit calculation: ${requestedAmount} words = ${requiredCredits} credits (ratio: 1:${ratio}, tool: ${toolType})`);
+        logger.debug('Credit calculation for tool', {
+            service: 'AtomicCreditSystem',
+            toolType,
+            requestedAmount,
+            requiredCredits,
+            ratio: `1:${ratio}`
+        });
         
         return requiredCredits;
     }
@@ -67,20 +89,59 @@ class AtomicCreditSystem {
         // For detector tool, requestedAmount is credits, so wordCount should be 0
         const wordCount = toolType === 'detector' ? 0 : requestedAmount;
         
+        // If Firebase is not initialized, return mock success
+        if (!this.isInitialized) {
+            logger.warn('Firebase not initialized, returning mock credit deduction', {
+                service: 'AtomicCreditSystem',
+                method: 'deductCreditsAtomic',
+                userId,
+                requiredCredits,
+                wordCount
+            });
+            return {
+                success: true,
+                mock: true,
+                creditsDeducted: requiredCredits,
+                remainingCredits: 200 - requiredCredits,
+                monthlyWordsUsed: wordCount,
+                toolType: toolType,
+                requestedAmount: requestedAmount
+            };
+        }
+        
         let attempt = 0;
         while (attempt < this.MAX_RETRY_ATTEMPTS) {
             try {
                 const result = await this.executeTransaction(userId, requiredCredits, wordCount, planType);
-                console.log(`Atomic credit deduction successful for user ${userId}: -${requiredCredits} credits, +${wordCount} monthly words`);
+                logger.info('Atomic credit deduction successful', {
+                    service: 'AtomicCreditSystem',
+                    method: 'deductCreditsAtomic',
+                    userId,
+                    creditsDeducted: requiredCredits,
+                    wordsAdded: wordCount,
+                    toolType
+                });
                 result.toolType = toolType;
                 result.requestedAmount = requestedAmount;
                 return result;
             } catch (error) {
                 attempt++;
-                console.warn(`Transaction attempt ${attempt} failed for user ${userId}:`, error.message);
+                logger.warn('Transaction attempt failed', {
+                    service: 'AtomicCreditSystem',
+                    method: 'deductCreditsAtomic',
+                    userId,
+                    attempt,
+                    error: error.message
+                });
                 
                 if (attempt >= this.MAX_RETRY_ATTEMPTS) {
-                    console.error(`All ${this.MAX_RETRY_ATTEMPTS} transaction attempts failed for user ${userId}`);
+                    logger.error('All transaction attempts failed', {
+                        service: 'AtomicCreditSystem',
+                        method: 'deductCreditsAtomic',
+                        userId,
+                        maxAttempts: this.MAX_RETRY_ATTEMPTS,
+                        finalError: error.message
+                    });
                     throw error;
                 }
                 
@@ -275,7 +336,13 @@ class AtomicCreditSystem {
                 };
             });
         } catch (error) {
-            console.error('Rollback transaction failed:', error);
+            logger.error('Rollback transaction failed', {
+                service: 'AtomicCreditSystem',
+                method: 'rollbackTransaction',
+                userId,
+                transactionId,
+                error: error.message
+            });
             throw new Error(`Rollback failed: ${error.message}`);
         }
     }
@@ -302,7 +369,12 @@ class AtomicCreditSystem {
                 lastCreditDeduction: userData.lastCreditDeduction?.toDate() || null
             };
         } catch (error) {
-            console.error('Error getting credit balance:', error);
+            logger.error('Error getting credit balance', {
+                service: 'AtomicCreditSystem',
+                method: 'getCreditBalance',
+                userId,
+                error: error.message
+            });
             throw error;
         }
     }
@@ -328,7 +400,13 @@ class AtomicCreditSystem {
                 timestamp: doc.data().timestamp?.toDate()
             }));
         } catch (error) {
-            console.error('Error getting transaction history:', error);
+            logger.error('Error getting transaction history', {
+                service: 'AtomicCreditSystem',
+                method: 'getTransactionHistory',
+                userId,
+                limit,
+                error: error.message
+            });
             throw error;
         }
     }
@@ -403,7 +481,14 @@ class AtomicCreditSystem {
                 };
             });
         } catch (error) {
-            console.error('Error refunding credits:', error);
+            logger.error('Error refunding credits', {
+                service: 'AtomicCreditSystem',
+                method: 'refundCredits',
+                userId,
+                creditsToRefund,
+                originalTransactionId,
+                error: error.message
+            });
             throw new Error(`Credit refund failed: ${error.message}`);
         }
     }
@@ -435,7 +520,12 @@ class AtomicCreditSystem {
                 }
             };
         } catch (error) {
-            console.error('Error validating transaction:', error);
+            logger.error('Error validating transaction', {
+                service: 'AtomicCreditSystem',
+                method: 'validateTransaction',
+                transactionId,
+                error: error.message
+            });
             return {
                 isValid: false,
                 error: error.message

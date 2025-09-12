@@ -1,393 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Writer - AssignSavvy</title>
-  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
-  <link rel="stylesheet" href="./styles/main.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-
-    
-    .writer-container {
-       display: flex;
-       flex: 1;
-       height: calc(100vh - 80px);
-       gap: 20px;
-       padding: 20px;
-     }
-     
-     .chat-section {
-       flex: 1;
-       display: flex;
-       flex-direction: column;
-       background: white;
-       border-radius: 12px;
-       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-       overflow: hidden;
-     }
-     
-     .content-panel {
-       flex: 1;
-       display: flex;
-       flex-direction: column;
-       background: white;
-       border-radius: 12px;
-       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-       overflow: hidden;
-     }
-    
-    .chat-messages {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background: transparent;
-      display: flex;
-      flex-direction: column;
-    }
-    
-
-    
-    .message {
-      margin-bottom: 20px;
-      display: flex;
-      align-items: flex-start;
-    }
-    
-    .message.user {
-      flex-direction: row-reverse;
-    }
-    
-    .message-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 12px;
-      font-size: 1.2rem;
-    }
-    
-    .message.user .message-avatar {
-      background: #3498db;
-      color: white;
-    }
-    
-    .message.assistant .message-avatar {
-      background: #e74c3c;
-      color: white;
-    }
-    
-    .message-content {
-      max-width: 70%;
-      padding: 12px 16px;
-      border-radius: 18px;
-      line-height: 1.4;
-    }
-    
-    .message.user .message-content {
-      background: #3498db;
-      color: white;
-    }
-    
-    .message.assistant .message-content {
-      background: #f1f3f4;
-      color: #2c3e50;
-    }
-    
-    .message-time {
-      font-size: 0.75rem;
-      color: #95a5a6;
-      margin-top: 4px;
-    }
-    
-    .chat-input-container {
-      padding: 20px;
-      background: transparent;
-      border-top: 1px solid #e9ecef;
-    }
-    
-    .chat-input-wrapper {
-      display: flex;
-      align-items: flex-end;
-      background: #f8f9fa;
-      border: 2px solid #e9ecef;
-      border-radius: 25px;
-      padding: 8px;
-      transition: border-color 0.3s ease;
-    }
-    
-    .chat-input-wrapper:focus-within {
-      border-color: #3498db;
-    }
-    
-    .file-upload-btn {
-      background: none;
-      border: none;
-      color: #6c757d;
-      font-size: 1.2rem;
-      padding: 8px 12px;
-      cursor: pointer;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-    }
-    
-    .file-upload-btn:hover {
-      background: #e9ecef;
-      color: #3498db;
-    }
-    
-    .chat-input {
-      flex: 1;
-      border: none;
-      background: none;
-      padding: 12px 16px;
-      font-size: 1rem;
-      resize: none;
-      outline: none;
-      max-height: 120px;
-      min-height: 20px;
-    }
-    
-    .send-btn {
-      background: #3498db;
-      border: none;
-      color: white;
-      padding: 10px 12px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background 0.3s ease;
-    }
-    
-    .send-btn:hover:not(:disabled) {
-      background: #2980b9;
-    }
-    
-    .send-btn:disabled {
-      background: #bdc3c7;
-      cursor: not-allowed;
-    }
-    
-    .content-panel {
-      width: 600px;
-      background: white;
-      border-left: 1px solid #e9ecef;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .panel-header {
-      padding: 20px;
-      border-bottom: 1px solid #e9ecef;
-      background: #f8f9fa;
-    }
-    
-    .panel-header h3 {
-      margin: 0;
-      color: #2c3e50;
-      font-size: 1.1rem;
-    }
-    
-    .panel-content {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .editor-toolbar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 15px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #e9ecef;
-    }
-    
-    .toolbar-btn {
-      background: none;
-      border: 1px solid #e9ecef;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      color: #6c757d;
-      transition: all 0.3s ease;
-    }
-    
-    .toolbar-btn:hover {
-      background: #f8f9fa;
-      color: #3498db;
-    }
-    
-    .content-editor {
-      width: 100%;
-      height: 400px;
-      border: 1px solid #e9ecef;
-      border-radius: 8px;
-      padding: 15px;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      resize: vertical;
-      outline: none;
-    }
-    
-    .content-editor:focus {
-      border-color: #3498db;
-    }
-    
-    .content-stats {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-      font-size: 0.85rem;
-      color: #6c757d;
-    }
-    
-    .uploaded-files {
-      margin-top: 15px;
-    }
-    
-    .file-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 12px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      margin-bottom: 8px;
-    }
-    
-    .file-info {
-      display: flex;
-      align-items: center;
-    }
-    
-    .file-info i {
-      margin-right: 8px;
-      color: #6c757d;
-    }
-    
-    .file-remove {
-      background: none;
-      border: none;
-      color: #dc3545;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 4px;
-    }
-    
-    .file-remove:hover {
-      background: #f8d7da;
-    }
-    
-    .typing-indicator {
-      display: none;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    
-    .typing-indicator .message-avatar {
-      background: #e74c3c;
-      color: white;
-    }
-    
-    .typing-dots {
-      background: #f1f3f4;
-      padding: 12px 16px;
-      border-radius: 18px;
-      display: flex;
-      gap: 4px;
-    }
-    
-    .typing-dot {
-      width: 8px;
-      height: 8px;
-      background: #95a5a6;
-      border-radius: 50%;
-      animation: typing 1.4s infinite;
-    }
-    
-    .typing-dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    
-    .typing-dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-    
-    @keyframes typing {
-      0%, 60%, 100% {
-        transform: translateY(0);
-        opacity: 0.5;
-      }
-      30% {
-        transform: translateY(-10px);
-        opacity: 1;
-      }
-    }
-    
-    .welcome-message {
-      text-align: center;
-      padding: 40px 20px;
-      color: #6c757d;
-    }
-    
-    .welcome-message h3 {
-      margin-bottom: 10px;
-      color: #2c3e50;
-    }
-    
-    .welcome-message p {
-      margin-bottom: 20px;
-    }
-    
-    .quick-prompts {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-    
-    .quick-prompt {
-      background: #f8f9fa;
-      border: 1px solid #e9ecef;
-      padding: 8px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.3s ease;
-    }
-    
-    .quick-prompt:hover {
-      background: #3498db;
-      color: white;
-      border-color: #3498db;
-    }
-    
-    @media (max-width: 768px) {
-       .writer-container {
-         flex-direction: column;
-         gap: 10px;
-         padding: 10px;
-       }
-       
-       .chat-section,
-       .content-panel {
-         flex: none;
-         height: 50vh;
-       }
-      
-
-      
-      .message-content {
-        max-width: 85%;
-      }
-    }
-  </style>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+  <link rel="stylesheet" href="./styles/main.css" />
+  <link rel="stylesheet" href="./styles/writer.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Temporarily disabled for preview -->
+  <script src="js/userSession.js"></script>
+  <script src="js/authCheck.js"></script>
 </head>
 <body>
   <div class="dashboard-layout">
@@ -397,10 +20,21 @@
         <button class="sidebar-toggle" id="sidebar-toggle">
           <i class="fas fa-bars"></i>
         </button>
-        <div class="logo">AssignSavvy</div>
+        <div class="topbar-logo">
+          AssignSavvy
+        </div>
       </div>
-      <div>AI Writer</div>
-      <a href="index.html" class="btn btn-outline">Back to Home</a>
+      <div class="topbar-title">Writer</div>
+      <div class="topbar-actions">
+        <button class="notification-btn" id="notification-btn">
+          <i class="fas fa-bell"></i>
+          <div class="notification-badge"></div>
+        </button>
+        <a href="index.html" class="home-btn">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </a>
+      </div>
     </div>
     
     <!-- Sidebar -->
@@ -428,7 +62,7 @@
         <li>
           <a href="detector.html" class="sidebar-nav-item">
             <i class="fas fa-shield-halved"></i>
-            <span>Detector</span>
+            <span>Originality Detector</span>
           </a>
         </li>
         <li>
@@ -452,11 +86,11 @@
             <i class="fas fa-user-circle"></i>
           </div>
           <div class="user-details">
-            <h4 id="user-name">John Doe</h4>
+            <h4 id="user-name">User Name</h4>
             <p class="user-plan" id="user-plan">Free Plan</p>
             <div class="user-credits">
               <i class="fas fa-coins"></i>
-              <span id="user-credits">145/200 Credits</span>
+              <span id="user-credits">Loading...</span>
             </div>
           </div>
         </div>
@@ -464,7 +98,14 @@
     </div>
     
     <!-- Main Content Area -->
-    <div class="dashboard-main">
+    <div class="dashboard-content">
+      <!-- Compact Header Section -->
+      <div class="section-header" style="display: flex; align-items: center; padding: 0.5rem 1rem; margin-bottom: 0.5rem;">
+        <button class="btn btn-outline" id="open-history-btn" onclick="openHistoryModal()" style="padding: 0.5rem; border-radius: 8px; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px);" title="History">
+          <i class="fas fa-history"></i>
+        </button>
+      </div>
+      
       <div class="writer-container">
         
         <!-- Chat Section -->
@@ -490,6 +131,7 @@
           
           <div class="chat-input-container">
             <div class="uploaded-files" id="uploaded-files"></div>
+            
             <div class="chat-input-wrapper">
               <button class="file-upload-btn" onclick="document.getElementById('file-input').click()" title="Upload files">
                 <i class="fas fa-plus"></i>
@@ -497,48 +139,109 @@
               <textarea 
                 id="chat-input" 
                 class="chat-input" 
-                placeholder="Type your writing request here... (e.g., 'Write a blog post about sustainable living')"
+                placeholder="How can I help you..."
                 rows="1"
               ></textarea>
-              <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
+              <!-- Quality Tier Selection -->
+              <div class="quality-tier-selection" style="display: flex; align-items: center; gap: 8px; margin: 0 8px;">
+                <button class="quality-filter-btn" onclick="toggleQualityOptions()" title="Generation Quality" style="padding: var(--spacing-sm); border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.9); border-radius: 50%; cursor: pointer; backdrop-filter: blur(10px); font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                  <i class="fas fa-filter"></i>
+                </button>
+                <div class="quality-options-dropdown" id="quality-options" style="display: none; position: absolute; bottom: 100%; right: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 12px; padding: 12px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); z-index: 1000; min-width: 320px;">
+                  <!-- Content Type Selection -->
+                  <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 8px; font-weight: 500;">
+                    <i class="fas fa-file-alt"></i> Content Type:
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+                    <label class="content-type-option" style="display: flex; align-items: center; cursor: pointer; padding: 6px 10px; border: 2px solid #e9ecef; border-radius: 6px; transition: all 0.3s ease;">
+                      <input type="radio" name="contentType" value="general" checked="checked" style="margin-right: 8px;" onchange="toggleAssignmentOptions()" />
+                      <div>
+                        <div style="font-weight: 500; color: #2c3e50; font-size: 0.85rem;">General Content</div>
+                        <div style="font-size: 0.7rem; color: #6c757d;">Essays, articles, blog posts</div>
+                      </div>
+                    </label>
+                    <label class="content-type-option" style="display: flex; align-items: center; cursor: pointer; padding: 6px 10px; border: 2px solid #e9ecef; border-radius: 6px; transition: all 0.3s ease;">
+                      <input type="radio" name="contentType" value="assignment" style="margin-right: 8px;" onchange="toggleAssignmentOptions()" />
+                      <div>
+                        <div style="font-weight: 500; color: #2c3e50; font-size: 0.85rem;">Academic Assignment</div>
+                        <div style="font-size: 0.7rem; color: #6c757d;">Structured academic papers with citations</div>
+                      </div>
+                    </label>
+                  </div>
+                  
+                  <!-- Assignment Options (hidden by default) -->
+                  <div id="assignment-options" style="display: none; margin-bottom: 12px; padding: 8px; background: rgba(102, 126, 234, 0.05); border-radius: 8px;">
+                    <div style="font-size: 0.8rem; color: #6c757d; margin-bottom: 6px; font-weight: 500;">
+                      <i class="fas fa-graduation-cap"></i> Assignment Details:
+                    </div>
+                    <input type="text" id="assignment-title" placeholder="Assignment title (required)" style="width: 100%; padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; margin-bottom: 6px; box-sizing: border-box;" />
+                    <select id="citation-style" style="width: 100%; padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; box-sizing: border-box;">
+                      <option value="APA">APA Citation Style</option>
+                      <option value="MLA">MLA Citation Style</option>
+                      <option value="Chicago">Chicago Citation Style</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Quality Selection -->
+                  <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 8px; font-weight: 500;">
+                    <i class="fas fa-star"></i> Generation Quality:
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label class="quality-option" style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border: 2px solid #e9ecef; border-radius: 8px; transition: all 0.3s ease;">
+                      <input type="radio" name="qualityTier" value="standard" checked="checked" style="margin-right: 8px;" />
+                      <div>
+                        <div style="font-weight: 500; color: #2c3e50; font-size: 0.9rem;">Standard</div>
+                        <div style="font-size: 0.75rem; color: #6c757d;">1 credit per 3 words • Fast generation</div>
+                      </div>
+                    </label>
+                    <label class="quality-option" style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border: 2px solid #e9ecef; border-radius: 8px; transition: all 0.3s ease;">
+                      <input type="radio" name="qualityTier" value="premium" style="margin-right: 8px;" />
+                      <div>
+                        <div style="font-weight: 500; color: #2c3e50; font-size: 0.9rem;">Premium</div>
+                        <div style="font-size: 0.75rem; color: #6c757d;">2 credits per 3 words • Enhanced quality</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <button class="send-btn" id="send-btn" onclick="sendMessage()">
                 <i class="fas fa-paper-plane"></i>
               </button>
             </div>
-            <input type="file" id="file-input" multiple accept=".pdf,.docx,.txt" style="display: none;">
+            <input type="file" id="file-input" multiple="multiple" accept=".pdf,.docx,.txt" style="display: none;" />
           </div>
         </div>
         
-        <!-- Content Editor Panel -->
-        <div class="content-panel">
-      <div class="panel-header">
-        <h3><i class="fas fa-edit"></i> Content Editor</h3>
-      </div>
-      
-      <div class="panel-content">
-        <div class="editor-toolbar">
-          <button class="toolbar-btn" onclick="copyContent()" title="Copy">
-            <i class="fas fa-copy"></i>
-          </button>
-          <button class="toolbar-btn" onclick="downloadContent()" title="Download">
-            <i class="fas fa-download"></i>
-          </button>
-          <button class="toolbar-btn" onclick="clearEditor()" title="Clear">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-        
-        <textarea 
-          id="content-editor" 
-          class="content-editor" 
-          placeholder="Generated content will appear here. You can edit it directly..."
-        ></textarea>
-        
-        <div class="content-stats">
-          <span id="word-count">0 words</span>
-          <span id="char-count">0 characters</span>
-        </div>
+        <!-- Content will appear as canvas messages in the chat -->
       </div>
     </div>
+
+  </div>
+  
+  <!-- History Modal -->
+  <div id="history-modal" class="modal" style="display: none;">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3><i class="fas fa-history"></i> Project History</h3>
+        <button id="close-history-modal" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="history-filters">
+          <div class="filter-group">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="essay">Essays</button>
+            <button class="filter-btn" data-filter="research">Research</button>
+            <button class="filter-btn" data-filter="report">Reports</button>
+          </div>
+          <div class="search-group">
+            <input type="text" class="form-input" placeholder="Search projects..." id="history-search" />
+          </div>
+        </div>
+        
+        <div class="history-grid" id="history-grid">
+          <!-- History items will be loaded here -->
+        </div>
+      </div>
     </div>
   </div>
   
@@ -555,13 +258,13 @@
             <i class="fas fa-user-circle text-6xl text-primary"></i>
           </div>
           <div class="profile-info">
-            <h4 id="modal-user-name">John Doe</h4>
+            <h4 id="modal-user-name">User Name</h4>
             <p class="text-gray" id="modal-user-email">john.doe@example.com</p>
             <div class="plan-info">
               <span class="plan-badge" id="modal-user-plan">Free Plan</span>
               <div class="credits-info">
                 <i class="fas fa-coins text-orange"></i>
-                <span id="modal-user-credits">145/200 Credits</span>
+                <span id="modal-user-credits">Loading...</span>
               </div>
             </div>
           </div>
@@ -576,36 +279,26 @@
   </div>
   
   <script>
-    // User profile functionality
-    let currentUser = {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      plan: 'free',
-      credits: 145,
-      maxCredits: 200
-    };
-
+    // Load user profile data - temporarily disabled for preview
     function loadUserProfile() {
-      // Update sidebar user info
-      document.getElementById('user-name').textContent = currentUser.name;
-      document.getElementById('user-plan').textContent = currentUser.plan === 'free' ? 'Free Plan' : 'Pro Plan';
-      document.getElementById('user-credits').textContent = `${currentUser.credits}/${currentUser.maxCredits} Credits`;
-      
-      // Update modal user info
-      document.getElementById('modal-user-name').textContent = currentUser.name;
-      document.getElementById('modal-user-email').textContent = currentUser.email;
-      document.getElementById('modal-user-plan').textContent = currentUser.plan === 'free' ? 'Free Plan' : 'Pro Plan';
-      document.getElementById('modal-user-credits').textContent = `${currentUser.credits}/${currentUser.maxCredits} Credits`;
+      // Initialize user session and update displays
+      if (window.userSession) {
+        window.userSession.updateAllDisplays();
+      }
     }
 
-    function logout() {
-      if (confirm('Are you sure you want to logout?')) {
-        // Clear user data
-        localStorage.removeItem('userToken');
-        localStorage.removeItem('userData');
-        // Redirect to auth page
-        window.location.href = 'auth.html';
+    // Get current user data
+    function getCurrentUser() {
+      if (window.userSession) {
+        return window.userSession.getCurrentUser();
       }
+      // Fallback for when userSession is not available
+      return {
+        name: 'Demo User',
+        email: 'demo@example.com',
+        credits: 0,
+        maxCredits: 200
+      };
     }
 
     let uploadedFiles = [];
@@ -613,85 +306,220 @@
     
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM Content Loaded - Initializing UI elements');
+      
+      // Comprehensive DOM element check
+      const elements = {
+        chatInput: document.getElementById('chat-input'),
+        sendBtn: document.getElementById('send-btn'),
+        fileInput: document.getElementById('file-input'),
+        sidebarToggle: document.getElementById('sidebar-toggle'),
+        sidebar: document.getElementById('dashboard-sidebar'),
+        dashboardLayout: document.querySelector('.dashboard-layout'),
+        historyBtn: document.getElementById('open-history-btn'),
+        userProfileCard: document.getElementById('user-profile-card'),
+        userProfileModal: document.getElementById('user-profile-modal'),
+        closeProfileModal: document.getElementById('close-profile-modal'),
+        historyModal: document.getElementById('history-modal'),
+        closeHistoryModal: document.getElementById('close-history-modal'),
+        historySearch: document.getElementById('history-search')
+      };
+      
+      console.log('All DOM Elements Check:', elements);
+      
+      // Check which elements are missing
+      Object.keys(elements).forEach(key => {
+        if (!elements[key]) {
+          console.error(`Missing element: ${key}`);
+        }
+      });
+      
       // Load user profile data
       loadUserProfile();
       
       // User profile modal functionality
-      const userProfileCard = document.getElementById('user-profile-card');
-      const userProfileModal = document.getElementById('user-profile-modal');
-      const closeProfileModal = document.getElementById('close-profile-modal');
+      const userProfileCard = elements.userProfileCard;
+      const userProfileModal = elements.userProfileModal;
+      const closeProfileModal = elements.closeProfileModal;
       
-      userProfileCard.addEventListener('click', function() {
-        userProfileModal.style.display = 'flex';
-      });
+      if (userProfileCard && userProfileModal && closeProfileModal) {
+        userProfileCard.addEventListener('click', function() {
+          console.log('User profile card clicked');
+          userProfileModal.style.display = 'flex';
+        });
+        
+        closeProfileModal.addEventListener('click', function() {
+          console.log('Close profile modal clicked');
+          userProfileModal.style.display = 'none';
+        });
+        
+        window.addEventListener('click', function(event) {
+          if (event.target === userProfileModal) {
+            userProfileModal.style.display = 'none';
+          }
+        });
+      } else {
+        console.error('User profile elements not found:', {
+          userProfileCard: !!userProfileCard,
+          userProfileModal: !!userProfileModal,
+          closeProfileModal: !!closeProfileModal
+        });
+      }
       
-      closeProfileModal.addEventListener('click', function() {
-        userProfileModal.style.display = 'none';
-      });
+      // History modal functionality
+      const historyModal = elements.historyModal;
+      const closeHistoryModal = elements.closeHistoryModal;
+      
+      if (closeHistoryModal) {
+        closeHistoryModal.addEventListener('click', function() {
+          historyModal.style.display = 'none';
+        });
+      }
       
       window.addEventListener('click', function(event) {
-        if (event.target === userProfileModal) {
-          userProfileModal.style.display = 'none';
+        if (event.target === historyModal) {
+          historyModal.style.display = 'none';
         }
       });
-      const chatInput = document.getElementById('chat-input');
-      const sendBtn = document.getElementById('send-btn');
-      const fileInput = document.getElementById('file-input');
-      const contentEditor = document.getElementById('content-editor');
-      const sidebarToggle = document.getElementById('sidebar-toggle');
+      
+      // History filter functionality
+      document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('filter-btn')) {
+          document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+          event.target.classList.add('active');
+          
+          const filter = event.target.dataset.filter;
+          const historyCards = document.querySelectorAll('.history-card');
+          
+          historyCards.forEach(card => {
+            if (filter === 'all' || card.dataset.type === filter) {
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        }
+      });
+      
+      // History search functionality
+      const historySearch = elements.historySearch;
+      if (historySearch) {
+        historySearch.addEventListener('input', function() {
+          const searchTerm = this.value.toLowerCase();
+          const historyCards = document.querySelectorAll('.history-card');
+          
+          historyCards.forEach(card => {
+            const title = card.querySelector('h4').textContent.toLowerCase();
+            const preview = card.querySelector('.history-preview').textContent.toLowerCase();
+            
+            if (title.includes(searchTerm) || preview.includes(searchTerm)) {
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      }
+      
+      const chatInput = elements.chatInput;
+      const sendBtn = elements.sendBtn;
+      const fileInput = elements.fileInput;
+      const sidebarToggle = elements.sidebarToggle;
+      
+      console.log('UI Elements found:', {
+        chatInput: !!chatInput,
+        sendBtn: !!sendBtn,
+        fileInput: !!fileInput,
+        sidebarToggle: !!sidebarToggle
+      });
       
       // Sidebar toggle functionality
-      sidebarToggle.addEventListener('click', function() {
-        const dashboardLayout = document.querySelector('.dashboard-layout');
-        dashboardLayout.classList.toggle('sidebar-collapsed');
-      });
+      const sidebar = document.getElementById('dashboard-sidebar');
+      const dashboardLayout = document.querySelector('.dashboard-layout');
+      
+      if (sidebarToggle && sidebar && dashboardLayout) {
+        console.log('Sidebar elements found, adding event listener');
+        sidebarToggle.addEventListener('click', function() {
+          console.log('Sidebar toggle clicked');
+          if (window.innerWidth <= 768) {
+            // Mobile behavior
+            sidebar.classList.toggle('sidebar-open');
+            dashboardLayout.classList.toggle('sidebar-active');
+          } else {
+            // Desktop behavior
+            dashboardLayout.classList.toggle('sidebar-collapsed');
+          }
+        });
+      } else {
+        console.error('Sidebar elements not found:', {
+          sidebarToggle: !!sidebarToggle,
+          sidebar: !!sidebar,
+          dashboardLayout: !!dashboardLayout
+        });
+      }
       
       // Close sidebar when clicking outside on mobile
       document.addEventListener('click', function(event) {
-        const sidebar = document.querySelector('.dashboard-sidebar');
-        const dashboardLayout = document.querySelector('.dashboard-layout');
-        
-        if (window.innerWidth <= 768 && 
-            !sidebar.contains(event.target) && 
-            !sidebarToggle.contains(event.target) &&
-            !dashboardLayout.classList.contains('sidebar-collapsed')) {
-          dashboardLayout.classList.add('sidebar-collapsed');
+        if (window.innerWidth <= 768) {
+          if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target) && sidebar.classList.contains('sidebar-open')) {
+            sidebar.classList.remove('sidebar-open');
+            dashboardLayout.classList.remove('sidebar-active');
+          }
         }
       });
       
       // Handle window resize
       window.addEventListener('resize', function() {
-        const dashboardLayout = document.querySelector('.dashboard-layout');
-        
         if (window.innerWidth > 768) {
+          sidebar.classList.remove('sidebar-open');
+          dashboardLayout.classList.remove('sidebar-active');
+        } else {
           dashboardLayout.classList.remove('sidebar-collapsed');
         }
       });
       
       // Auto-resize chat input
-      chatInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      if (chatInput && sendBtn) {
+        console.log('Adding chat input event listeners');
         
-        // Enable/disable send button
-        sendBtn.disabled = !this.value.trim();
-      });
-      
-      // Send message on Enter (Shift+Enter for new line)
-      chatInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          if (!sendBtn.disabled) {
-            sendMessage();
+        // Add direct click event listener to send button as backup
+        sendBtn.addEventListener('click', function() {
+          console.log('Send button clicked via event listener');
+          sendMessage();
+        });
+        
+        chatInput.addEventListener('input', function() {
+          this.style.height = 'auto';
+          this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+          
+          // Enable/disable send button
+          sendBtn.disabled = !this.value.trim();
+        });
+        
+        // Send message on Enter (Shift+Enter for new line)
+        chatInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!sendBtn.disabled) {
+              console.log('Sending message via Enter key');
+              sendMessage();
+            }
           }
-        }
-      });
+        });
+      } else {
+        console.error('Chat input elements not found:', {
+          chatInput: !!chatInput,
+          sendBtn: !!sendBtn
+        });
+      }
       
       // File upload handling
-      fileInput.addEventListener('change', handleFileUpload);
-      
-      // Content editor stats
-      contentEditor.addEventListener('input', updateContentStats);
+      if (fileInput) {
+        console.log('Adding file input event listener');
+        fileInput.addEventListener('change', handleFileUpload);
+      } else {
+        console.error('File input not found');
+      }
     });
     
     function useQuickPrompt(prompt) {
@@ -701,10 +529,16 @@
     }
     
     function sendMessage() {
+      console.log('sendMessage function called');
       const chatInput = document.getElementById('chat-input');
-      const message = chatInput.value.trim();
+      const message = chatInput ? chatInput.value.trim() : '';
       
-      if (!message) return;
+      console.log('Message to send:', message);
+      
+      if (!message) {
+        console.log('No message to send');
+        return;
+      }
       
       // Add user message
       addMessage('user', message);
@@ -759,6 +593,105 @@
       messageHistory.push({sender, content, timestamp});
     }
     
+    function addCanvasMessage(sender, title, content, timestamp = new Date()) {
+      const messagesContainer = document.getElementById('chat-messages');
+      const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+      
+      if (welcomeMessage) {
+        welcomeMessage.style.display = 'none';
+      }
+      
+      const canvasId = 'canvas-' + Date.now();
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}`;
+      
+      const avatar = document.createElement('div');
+      avatar.className = 'message-avatar';
+      avatar.innerHTML = '<i class="fas fa-robot"></i>';
+      
+      const canvasContainer = document.createElement('div');
+      canvasContainer.className = 'content-canvas';
+      canvasContainer.id = canvasId;
+      
+      const canvasHeader = document.createElement('div');
+      canvasHeader.className = 'canvas-header';
+      
+      const canvasTitle = document.createElement('h4');
+      canvasTitle.className = 'canvas-title';
+      canvasTitle.innerHTML = `<i class="fas fa-file-alt"></i> ${title}`;
+      
+      const canvasActions = document.createElement('div');
+      canvasActions.className = 'canvas-actions';
+      canvasActions.innerHTML = `
+        <button class="canvas-btn" onclick="previewCanvas('${canvasId}')" title="Preview">
+          <i class="fas fa-eye"></i> Preview
+        </button>
+        <button class="canvas-btn" onclick="editCanvas('${canvasId}')" title="Edit">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="canvas-btn" onclick="copyCanvas('${canvasId}')" title="Copy">
+          <i class="fas fa-copy"></i> Copy
+        </button>
+        <button class="canvas-btn" onclick="addCitations('${canvasId}')" title="Citations">
+          <i class="fas fa-quote-right"></i> Citations
+        </button>
+        <button class="canvas-btn" onclick="downloadCanvas('${canvasId}')" title="Download">
+          <i class="fas fa-download"></i> Download
+        </button>
+      `;
+      
+      canvasHeader.appendChild(canvasTitle);
+      canvasHeader.appendChild(canvasActions);
+      
+      const canvasContent = document.createElement('div');
+      canvasContent.className = 'canvas-content';
+      canvasContent.innerHTML = formatContent(content);
+      
+      const canvasStats = document.createElement('div');
+      canvasStats.className = 'canvas-stats';
+      const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+      const charCount = content.length;
+      canvasStats.innerHTML = `
+        <span>${wordCount} words</span>
+        <span>${charCount} characters</span>
+        <span>${timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+      `;
+      
+      canvasContainer.appendChild(canvasHeader);
+      canvasContainer.appendChild(canvasContent);
+      canvasContainer.appendChild(canvasStats);
+      
+      const contentWrapper = document.createElement('div');
+      contentWrapper.appendChild(canvasContainer);
+      
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(contentWrapper);
+      
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      messageHistory.push({sender, content: title, timestamp, canvasContent: content});
+    }
+    
+    function formatContent(content) {
+      // Convert markdown-like formatting to HTML
+      return content
+        .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+        .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+        .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/^• (.*$)/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/^(?!<[h|u|l])/gm, '<p>')
+        .replace(/(?<!>)$/gm, '</p>')
+        .replace(/<p><\/p>/g, '')
+        .replace(/<p>(<[h|u])/g, '$1')
+        .replace(/(<\/[h|u].*>)<\/p>/g, '$1');
+    }
+    
     function showTypingIndicator() {
       document.getElementById('typing-indicator').style.display = 'flex';
       const messagesContainer = document.getElementById('chat-messages');
@@ -769,19 +702,71 @@
       document.getElementById('typing-indicator').style.display = 'none';
     }
     
+    function toggleAssignmentOptions() {
+      const assignmentRadio = document.querySelector('input[name="contentType"][value="assignment"]');
+      const assignmentOptions = document.getElementById('assignment-options');
+      
+      if (assignmentRadio && assignmentOptions) {
+        if (assignmentRadio.checked) {
+          assignmentOptions.style.display = 'block';
+        } else {
+          assignmentOptions.style.display = 'none';
+        }
+      }
+    }
+    
     async function generateContent(prompt) {
       try {
-        // Simulate API call
+        // Get selected quality tier and content type
+        const qualityTier = document.querySelector('input[name="qualityTier"]:checked').value;
+        const contentType = document.querySelector('input[name="contentType"]:checked').value;
+        
+        // Prepare request body
+        const requestBody = {
+          prompt: prompt,
+          files: uploadedFiles,
+          style: 'conversational',
+          qualityTier: qualityTier,
+          contentType: contentType
+        };
+        
+        // Add assignment-specific parameters if needed
+        if (contentType === 'assignment') {
+          const assignmentTitle = document.getElementById('assignment-title').value;
+          const citationStyle = document.getElementById('citation-style').value;
+          
+          if (!assignmentTitle.trim()) {
+            alert('Please enter an assignment title for academic assignments.');
+            return;
+          }
+          
+          requestBody.assignmentTitle = assignmentTitle;
+          requestBody.citationStyle = citationStyle;
+        }
+        
+        // Check authentication
+        const authToken = localStorage.getItem('authToken') || localStorage.getItem('userToken');
+        if (!authToken) {
+          alert('Please log in to use the writer tool.');
+          window.location.href = 'auth.html';
+          return;
+        }
+        
+        // Check user credits before generation
+        const currentUser = getCurrentUser();
+        if (currentUser.credits <= 0) {
+          alert('Insufficient credits. Please purchase more credits to continue.');
+          return;
+        }
+        
+        // Make API call with authentication
         const response = await fetch('/api/writer/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
           },
-          body: JSON.stringify({
-            prompt: prompt,
-            files: uploadedFiles,
-            style: 'conversational'
-          })
+          body: JSON.stringify(requestBody)
         });
         
         if (!response.ok) {
@@ -790,45 +775,29 @@
         
         const data = await response.json();
         
-        // Add AI response
-        addMessage('assistant', `I've generated content based on your request. The content has been added to the editor panel where you can review and edit it.`);
+        // Update user credits if credits were deducted
+        if (data.creditsUsed && window.userSession) {
+          const updatedUser = getCurrentUser();
+          updatedUser.credits = Math.max(0, updatedUser.credits - data.creditsUsed);
+          window.userSession.updateUser(updatedUser);
+          console.log(`Credits deducted: ${data.creditsUsed}, Remaining: ${updatedUser.credits}`);
+        }
         
-        // Update content editor
-        document.getElementById('content-editor').value = data.content;
-        updateContentStats();
+        // Add AI response with canvas content
+        addCanvasMessage('assistant', 'Generated Content', data.content);
         
       } catch (error) {
         console.error('Error generating content:', error);
         
         // Fallback demo content
         const demoContent = generateDemoContent(prompt);
-        addMessage('assistant', `I've generated content based on your request. The content has been added to the editor panel where you can review and edit it.`);
-        document.getElementById('content-editor').value = demoContent;
-        updateContentStats();
+        addCanvasMessage('assistant', 'Generated Content', demoContent);
       }
     }
     
     function generateDemoContent(prompt) {
-      const templates = {
-        'essay': `# Academic Essay: The Impact of Technology on Modern Education\n\n## Introduction\n\nThe integration of technology in educational settings has fundamentally transformed the learning landscape. This essay examines the multifaceted impact of technological advancement on modern educational practices and student outcomes.\n\n## Body Paragraph 1: Enhanced Learning Opportunities\n\nTechnology has democratized access to educational resources, enabling students to engage with diverse learning materials beyond traditional textbooks. Online platforms, interactive simulations, and multimedia content have created immersive learning experiences that cater to different learning styles.\n\n## Body Paragraph 2: Challenges and Considerations\n\nDespite the benefits, the digital divide remains a significant concern, as not all students have equal access to technological resources. Additionally, the over-reliance on technology may impact critical thinking and interpersonal skills development.\n\n## Conclusion\n\nWhile technology presents both opportunities and challenges in education, its thoughtful integration can enhance learning outcomes when implemented with careful consideration of equity and pedagogical best practices.`,
-        'research': `# Research Paper: Climate Change and Agricultural Sustainability\n\n## Abstract\n\nThis research paper examines the relationship between climate change and agricultural sustainability, analyzing current challenges and potential solutions for food security in the 21st century.\n\n## Introduction\n\nClimate change poses unprecedented challenges to global agricultural systems. Rising temperatures, changing precipitation patterns, and extreme weather events threaten food production worldwide.\n\n## Literature Review\n\nRecent studies indicate that agricultural yields are declining in many regions due to climate-related factors (Smith et al., 2023). Adaptation strategies must be implemented to ensure food security for growing populations.\n\n## Methodology\n\nThis study employs a mixed-methods approach, combining quantitative analysis of agricultural data with qualitative interviews of farmers and agricultural experts.\n\n## Results and Discussion\n\nPreliminary findings suggest that sustainable farming practices can mitigate some climate impacts while maintaining productivity levels.\n\n## Conclusion\n\nAddressing climate change in agriculture requires coordinated efforts between policymakers, researchers, and farming communities.`,
-        'report': `# Laboratory Report: Enzyme Activity Analysis\n\n## Objective\n\nTo investigate the effect of temperature on enzyme activity using catalase as a model enzyme.\n\n## Materials and Methods\n\n### Materials:\n• Catalase enzyme solution\n• Hydrogen peroxide (3%)\n• Test tubes and measuring equipment\n• Water baths at various temperatures\n\n### Procedure:\n1. Prepared enzyme solutions at different temperatures (0°C, 25°C, 37°C, 60°C)\n2. Added hydrogen peroxide substrate\n3. Measured oxygen production over 5-minute intervals\n4. Recorded data and calculated reaction rates\n\n## Results\n\nOptimal enzyme activity occurred at 37°C, with decreased activity at both lower and higher temperatures. Complete denaturation was observed at 60°C.\n\n## Discussion\n\nThe results confirm the temperature-dependent nature of enzyme activity, supporting the induced-fit model of enzyme function.\n\n## Conclusion\n\nTemperature significantly affects enzyme activity, with optimal performance occurring near physiological temperatures.`,
-        'thesis': `Thesis Statement: While social media platforms have revolutionized global communication and information sharing, their unchecked proliferation has contributed to the spread of misinformation, political polarization, and mental health challenges, necessitating comprehensive regulatory frameworks that balance free expression with public welfare.\n\nSupporting Arguments:\n1. Social media has democratized information access and enabled global connectivity\n2. Misinformation spreads rapidly through algorithmic amplification\n3. Echo chambers contribute to political and social polarization\n4. Excessive social media use correlates with increased anxiety and depression\n5. Regulatory measures must protect both individual rights and collective well-being`,
-        'analysis': `# Literary Analysis: Symbolism in "The Great Gatsby"\n\n## Introduction\n\nF. Scott Fitzgerald's "The Great Gatsby" employs rich symbolism to critique the American Dream and the moral decay of 1920s society. This analysis examines key symbols and their significance within the novel's broader themes.\n\n## The Green Light\n\nThe green light at the end of Daisy's dock represents Gatsby's unattainable dreams and the broader American pursuit of happiness. Its distant, elusive nature mirrors the impossibility of recapturing the past.\n\n## The Valley of Ashes\n\nThis desolate wasteland symbolizes the moral and spiritual emptiness underlying the era's material prosperity. It serves as a stark contrast to the opulence of East and West Egg.\n\n## The Eyes of Doctor T.J. Eckleburg\n\nThe billboard's watchful eyes represent the absence of moral oversight in a godless society, witnessing the characters' moral failures without intervention.\n\n## Conclusion\n\nFitzgerald's masterful use of symbolism reveals the hollowness of the American Dream and the spiritual bankruptcy of the Jazz Age.`,
-        'review': `# Literature Review: Artificial Intelligence in Healthcare\n\n## Introduction\n\nThis literature review examines recent developments in artificial intelligence applications within healthcare settings, focusing on diagnostic accuracy, treatment optimization, and patient outcomes.\n\n## Diagnostic Applications\n\nRecent studies demonstrate AI's effectiveness in medical imaging analysis. Johnson et al. (2023) found that machine learning algorithms achieved 94% accuracy in detecting early-stage cancer, surpassing traditional diagnostic methods.\n\n## Treatment Personalization\n\nPersonalized medicine has benefited significantly from AI integration. Research by Chen and Williams (2022) indicates that AI-driven treatment recommendations improved patient outcomes by 23% compared to standard protocols.\n\n## Challenges and Limitations\n\nDespite promising results, several challenges remain. Data privacy concerns, algorithmic bias, and the need for extensive validation limit widespread implementation (Rodriguez et al., 2023).\n\n## Future Directions\n\nEmerging research focuses on explainable AI systems that provide transparent decision-making processes, addressing current limitations in clinical adoption.\n\n## Conclusion\n\nAI shows tremendous potential in healthcare, but successful implementation requires addressing ethical, technical, and regulatory challenges.`
-      };
-      
-      // Determine content type based on prompt
-      const lowerPrompt = prompt.toLowerCase();
-      if (lowerPrompt.includes('essay')) return templates.essay;
-      if (lowerPrompt.includes('research')) return templates.research;
-      if (lowerPrompt.includes('report') || lowerPrompt.includes('lab')) return templates.report;
-      if (lowerPrompt.includes('thesis')) return templates.thesis;
-      if (lowerPrompt.includes('analysis') || lowerPrompt.includes('literary')) return templates.analysis;
-      if (lowerPrompt.includes('review') || lowerPrompt.includes('literature')) return templates.review;
-      
-      // Default content
-      return `# Generated Content\n\nBased on your request: "${prompt}"\n\nThis is a sample generated content that demonstrates the AI writing capabilities. The content would be customized based on your specific requirements and writing style preferences.\n\n## Key Points\n\n• Professional tone and structure\n• Relevant to your request\n• Ready for editing and customization\n• Optimized for your target audience\n\nFeel free to edit this content directly in the editor panel to match your exact needs.`;
+      // Fallback content when backend is not available
+      return `# Content Generation Unavailable\n\nBased on your request: "${prompt}"\n\nThe AI content generation service is currently unavailable. This could be due to:\n\n• Backend server not running\n• Network connectivity issues\n• Service maintenance\n\nPlease ensure the backend server is running and try again. Contact support if the issue persists.\n\n## Next Steps\n\n• Check server status\n• Verify network connection\n• Try again in a few moments\n• Contact technical support if needed`;
     }
     
     function handleFileUpload(event) {
@@ -916,12 +885,760 @@
       URL.revokeObjectURL(url);
     }
     
+    // Canvas message action functions
+    function previewCanvas(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const content = canvas.querySelector('.canvas-content').innerHTML;
+      
+      const previewWindow = window.open('', '_blank', 'width=800,height=600');
+      previewWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Content Preview</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; line-height: 1.6; }
+            h1, h2, h3 { color: #333; }
+            p { margin-bottom: 1em; }
+            ul { margin: 1em 0; }
+            li { margin-bottom: 0.5em; }
+          </style>
+        </head>
+        <body>
+          ${content}
+        </body>
+        </html>
+      `);
+      previewWindow.document.close();
+    }
+    
+    function editCanvas(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const contentDiv = canvas.querySelector('.canvas-content');
+      const currentContent = contentDiv.textContent || contentDiv.innerText;
+      
+      const editModal = document.createElement('div');
+      editModal.className = 'modal';
+      editModal.style.display = 'flex';
+      editModal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px; width: 90%;">
+          <div class="modal-header">
+            <h3>Edit Content</h3>
+            <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+          </div>
+          <div class="modal-body">
+            <textarea id="edit-textarea" style="width: 100%; height: 400px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;">${currentContent}</textarea>
+          </div>
+          <div class="modal-footer">
+            <button onclick="saveCanvasEdit('${canvasId}', this)" class="btn btn-primary">Save Changes</button>
+            <button onclick="this.closest('.modal').remove()" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(editModal);
+      document.getElementById('edit-textarea').focus();
+    }
+    
+    function saveCanvasEdit(canvasId, button) {
+      const textarea = document.getElementById('edit-textarea');
+      const newContent = textarea.value;
+      const canvas = document.getElementById(canvasId);
+      const contentDiv = canvas.querySelector('.canvas-content');
+      
+      contentDiv.innerHTML = formatContent(newContent);
+      
+      // Update stats
+      const statsDiv = canvas.querySelector('.canvas-stats');
+      const wordCount = newContent.trim() ? newContent.trim().split(/\s+/).length : 0;
+      const charCount = newContent.length;
+      const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      
+      statsDiv.innerHTML = `
+        <span>${wordCount} words</span>
+        <span>${charCount} characters</span>
+        <span>Edited at ${timestamp}</span>
+      `;
+      
+      button.closest('.modal').remove();
+    }
+    
+    function copyCanvas(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const content = canvas.querySelector('.canvas-content').textContent || canvas.querySelector('.canvas-content').innerText;
+      
+      navigator.clipboard.writeText(content).then(() => {
+        showNotification('Content copied to clipboard!', 'success');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = content;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showNotification('Content copied to clipboard!', 'success');
+      });
+    }
+    
+    function addCitations(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const contentDiv = canvas.querySelector('.canvas-content');
+      
+      const citationModal = document.createElement('div');
+      citationModal.className = 'modal';
+      citationModal.style.display = 'flex';
+      citationModal.innerHTML = `
+        <div class="modal-content" style="max-width: 700px;">
+          <div class="modal-header">
+            <h3><i class="fas fa-quote-right"></i> Add Citations with Zotero</h3>
+            <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+          </div>
+          <div class="modal-body">
+            <div class="citation-tabs" style="margin-bottom: 20px;">
+              <button class="tab-btn active" onclick="switchCitationTab('manual', this)">Manual Entry</button>
+              <button class="tab-btn" onclick="switchCitationTab('auto', this)">Auto-Generate</button>
+              <button class="tab-btn" onclick="switchCitationTab('zotero', this)">Zotero Integration</button>
+            </div>
+            
+            <!-- Manual Citation Tab -->
+            <div id="manual-citation" class="citation-tab active">
+              <div style="margin-bottom: 15px;">
+                <label>Citation Style:</label>
+                <select id="manual-citation-style" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                  <option value="apa">APA Style</option>
+                  <option value="mla">MLA Style</option>
+                  <option value="chicago">Chicago Style</option>
+                  <option value="harvard">Harvard Style</option>
+                </select>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Citation Text:</label>
+                <textarea id="citation-text" placeholder="Enter formatted citation" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; height: 80px; resize: vertical;"></textarea>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Source URL (optional):</label>
+                <input type="url" id="citation-url" placeholder="https://example.com" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" />
+              </div>
+            </div>
+            
+            <!-- Auto-Generate Citation Tab -->
+            <div id="auto-citation" class="citation-tab" style="display: none;">
+              <div style="margin-bottom: 15px;">
+                <label>Citation Style:</label>
+                <select id="auto-citation-style" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                  <option value="apa">APA Style</option>
+                  <option value="mla">MLA Style</option>
+                  <option value="chicago">Chicago Style</option>
+                  <option value="harvard">Harvard Style</option>
+                </select>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Content Topic:</label>
+                <input type="text" id="auto-topic" placeholder="Enter the topic for citation generation" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" />
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Number of Citations:</label>
+                <input type="number" id="auto-count" min="1" max="10" value="3" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" />
+              </div>
+              <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 0.9em; color: #6c757d;">
+                <i class="fas fa-info-circle"></i> Auto-generation uses AI to create relevant citations based on your content topic.
+              </div>
+            </div>
+            
+            <!-- Zotero Integration Tab -->
+            <div id="zotero-citation" class="citation-tab" style="display: none;">
+              <div style="margin-bottom: 15px;">
+                <label>Zotero Library ID:</label>
+                <input type="text" id="zotero-library-id" placeholder="Enter your Zotero library ID" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" />
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Citation Style:</label>
+                <select id="zotero-citation-style" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                  <option value="apa">APA Style</option>
+                  <option value="mla">MLA Style</option>
+                  <option value="chicago">Chicago Style</option>
+                  <option value="harvard">Harvard Style</option>
+                </select>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <button onclick="loadZoteroLibrary()" class="btn btn-secondary" style="width: 100%;">
+                  <i class="fas fa-sync"></i> Load Zotero Library
+                </button>
+              </div>
+              <div id="zotero-items" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px; display: none;">
+                <!-- Zotero items will be loaded here -->
+              </div>
+              <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 4px; font-size: 0.9em; color: #1976d2;">
+                <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> Get your Zotero library ID from your Zotero account settings. API key should be configured in server environment.
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button onclick="processCitation('${canvasId}')" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Add Citation
+            </button>
+            <button onclick="this.closest('.modal').remove()" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(citationModal);
+      
+      // Add CSS for tabs
+      const style = document.createElement('style');
+      style.textContent = `
+        .citation-tabs {
+          display: flex;
+          border-bottom: 1px solid #ddd;
+        }
+        .tab-btn {
+          padding: 10px 20px;
+          border: none;
+          background: #f8f9fa;
+          cursor: pointer;
+          border-bottom: 2px solid transparent;
+          transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+          background: white;
+          border-bottom-color: #007bff;
+          color: #007bff;
+        }
+        .tab-btn:hover {
+          background: #e9ecef;
+        }
+        .citation-tab {
+          padding-top: 20px;
+        }
+        .zotero-item {
+          padding: 10px;
+          border: 1px solid #eee;
+          margin-bottom: 5px;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .zotero-item:hover {
+          background: #f8f9fa;
+        }
+        .zotero-item.selected {
+          background: #e3f2fd;
+          border-color: #2196f3;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    function switchCitationTab(tabName, button) {
+      // Hide all tabs
+      document.querySelectorAll('.citation-tab').forEach(tab => {
+        tab.style.display = 'none';
+      });
+      
+      // Remove active class from all buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Show selected tab and activate button
+      document.getElementById(tabName + '-citation').style.display = 'block';
+      button.classList.add('active');
+    }
+    
+    async function loadZoteroLibrary() {
+      const libraryId = document.getElementById('zotero-library-id').value;
+      if (!libraryId.trim()) {
+        showNotification('Please enter your Zotero library ID', 'error');
+        return;
+      }
+      
+      const itemsContainer = document.getElementById('zotero-items');
+      itemsContainer.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading Zotero library...</div>';
+      itemsContainer.style.display = 'block';
+      
+      try {
+        const response = await fetch('/api/zotero/library', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ libraryId })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to load Zotero library');
+        }
+        
+        const data = await response.json();
+        displayZoteroItems(data.items || []);
+      } catch (error) {
+        console.error('Error loading Zotero library:', error);
+        itemsContainer.innerHTML = `
+          <div style="text-align: center; padding: 20px; color: #dc3545;">
+            <i class="fas fa-exclamation-triangle"></i> 
+            Failed to load Zotero library. Please check your library ID and API configuration.
+          </div>
+        `;
+      }
+    }
+    
+    function displayZoteroItems(items) {
+      const itemsContainer = document.getElementById('zotero-items');
+      
+      if (items.length === 0) {
+        itemsContainer.innerHTML = `
+          <div style="text-align: center; padding: 20px; color: #6c757d;">
+            <i class="fas fa-book-open"></i> No items found in your Zotero library.
+          </div>
+        `;
+        return;
+      }
+      
+      itemsContainer.innerHTML = items.map((item, index) => `
+        <div class="zotero-item" onclick="selectZoteroItem(this, ${index})" data-item='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
+          <div style="font-weight: bold; margin-bottom: 5px;">${item.title || 'Untitled'}</div>
+          <div style="font-size: 0.9em; color: #6c757d;">
+            ${item.creators && item.creators.length > 0 ? item.creators.map(c => c.lastName + ', ' + c.firstName).join('; ') : 'Unknown Author'}
+            ${item.date ? ' (' + item.date + ')' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function selectZoteroItem(element, index) {
+      // Remove selection from other items
+      document.querySelectorAll('.zotero-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      
+      // Select current item
+      element.classList.add('selected');
+      element.setAttribute('data-selected', 'true');
+    }
+    
+    async function processCitation(canvasId) {
+      const activeTab = document.querySelector('.tab-btn.active').textContent;
+      
+      let citationData = null;
+      
+      if (activeTab === 'Manual Entry') {
+        const citationText = document.getElementById('citation-text').value;
+        const citationUrl = document.getElementById('citation-url').value;
+        const style = document.getElementById('manual-citation-style').value;
+        
+        if (!citationText.trim()) {
+          showNotification('Please enter citation text', 'error');
+          return;
+        }
+        
+        citationData = {
+          text: citationText,
+          url: citationUrl,
+          style: style,
+          type: 'manual'
+        };
+      } else if (activeTab === 'Auto-Generate') {
+        const topic = document.getElementById('auto-topic').value;
+        const count = document.getElementById('auto-count').value;
+        const style = document.getElementById('auto-citation-style').value;
+        
+        if (!topic.trim()) {
+          showNotification('Please enter a topic for citation generation', 'error');
+          return;
+        }
+        
+        try {
+          showNotification('Generating citations...', 'info');
+          const response = await fetch('/api/citations/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ topic, count: parseInt(count), style })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to generate citations');
+          }
+          
+          const data = await response.json();
+          citationData = {
+            citations: data.citations,
+            style: style,
+            type: 'auto'
+          };
+        } catch (error) {
+          console.error('Error generating citations:', error);
+          showNotification('Failed to generate citations. Please try again.', 'error');
+          return;
+        }
+      } else if (activeTab === 'Zotero Integration') {
+        const selectedItem = document.querySelector('.zotero-item.selected');
+        const style = document.getElementById('zotero-citation-style').value;
+        
+        if (!selectedItem) {
+          showNotification('Please select an item from your Zotero library', 'error');
+          return;
+        }
+        
+        const itemData = JSON.parse(selectedItem.getAttribute('data-item'));
+        
+        try {
+          showNotification('Formatting citation...', 'info');
+          const response = await fetch('/api/zotero/format', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ item: itemData, style })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to format Zotero citation');
+          }
+          
+          const data = await response.json();
+          citationData = {
+            text: data.citation,
+            style: style,
+            type: 'zotero',
+            item: itemData
+          };
+        } catch (error) {
+          console.error('Error formatting Zotero citation:', error);
+          showNotification('Failed to format citation. Please try again.', 'error');
+          return;
+        }
+      }
+      
+      if (citationData) {
+        insertCitation(canvasId, citationData);
+      }
+    }
+    
+    function insertCitation(canvasId, citationDataOrButton) {
+      // Handle both old and new function signatures
+      if (typeof citationDataOrButton === 'object' && citationDataOrButton.text) {
+        // New enhanced citation system
+        const citationData = citationDataOrButton;
+        const canvas = document.getElementById(canvasId);
+        const contentDiv = canvas.querySelector('.canvas-content');
+        
+        if (citationData.type === 'auto' && citationData.citations) {
+          // Insert multiple citations for auto-generated
+          citationData.citations.forEach((citation, index) => {
+            setTimeout(() => {
+              insertSingleCitation(contentDiv, {
+                text: citation,
+                style: citationData.style,
+                type: 'auto'
+              });
+            }, index * 100); // Stagger insertions
+          });
+        } else {
+          // Insert single citation
+          insertSingleCitation(contentDiv, citationData);
+        }
+        
+        // Close modal
+        const modal = document.querySelector('.modal');
+        if (modal) modal.remove();
+        showNotification('Citation added successfully!', 'success');
+      } else {
+        // Legacy citation system (manual entry)
+        const button = citationDataOrButton;
+        const citationText = document.getElementById('citation-text').value;
+        const citationUrl = document.getElementById('citation-url').value;
+        
+        if (!citationText.trim()) {
+          showNotification('Please enter citation text', 'error');
+          return;
+        }
+        
+        const canvas = document.getElementById(canvasId);
+        const contentDiv = canvas.querySelector('.canvas-content');
+        
+        const citation = citationUrl ? 
+          `<sup><a href="${citationUrl}" target="_blank" style="color: #007bff; text-decoration: none;">[${citationText}]</a></sup>` :
+          `<sup>[${citationText}]</sup>`;
+        
+        contentDiv.innerHTML += citation;
+        
+        button.closest('.modal').remove();
+        showNotification('Citation added successfully!', 'success');
+      }
+    }
+    
+    function insertSingleCitation(contentDiv, citationData) {
+      // Create citation element
+      const citation = document.createElement('sup');
+      citation.style.cursor = 'pointer';
+      citation.style.color = '#007bff';
+      citation.style.textDecoration = 'underline';
+      citation.style.marginLeft = '2px';
+      citation.style.marginRight = '2px';
+      
+      // Get next citation number
+      const existingCitations = contentDiv.querySelectorAll('sup[data-citation]');
+      const citationNumber = existingCitations.length + 1;
+      
+      citation.textContent = `[${citationNumber}]`;
+      citation.setAttribute('data-citation', citationNumber);
+      citation.setAttribute('data-citation-text', citationData.text);
+      citation.setAttribute('data-citation-style', citationData.style);
+      citation.setAttribute('data-citation-type', citationData.type);
+      
+      if (citationData.url) {
+        citation.setAttribute('data-citation-url', citationData.url);
+      }
+      
+      if (citationData.item) {
+        citation.setAttribute('data-zotero-item', JSON.stringify(citationData.item));
+      }
+      
+      // Add click handler to show citation details
+      citation.addEventListener('click', function() {
+        showCitationDetails(citationData, citationNumber);
+      });
+      
+      // Insert at cursor position or append
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0 && contentDiv.contains(selection.anchorNode)) {
+        const range = selection.getRangeAt(0);
+        range.insertNode(citation);
+        range.collapse(false);
+      } else {
+        contentDiv.appendChild(citation);
+      }
+    }
+    
+    function showCitationDetails(citationData, citationNumber) {
+      let details = `Citation ${citationNumber}:\n\n${citationData.text}`;
+      
+      if (citationData.style) {
+        details += `\n\nStyle: ${citationData.style.toUpperCase()}`;
+      }
+      
+      if (citationData.url) {
+        details += `\n\nSource: ${citationData.url}`;
+      }
+      
+      if (citationData.type === 'zotero' && citationData.item) {
+        details += `\n\nZotero Item: ${citationData.item.title || 'Untitled'}`;
+      }
+      
+      alert(details);
+    }
+    
+    async function downloadCanvas(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const title = canvas.querySelector('.canvas-title').textContent.replace(/^.*\s/, '').trim();
+      const content = canvas.querySelector('.canvas-content').textContent || canvas.querySelector('.canvas-content').innerText;
+      
+      try {
+        showNotification('Preparing download...', 'info');
+        
+        const response = await fetch('/api/writer/download', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: title,
+            content: content,
+            format: 'docx'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Download failed: ${response.statusText}`);
+        }
+        
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showNotification('Content downloaded successfully as .docx!', 'success');
+      } catch (error) {
+        console.error('Download error:', error);
+        showNotification('Download failed. Please try again.', 'error');
+        
+        // Fallback to text download
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    }
+    
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+      `;
+      
+      switch(type) {
+        case 'success':
+          notification.style.backgroundColor = '#28a745';
+          break;
+        case 'error':
+          notification.style.backgroundColor = '#dc3545';
+          break;
+        default:
+          notification.style.backgroundColor = '#007bff';
+      }
+      
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+    
     function clearEditor() {
       if (confirm('Are you sure you want to clear the editor? This action cannot be undone.')) {
         document.getElementById('content-editor').value = '';
         updateContentStats();
       }
     }
+    
+    function previewContent() {
+      const content = document.getElementById('content-editor').value;
+      if (!content.trim()) {
+        alert('No content to preview!');
+        return;
+      }
+      
+      // Create preview window
+      const previewWindow = window.open('', '_blank', 'width=800,height=600');
+      previewWindow.document.write(`
+        <html>
+          <head>
+            <title>Content Preview</title>
+            <style>
+              body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+              h1, h2, h3 { color: #333; }
+              pre { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+            </style>
+          </head>
+          <body>
+            <pre>${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+          </body>
+        </html>
+      `);
+      previewWindow.document.close();
+    }
+    
+    function editContent() {
+      const editor = document.getElementById('content-editor');
+      editor.focus();
+      editor.setSelectionRange(editor.value.length, editor.value.length);
+    }
+    
+    function openHistoryModal() {
+      const historyModal = document.getElementById('history-modal');
+      historyModal.style.display = 'flex';
+      loadProjectHistory();
+    }
+    
+    function loadProjectHistory() {
+      // Load user's actual project history from backend
+      const historyGrid = document.getElementById('history-grid');
+      
+      // Show loading state
+      historyGrid.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading your projects...</div>';
+      
+      // TODO: Replace with actual API call to fetch user's content history
+      // For now, show empty state
+      setTimeout(() => {
+        historyGrid.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><p>No projects yet. Start writing to see your history here!</p></div>';
+      }, 1000);
+    }
+    
+    function loadHistoryItem(itemId) {
+      // TODO: Load specific history item from backend
+      console.log(`Loading project: ${itemId}`);
+    }
+    
+    function loadToEditor(itemId) {
+      // TODO: Load actual content from backend API
+      // For now, show message that this feature requires backend connection
+      alert('This feature requires backend connection. Please ensure the server is running.');
+      
+      // Close modal
+      document.getElementById('history-modal').style.display = 'none';
+      
+      alert('Content loaded to editor!');
+    }
+    
+    // Premium quality tier is now available to all users at 2x credit cost
+    // No plan restrictions needed - credit system handles access control
+    
+    function toggleQualityOptions() {
+      const dropdown = document.getElementById('quality-options');
+      const isVisible = dropdown.style.display !== 'none';
+      dropdown.style.display = isVisible ? 'none' : 'block';
+    }
+    
+    function toggleAssignmentOptions() {
+      const contentTypeRadios = document.querySelectorAll('input[name="contentType"]');
+      const assignmentOptions = document.getElementById('assignment-options');
+      
+      const isAssignmentSelected = Array.from(contentTypeRadios).some(radio => 
+        radio.checked && radio.value === 'assignment'
+      );
+      
+      if (assignmentOptions) {
+        assignmentOptions.style.display = isAssignmentSelected ? 'block' : 'none';
+      }
+    }
+    
+    function logout() {
+      // Clear user session data
+      if (window.userSession) {
+        window.userSession.logout();
+      } else {
+        // Fallback logout
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = 'auth.html';
+      }
+    }
+    
+    // Close quality dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('quality-options');
+      const filterBtn = document.querySelector('.quality-filter-btn');
+      
+      if (!dropdown.contains(event.target) && !filterBtn.contains(event.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
   </script>
 
 

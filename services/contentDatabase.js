@@ -6,7 +6,13 @@ const admin = require('firebase-admin');
  */
 class ContentDatabase {
     constructor() {
-        this.db = admin.firestore();
+        // Handle Firebase initialization in mock mode
+        try {
+            this.db = admin.firestore();
+        } catch (error) {
+            console.warn('⚠️  Firebase not initialized, using mock database for content database');
+            this.db = null;
+        }
         this.SIMILARITY_THRESHOLD = 0.8; // 80% similarity threshold
         this.MAX_SEARCH_RESULTS = 10;
         this.CONTENT_COLLECTION = 'generatedContent';
@@ -23,6 +29,12 @@ class ContentDatabase {
      */
     async storeContent(userId, prompt, content, metadata = {}) {
         try {
+            // Handle mock mode
+            if (!this.db) {
+                console.log('📝 Mock: Would store content for user', userId);
+                return 'mock-content-id-' + Date.now();
+            }
+            
             const keywords = this.extractKeywords(prompt);
             const contentHash = this.generateContentHash(content);
             
@@ -70,6 +82,12 @@ class ContentDatabase {
      */
     async findSimilarContent(prompt, style = 'Academic', tone = 'Formal', targetWordCount = 1000) {
         try {
+            // Handle mock mode
+            if (!this.db) {
+                console.log('🔍 Mock: Would search for similar content with prompt:', prompt.substring(0, 50) + '...');
+                return [];
+            }
+            
             const searchKeywords = this.extractKeywords(prompt);
             const promptLower = prompt.toLowerCase().trim();
             

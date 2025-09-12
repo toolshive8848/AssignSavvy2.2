@@ -6,6 +6,8 @@
   <title>Detector - AssignSavvy</title>
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
   <link rel="stylesheet" href="./styles/main.css">
+  <script src="js/userSession.js"></script>
+  <script src="js/authCheck.js"></script>
 </head>
 <body>
   <div class="dashboard-layout">
@@ -15,10 +17,21 @@
         <button class="sidebar-toggle" id="sidebar-toggle">
           <i class="fas fa-bars"></i>
         </button>
-        <div class="logo">AssignSavvy</div>
+        <div class="topbar-logo">
+          AssignSavvy
+        </div>
       </div>
-      <div>Content Detector</div>
-      <a href="index.html" class="btn btn-outline">Back to Home</a>
+      <div class="topbar-title">Content Detector</div>
+      <div class="topbar-actions">
+        <button class="notification-btn" id="notification-btn">
+          <i class="fas fa-bell"></i>
+          <div class="notification-badge"></div>
+        </button>
+        <a href="index.html" class="home-btn">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </a>
+      </div>
     </div>
     
     <!-- Sidebar -->
@@ -46,7 +59,7 @@
         <li>
           <a href="detector.html" class="sidebar-nav-item active">
             <i class="fas fa-shield-halved"></i>
-            <span>Detector</span>
+            <span>Originality Detector</span>
           </a>
         </li>
         <li>
@@ -70,7 +83,7 @@
             <i class="fas fa-user-circle"></i>
           </div>
           <div class="user-details">
-            <h4 id="user-name">John Doe</h4>
+            <h4 id="user-name">User Name</h4>
             <p class="user-plan" id="user-plan">Free Plan</p>
             <div class="user-credits">
               <i class="fas fa-coins"></i>
@@ -84,9 +97,38 @@
     <!-- Main Content -->
     <div class="dashboard-content">
       <!-- Header -->
-      <div class="flex justify-between items-center mb-6">
-        <h2>Content Detector - Analyze Your Content</h2>
+      <div class="section-header">
+        <h2>Content Detector</h2>
+        <button class="btn btn-outline" id="open-history-btn">
+          <i class="fas fa-history"></i> History
+        </button>
       </div>
+      
+      <style>
+        /* Section Header */
+        .section-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: var(--space-6);
+          padding: var(--space-4) var(--space-5);
+          background: var(--glass-bg);
+          backdrop-filter: var(--backdrop-blur);
+          border: 1px solid var(--glass-border);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-sm);
+        }
+        
+        .section-header h2 {
+          margin: 0;
+          font-size: 1.75rem;
+          font-weight: 700;
+          background: var(--gradient-primary);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+      </style>
       
 
       
@@ -96,6 +138,7 @@
           <div class="mb-6">
             <h3><i class="fas fa-keyboard"></i> Content Analysis</h3>
             <p class="text-gray">Enter your content below to analyze for plagiarism, AI detection, and readability.</p>
+
           </div>
           
           <!-- Text Input Panel -->
@@ -143,7 +186,7 @@
           <div id="no-results" class="text-center py-12">
             <i class="fas fa-shield-halved text-4xl text-gray mb-4"></i>
             <h4>No Analysis Yet</h4>
-            <p class="text-gray">Enter content or upload a file to analyze</p>
+            <p class="text-gray">Enter content to analyze</p>
           </div>
           
           <!-- Results State (Hidden by default) -->
@@ -218,7 +261,7 @@
             <i class="fas fa-user-circle text-6xl text-primary"></i>
           </div>
           <div class="profile-info">
-            <h4 id="modal-user-name">John Doe</h4>
+            <h4 id="modal-user-name">User Name</h4>
             <p class="text-gray" id="modal-user-email">john.doe@example.com</p>
             <div class="plan-info">
               <span class="plan-badge" id="modal-user-plan">Free Plan</span>
@@ -239,33 +282,15 @@
   </div>
   
   <script>
-    // User profile data
-    const currentUser = {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      plan: 'Free Plan',
-      credits: '145/200 Credits'
-    };
-
     // Load user profile data
     function loadUserProfile() {
-      // Update sidebar user info
-      document.getElementById('user-name').textContent = currentUser.name;
-      document.getElementById('user-plan').textContent = currentUser.plan;
-      document.getElementById('user-credits').textContent = currentUser.credits;
-      
-      // Update modal user info
-      document.getElementById('modal-user-name').textContent = currentUser.name;
-      document.getElementById('modal-user-email').textContent = currentUser.email;
-      document.getElementById('modal-user-plan').textContent = currentUser.plan;
-      document.getElementById('modal-user-credits').textContent = currentUser.credits;
+      // Now handled by UserSessionManager
+      window.userSession.updateAllDisplays();
     }
 
-    // Logout function
-    function logout() {
-      // In a real app, this would clear session/tokens
-      alert('Logging out...');
-      window.location.href = 'auth.html';
+    // Get current user data
+    function getCurrentUser() {
+      return window.userSession.getCurrentUser();
     }
 
     // Event listeners for user profile modal
@@ -287,6 +312,17 @@
         if (e.target === this) {
           this.style.display = 'none';
         }
+      });
+      
+      // Notification button event handler
+      document.getElementById('notification-btn').addEventListener('click', function() {
+        alert('Notifications feature coming soon!');
+        console.log('Notification button clicked');
+      });
+      
+      // History button event handler
+      document.getElementById('open-history-btn').addEventListener('click', function() {
+        window.location.href = 'history.html';
       });
     });
 
@@ -330,120 +366,10 @@
     });
   </script>
   
-  <style>
 
-    
-    /* Checkbox Container */
-    .checkbox-container {
-      display: flex;
-      align-items: center;
-      position: relative;
-      padding-left: 35px;
-      margin-bottom: 12px;
-      cursor: pointer;
-      user-select: none;
-    }
-    
-    .checkbox-container input {
-      position: absolute;
-      opacity: 0;
-      cursor: pointer;
-      height: 0;
-      width: 0;
-    }
-    
-    .checkmark {
-      position: absolute;
-      left: 0;
-      height: 20px;
-      width: 20px;
-      background-color: var(--bg-gray-100);
-      border-radius: var(--radius-sm);
-    }
-    
-    .checkbox-container:hover input ~ .checkmark {
-      background-color: var(--bg-gray-200);
-    }
-    
-    .checkbox-container input:checked ~ .checkmark {
-      background-color: var(--primary-purple);
-    }
-    
-    .checkmark:after {
-      content: "";
-      position: absolute;
-      display: none;
-    }
-    
-    .checkbox-container input:checked ~ .checkmark:after {
-      display: block;
-    }
-    
-    .checkbox-container .checkmark:after {
-      left: 7px;
-      top: 3px;
-      width: 6px;
-      height: 10px;
-      border: solid white;
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-    }
-    
-    /* Progress Bar */
-    .progress-bar {
-      height: 8px;
-      background-color: var(--bg-gray-100);
-      border-radius: var(--radius-full);
-      overflow: hidden;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background-color: var(--primary-purple);
-    }
-    
-    .bg-danger {
-      background-color: var(--danger-red);
-    }
-    
-    /* Badges */
-    .badge {
-      padding: var(--space-1) var(--space-2);
-      border-radius: var(--radius-sm);
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-    
-    .badge-warning {
-      background-color: var(--warning-yellow-light);
-      color: var(--warning-yellow-dark);
-    }
-    
-    .badge-danger {
-      background-color: var(--danger-red-light);
-      color: var(--danger-red-dark);
-    }
-    
-    .badge-success {
-      background-color: var(--success-green-light);
-      color: var(--success-green-dark);
-    }
-    
-    .badge-info {
-      background-color: var(--info-blue-light);
-      color: var(--info-blue-dark);
-    }
-    
-    /* Result Section */
-    .result-section {
-      padding-bottom: var(--space-4);
-      border-bottom: 1px solid var(--bg-gray-100);
-    }
-    
-    .result-section:last-child {
-      border-bottom: none;
-    }
-  </style>
+
+
+
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -485,8 +411,7 @@
       aiCheck.checked = true;
       readabilityCheck.checked = true;
       
-      // TODO: Remove these mock functions once API integration is complete
-      // These functions were used for testing purposes only
+      // Content analysis functionality
       
       // Analyze content
       analyzeBtn.addEventListener('click', async function() {
@@ -512,30 +437,27 @@
           analyzeBtn.disabled = true;
           analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
           
-          // TODO: Replace with actual API call to /api/detector/analyze
-          // const response = await fetch('/api/detector/analyze', {
-          //   method: 'POST',
-          //   headers: {
-          //     'Content-Type': 'application/json',
-          //     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          //   },
-          //   body: JSON.stringify({ 
-          //     content: content,
-          //     options: options
-          //   })
-          // });
-          // 
-          // const result = await response.json();
-          // 
-          // if (!response.ok) {
-          //   throw new Error(result.message || result.error || 'Analysis failed');
-          // }
-          // 
-          // currentAnalysisResults = result.results;
-          // currentContent = content;
-          // displayResults(result);
+          const response = await fetch('/api/detector/analyze', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({ 
+              content: content,
+              options: options
+            })
+          });
           
-          alert('API integration needed. Please implement the /api/detector/analyze endpoint.');
+          const result = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(result.message || result.error || 'Analysis failed');
+          }
+          
+          currentAnalysisResults = result.data.results;
+          currentContent = content;
+          displayResults(result.data);
           
         } catch (error) {
           console.error('Analysis error:', error);
@@ -586,55 +508,52 @@
             readabilityAnalysis: readabilityCheck.checked
           };
           
-          // TODO: Replace with actual API call to /api/detector/workflow
-          // const response = await fetch('/api/detector/workflow', {
-          //   method: 'POST',
-          //   headers: {
-          //     'Content-Type': 'application/json',
-          //     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          //   },
-          //   body: JSON.stringify({ 
-          //     content: currentContent,
-          //     options: options
-          //   })
-          // });
-          // 
-          // const result = await response.json();
-          // 
-          // if (!response.ok) {
-          //   throw new Error(result.message || result.error || 'Content improvement failed');
-          // }
-          // 
-          // // Update content input with final improved content
-          // contentInput.value = result.data.finalContent;
-          // contentInput.dispatchEvent(new Event('input')); // Trigger word count update
-          // 
-          // // Update current analysis results with final detection
-          // currentAnalysisResults = result.data.finalDetection;
-          // currentContent = result.data.finalContent;
-          // 
-          // // Display updated results
-          // displayResults({ results: result.data.finalDetection });
-          // 
-          // // Show improvement summary
-          // const summary = result.data.improvementSummary;
-          // let improvementMsg = `Content improved successfully!\n\n`;
-          // improvementMsg += `Cycles used: ${result.data.cyclesUsed}/2\n`;
-          // improvementMsg += `Credits used: ${result.data.totalCreditsUsed}\n\n`;
-          // 
-          // if (summary.plagiarismReduced > 0) {
-          //   improvementMsg += `Plagiarism reduced by ${summary.plagiarismReduced.toFixed(1)}%\n`;
-          // }
-          // if (summary.aiContentReduced > 0) {
-          //   improvementMsg += `AI content reduced by ${summary.aiContentReduced.toFixed(1)}%\n`;
-          // }
-          // if (summary.readabilityImproved > 0) {
-          //   improvementMsg += `Reading level improved by ${summary.readabilityImproved.toFixed(1)} grades\n`;
-          // }
-          // 
-          // alert(improvementMsg);
+          const response = await fetch('/api/detector/workflow', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({ 
+              content: currentContent,
+              options: options
+            })
+          });
           
-          alert('API integration needed. Please implement the /api/detector/workflow endpoint.');
+          const result = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(result.message || result.error || 'Content improvement failed');
+          }
+          
+          // Update content input with final improved content
+          contentInput.value = result.data.finalContent;
+          contentInput.dispatchEvent(new Event('input')); // Trigger word count update
+          
+          // Update current analysis results with final detection
+          currentAnalysisResults = result.data.finalDetection;
+          currentContent = result.data.finalContent;
+          
+          // Display updated results
+          displayResults({ results: result.data.finalDetection });
+          
+          // Show improvement summary
+          const summary = result.data.improvementSummary;
+          let improvementMsg = `Content improved successfully!\n\n`;
+          improvementMsg += `Cycles used: ${result.data.cyclesUsed}/2\n`;
+          improvementMsg += `Credits used: ${result.data.totalCreditsUsed}\n\n`;
+          
+          if (summary.plagiarismReduced > 0) {
+            improvementMsg += `Plagiarism reduced by ${summary.plagiarismReduced.toFixed(1)}%\n`;
+          }
+          if (summary.aiContentReduced > 0) {
+            improvementMsg += `AI content reduced by ${summary.aiContentReduced.toFixed(1)}%\n`;
+          }
+          if (summary.readabilityImproved > 0) {
+            improvementMsg += `Reading level improved by ${summary.readabilityImproved.toFixed(1)} grades\n`;
+          }
+          
+          alert(improvementMsg);
           
         } catch (error) {
           console.error('Workflow error:', error);
@@ -672,29 +591,26 @@
           saveResultsBtn.disabled = true;
           saveResultsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
           
-          // TODO: Replace with actual API call to /api/detector/save-results
-          // const response = await fetch('/api/detector/save-results', {
-          //   method: 'POST',
-          //   headers: {
-          //     'Content-Type': 'application/json',
-          //     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          //   },
-          //   body: JSON.stringify({
-          //     content: currentContent,
-          //     results: currentAnalysisResults,
-          //     timestamp: new Date().toISOString()
-          //   })
-          // });
-          // 
-          // const result = await response.json();
-          // 
-          // if (!response.ok) {
-          //   throw new Error(result.message || result.error || 'Failed to save results');
-          // }
-          // 
-          // alert('Analysis results saved to your history successfully!');
+          const response = await fetch('/api/detector/save-results', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({
+              content: currentContent,
+              results: currentAnalysisResults,
+              timestamp: new Date().toISOString()
+            })
+          });
           
-          alert('API integration needed. Please implement the /api/detector/save-results endpoint.');
+          const result = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(result.message || result.error || 'Failed to save results');
+          }
+          
+          alert('Results saved successfully!');
           
         } catch (error) {
           console.error('Save error:', error);

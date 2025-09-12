@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://assignsavvy.com/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+Disallow: /temp/
+
+# Allow important pages
+Allow: /writer.html
+Allow: /researcher.html
+Allow: /detector.html
+Allow: /prompt-engineer.html
+Allow: /pricing.html
+Allow: /auth.html
+Allow: /dashboard.html
+
+# Crawl delay (optional)
+Crawl-delay: 1

@@ -1,28 +1,10 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const router = express.Router();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-
-// Middleware to verify JWT token
-const authenticateToken = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-        return res.status(401).json({ error: 'Access token required' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.status(403).json({ error: 'Invalid or expired token' });
-    }
-};
+const { unifiedAuth } = require('./middleware/unifiedAuth');
+const { asyncErrorHandler } = require('./middleware/errorHandler');
 
 // Get user profile and credits
-router.get('/profile', authenticateToken, (req, res) => {
+router.get('/profile', unifiedAuth, asyncErrorHandler(async (req, res) => {
     const userId = req.user.userId;
     const db = req.app.locals.db;
 
@@ -39,21 +21,42 @@ router.get('/profile', authenticateToken, (req, res) => {
                 return res.status(404).json({ error: 'User not found' });
             }
 
+            // Determine max credits based on plan
+            const maxCredits = user.is_premium === 1 ? 2000 : 200;
+            const plan = user.is_premium === 1 ? 'Premium Plan' : 'Free Plan';
+
             res.json({
                 id: user.id,
                 name: user.name,
                 email: user.email,
                 credits: user.credits,
+                maxCredits: maxCredits,
+                plan: plan,
                 isPremium: user.is_premium === 1,
                 subscriptionEndDate: user.subscription_end_date,
                 memberSince: user.created_at
             });
         }
     );
+}));
+
+// Test endpoint for development - returns mock user data without authentication
+router.get('/test-profile', (req, res) => {
+    res.json({
+        id: 1,
+        name: 'Test User',
+        email: 'test@example.com',
+        credits: 145,
+        maxCredits: 200,
+        plan: 'Free Plan',
+        isPremium: false,
+        subscriptionEndDate: null,
+        memberSince: new Date().toISOString()
+    });
 });
 
 // Get user's credit usage statistics
-router.get('/stats', authenticateToken, (req, res) => {
+router.get('/stats', unifiedAuth, asyncErrorHandler(async (req, res) => {
     const userId = req.user.userId;
     const db = req.app.locals.db;
 
@@ -97,10 +100,10 @@ router.get('/stats', authenticateToken, (req, res) => {
             }
         });
     });
-});
+}));
 
 // Update user profile
-router.put('/profile', authenticateToken, (req, res) => {
+router.put('/profile', unifiedAuth, asyncErrorHandler(async (req, res) => {
     const userId = req.user.userId;
     const { name } = req.body;
     const db = req.app.locals.db;
@@ -125,10 +128,10 @@ router.put('/profile', authenticateToken, (req, res) => {
             res.json({ message: 'Profile updated successfully', name: name.trim() });
         }
     );
-});
+}));
 
 // Manual credit refresh (for testing - in production this would be automated monthly)
-router.post('/refresh-credits', authenticateToken, (req, res) => {
+router.post('/refresh-credits', unifiedAuth, asyncErrorHandler(async (req, res) => {
     const userId = req.user.userId;
     const db = req.app.locals.db;
 
@@ -161,6 +164,6 @@ router.post('/refresh-credits', authenticateToken, (req, res) => {
             }
         );
     });
-});
+}));
 
 module.exports = router;

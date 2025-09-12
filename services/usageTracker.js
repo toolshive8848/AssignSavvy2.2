@@ -1,4 +1,4 @@
-const admin = require('firebase-admin');
+const { admin, db, isInitialized } = require('../config/firebase');
 
 /**
  * UsageTracker class for managing monthly usage limits and tracking
@@ -6,7 +6,8 @@ const admin = require('firebase-admin');
  */
 class UsageTracker {
     constructor() {
-        this.db = admin.firestore();
+        this.db = isInitialized ? db : null;
+        this.isInitialized = isInitialized;
         this.FREEMIUM_MONTHLY_WORD_LIMIT = 1000;
         this.FREEMIUM_MONTHLY_CREDIT_LIMIT = 200;
     }
@@ -26,6 +27,22 @@ class UsageTracker {
      * @returns {Promise<Object>} Usage statistics
      */
     async getMonthlyUsage(userId) {
+        // If Firebase is not initialized, return mock usage data
+        if (!this.isInitialized) {
+            console.log(`⚠️  Firebase not initialized, returning mock usage data for user ${userId}`);
+            const monthKey = this.getCurrentMonthKey();
+            return {
+                userId,
+                monthKey,
+                wordsGenerated: 0,
+                creditsUsed: 0,
+                requestCount: 0,
+                lastUpdated: new Date(),
+                createdAt: new Date(),
+                mock: true
+            };
+        }
+
         try {
             const monthKey = this.getCurrentMonthKey();
             const usageRef = this.db.collection('monthlyUsage').doc(`${userId}_${monthKey}`);

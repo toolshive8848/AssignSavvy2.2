@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { logger } = require('../utils/logger');
 
 /**
  * LLM Service for AI Content Generation
@@ -7,14 +8,12 @@ const axios = require('axios');
 
 class LLMService {
     constructor() {
-        // TODO: Add your Gemini API key here - Get from Google AI Studio (https://makersuite.google.com/app/apikey)
-        // For Gemini 2.5 Flash and Gemini 2.5 Pro models
-        this.geminiApiKey = process.env.GEMINI_API_KEY; // Add your Gemini API key
+        // Gemini Configuration
+        this.geminiApiKey = process.env.GEMINI_API_KEY;
+        this.isGeminiConfigured = this.geminiApiKey && this.geminiApiKey !== 'your-gemini-api-key-here';
         
-        // Legacy OpenAI support (can be removed if switching fully to Gemini)
-        this.apiKey = process.env.OPENAI_API_KEY;
-        this.baseURL = 'https://api.openai.com/v1';
-        this.model = 'gpt-3.5-turbo';
+        // Service is configured if Gemini is available
+        this.isConfigured = this.isGeminiConfigured;
         this.maxRetries = 3;
         this.retryDelay = 1000; // 1 second
         this.fallbackEnabled = true;
@@ -31,16 +30,27 @@ class LLMService {
      * @param {string} style - Writing style
      * @param {string} tone - Writing tone
      * @param {number} wordCount - Target word count
+     * @param {string} qualityTier - Quality tier ('standard' or 'premium')
      * @returns {Promise<Object>} Generated content with metadata
      */
-    async generateContent(prompt, style = 'Academic', tone = 'Formal', wordCount = 500) {
+    async generateContent(prompt, style = 'Academic', tone = 'Formal', wordCount = 500, qualityTier = 'standard') {
+        // Check if any LLM service is configured
+        if (!this.isConfigured) {
+            throw new Error('AI content generation service is not configured. Please contact support to enable this feature.');
+        }
+        
         const startTime = Date.now();
         let attempt = 0;
         let lastError = null;
 
         // Check circuit breaker
         if (this._isCircuitOpen()) {
-            console.warn('Circuit breaker is open, using fallback immediately');
+            logger.warn('Circuit breaker is open, using fallback immediately', {
+                service: 'LLMService',
+                method: 'generateContent',
+                failureCount: this.failureCount,
+                wordCount
+            });
             return this._generateFallbackContent(prompt, style, tone, wordCount, 'circuit_breaker');
         }
 
@@ -49,22 +59,30 @@ class LLMService {
             attempt++;
             
             try {
-                const result = await this._attemptLLMGeneration(prompt, style, tone, wordCount);
+                const result = await this._attemptLLMGeneration(prompt, style, tone, wordCount, qualityTier);
                 
                 // Success - reset failure count
                 this._recordSuccess();
                 
                 return {
                     content: result,
-                    source: 'llm',
+                    source: qualityTier === 'premium' ? 'gemini-pro' : 'gemini-flash',
                     attempt: attempt,
                     generationTime: Date.now() - startTime,
-                    fallbackUsed: false
+                    fallbackUsed: false,
+                    qualityTier: qualityTier
                 };
 
             } catch (error) {
                 lastError = error;
-                console.error(`LLM generation attempt ${attempt} failed:`, error.message);
+                logger.error('LLM generation attempt failed', {
+                    service: 'LLMService',
+                    method: 'generateContent',
+                    attempt,
+                    maxRetries: this.maxRetries,
+                    error: error.message,
+                    wordCount
+                });
                 
                 // Record failure
                 this._recordFailure();
@@ -72,7 +90,11 @@ class LLMService {
                 // Check if we should retry
                 if (attempt < this.maxRetries && this._shouldRetry(error)) {
                     const delay = this._calculateRetryDelay(attempt);
-                    console.log(`Retrying in ${delay}ms...`);
+                    logger.info('Retrying LLM generation', {
+                        service: 'LLMService',
+                        attempt,
+                        delayMs: delay
+                    });
                     await this._sleep(delay);
                     continue;
                 }
@@ -82,56 +104,51 @@ class LLMService {
         }
 
         // All retries failed, use fallback
-        console.warn(`All ${this.maxRetries} attempts failed, using fallback`);
+        logger.warn('All LLM generation attempts failed, using fallback', {
+            service: 'LLMService',
+            maxRetries: this.maxRetries,
+            finalError: lastError?.message
+        });
         return this._generateFallbackContent(prompt, style, tone, wordCount, 'llm_failure', lastError);
     }
 
     /**
      * Attempt LLM generation (single try)
      */
-    async _attemptLLMGeneration(prompt, style, tone, wordCount) {
-        if (!this.apiKey) {
-            throw new Error('OpenAI API key not configured');
+    async _attemptLLMGeneration(prompt, style, tone, wordCount, qualityTier = 'standard') {
+        // Use Gemini 2.5 Flash for standard tier, Gemini 2.5 Pro for premium
+        if (!this.geminiApiKey) {
+            throw new Error('Gemini API key not configured');
         }
 
+        const { GoogleGenerativeAI } = require('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(this.geminiApiKey);
+        
+        // Select model based on quality tier
+        const modelName = qualityTier === 'premium' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
+        const model = genAI.getGenerativeModel({ model: modelName });
+        
         const systemPrompt = this.buildSystemPrompt(style, tone, wordCount);
         const userPrompt = this.buildUserPrompt(prompt, wordCount);
-        const temperature = this.getTemperatureForStyle(style);
-
-        const response = await axios.post(
-            `${this.baseURL}/chat/completions`,
-            {
-                model: this.model,
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: userPrompt }
-                ],
-                max_tokens: Math.min(4000, Math.ceil(wordCount * 1.5)),
-                temperature: temperature,
-                presence_penalty: 0.1,
-                frequency_penalty: 0.1
-            },
-            {
-                headers: {
-                    'Authorization': `Bearer ${this.apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                timeout: 60000 // 60 second timeout
-            }
-        );
-
-        if (response.data && response.data.choices && response.data.choices[0]) {
-            return response.data.choices[0].message.content.trim();
-        } else {
-            throw new Error('Invalid response from LLM service');
-        }
+        
+        // For standard tier: direct generation without detection
+        const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
+        
+        const result = await model.generateContent(fullPrompt);
+        const response = await result.response;
+        return response.text();
     }
 
     /**
      * Generate fallback content when LLM fails
      */
     _generateFallbackContent(prompt, style, tone, wordCount, reason, error = null) {
-        console.log(`Generating fallback content due to: ${reason}`);
+        logger.info('Generating fallback content', {
+            service: 'LLMService',
+            reason,
+            error: error?.message,
+            wordCount
+        });
         
         const fallbackContent = this.generateMockContent(prompt, style, tone, wordCount);
         
@@ -153,7 +170,10 @@ class LLMService {
         
         // Check if timeout has passed
         if (Date.now() - this.lastFailureTime > this.circuitBreakerTimeout) {
-            console.log('Circuit breaker timeout passed, attempting to close circuit');
+            logger.info('Circuit breaker timeout passed, attempting to close circuit', {
+                service: 'LLMService',
+                timeoutMs: this.circuitBreakerTimeout
+            });
             this.circuitOpen = false;
             this.failureCount = 0;
             return false;
@@ -178,7 +198,11 @@ class LLMService {
         this.lastFailureTime = Date.now();
         
         if (this.failureCount >= this.circuitBreakerThreshold) {
-            console.warn(`Circuit breaker opened after ${this.failureCount} failures`);
+            logger.warn('Circuit breaker opened due to failures', {
+                service: 'LLMService',
+                failureCount: this.failureCount,
+                threshold: this.circuitBreakerThreshold
+            });
             this.circuitOpen = true;
         }
     }
@@ -273,97 +297,11 @@ Requirements:
     }
 
     /**
-     * Generate mock content for testing/fallback with enhanced quality
+     * Generate fallback content when LLM service is unavailable
      */
     generateMockContent(prompt, style, tone, wordCount) {
-        const styleTemplates = {
-            Academic: {
-                introduction: "This comprehensive analysis examines",
-                body_starters: [
-                    "Research indicates that",
-                    "Studies have demonstrated",
-                    "Evidence suggests that",
-                    "Scholarly investigation reveals",
-                    "Academic literature supports"
-                ],
-                transitions: ["Furthermore,", "Additionally,", "Moreover,", "In contrast,", "Subsequently,", "Nevertheless,", "Consequently,"]
-            },
-            Business: {
-                introduction: "This strategic report outlines",
-                body_starters: [
-                    "Market analysis shows",
-                    "Industry trends indicate",
-                    "Performance metrics demonstrate",
-                    "Stakeholder feedback reveals",
-                    "Competitive analysis suggests"
-                ],
-                transitions: ["Therefore,", "As a result,", "Consequently,", "In addition,", "However,", "Furthermore,", "Nevertheless,"]
-            },
-            Creative: {
-                introduction: "Imagine a world where",
-                body_starters: [
-                    "In this realm,",
-                    "The landscape reveals",
-                    "Characters discover that",
-                    "The narrative unfolds as",
-                    "Within this setting,"
-                ],
-                transitions: ["Suddenly,", "Meanwhile,", "In that moment,", "As if by magic,", "Without warning,", "Unexpectedly,", "In the distance,"]
-            },
-            Casual: {
-                introduction: "Let's dive into",
-                body_starters: [
-                    "Here's the thing:",
-                    "What's interesting is",
-                    "You might be surprised that",
-                    "The reality is",
-                    "It turns out that"
-                ],
-                transitions: ["So,", "Also,", "Plus,", "But here's the thing,", "On the other hand,", "Actually,", "Honestly,"]
-            }
-        };
-
-        const template = styleTemplates[style] || styleTemplates.Academic;
-        const wordsPerSentence = this._getWordsPerSentence(style);
-        const targetSentences = Math.ceil(wordCount / wordsPerSentence);
-        const paragraphs = Math.max(3, Math.ceil(targetSentences / 4));
-        
-        let content = '';
-        let sentenceCount = 0;
-        
-        // Introduction paragraph
-        content += `${template.introduction} ${prompt}. `;
-        sentenceCount++;
-        
-        // Add introduction details
-        if (targetSentences > 3) {
-            content += `This ${style.toLowerCase()} examination provides comprehensive insights into the subject matter. `;
-            sentenceCount++;
-        }
-        
-        content += '\n\n';
-        
-        // Body paragraphs
-        for (let p = 1; p < paragraphs - 1 && sentenceCount < targetSentences - 2; p++) {
-            const starter = template.body_starters[p % template.body_starters.length];
-            content += `${starter} ${this._generateTopicSentence(prompt, style, tone)}. `;
-            sentenceCount++;
-            
-            // Add supporting sentences
-            const sentencesInParagraph = Math.min(3, targetSentences - sentenceCount - 2);
-            for (let s = 0; s < sentencesInParagraph; s++) {
-                const transition = template.transitions[s % template.transitions.length];
-                content += `${transition} ${this._generateSupportingSentence(prompt, style, tone)}. `;
-                sentenceCount++;
-            }
-            
-            content += '\n\n';
-        }
-        
-        // Conclusion paragraph
-        content += this._generateConclusion(prompt, style, tone);
-        
-        return content.trim();
+        // Return null to indicate service unavailable instead of hardcoded content
+        throw new Error('LLM service is currently unavailable. Please try again later or contact support if the issue persists.');
     }
 
     /**
@@ -379,46 +317,7 @@ Requirements:
         return wordsPerSentence[style] || 15;
     }
 
-    /**
-     * Generate topic sentence
-     */
-    _generateTopicSentence(prompt, style, tone) {
-        const topics = [
-            `the fundamental aspects of ${prompt.toLowerCase()}`,
-            `key considerations regarding ${prompt.toLowerCase()}`,
-            `important implications of ${prompt.toLowerCase()}`,
-            `significant factors influencing ${prompt.toLowerCase()}`,
-            `critical elements within ${prompt.toLowerCase()}`
-        ];
-        return topics[Math.floor(Math.random() * topics.length)];
-    }
-
-    /**
-     * Generate supporting sentence
-     */
-    _generateSupportingSentence(prompt, style, tone) {
-        const supports = [
-            `this approach enhances understanding of the core concepts`,
-            `multiple perspectives contribute to a comprehensive analysis`,
-            `detailed examination reveals important patterns and trends`,
-            `systematic investigation provides valuable insights`,
-            `thorough evaluation demonstrates significant findings`
-        ];
-        return supports[Math.floor(Math.random() * supports.length)];
-    }
-
-    /**
-     * Generate conclusion
-     */
-    _generateConclusion(prompt, style, tone) {
-        const conclusions = {
-            Academic: `In conclusion, this comprehensive analysis of ${prompt.toLowerCase()} demonstrates the complexity and significance of the subject matter. The findings contribute to our understanding and provide a foundation for future research and investigation.`,
-            Business: `In summary, this examination of ${prompt.toLowerCase()} provides actionable insights and strategic recommendations. The analysis supports informed decision-making and effective implementation of proposed solutions.`,
-            Creative: `As our exploration of ${prompt.toLowerCase()} draws to a close, we discover that the journey itself has been as meaningful as the destination. The narrative continues to unfold, leaving us with lasting impressions and new possibilities.`,
-            Casual: `So there you have it - a complete look at ${prompt.toLowerCase()}. Hopefully this gives you a better understanding of the topic and maybe even sparks some new ideas for your own exploration.`
-        };
-        return conclusions[style] || conclusions.Academic;
-    }
+    // Helper functions removed - should be replaced with actual LLM service integration
 
     /**
      * Polish existing content sections to match new requirements
@@ -429,7 +328,7 @@ Requirements:
      * @param {number} wordCount - Target word count
      * @returns {Promise<Object>} Polished content with metadata
      */
-    async polishExistingContent(sections, prompt, style = 'Academic', tone = 'Formal', wordCount = 500) {
+    async polishExistingContent(sections, prompt, style = 'Academic', tone = 'Formal', wordCount = 500, qualityTier = 'standard') {
         const startTime = Date.now();
         
         try {
@@ -462,9 +361,14 @@ Polished Content:`;
             let polishedContent;
             
             try {
-                polishedContent = await this._attemptLLMGeneration(polishPrompt, style, tone, wordCount);
+                polishedContent = await this._attemptLLMGeneration(polishPrompt, style, tone, wordCount, qualityTier);
             } catch (error) {
-                console.warn('LLM polishing failed, using enhanced fallback:', error.message);
+                logger.warn('LLM polishing failed, using enhanced fallback', {
+                    service: 'LLMService',
+                    method: 'polishExistingContent',
+                    error: error.message,
+                    wordCount
+                });
                 polishedContent = this._generatePolishedFallback(baseContent, prompt, style, tone, wordCount);
             }
             
@@ -477,7 +381,12 @@ Polished Content:`;
             };
             
         } catch (error) {
-            console.error('Error polishing existing content:', error);
+            logger.error('Error polishing existing content', {
+                service: 'LLMService',
+                method: 'polishExistingContent',
+                error: error.message,
+                wordCount
+            });
             
             // Fallback to enhanced content generation
             return this._generateFallbackContent(prompt, style, tone, wordCount, 'polishing_error', error);
@@ -488,30 +397,8 @@ Polished Content:`;
      * Generate enhanced fallback for polished content
      */
     _generatePolishedFallback(baseContent, prompt, style, tone, wordCount) {
-        // Extract key concepts from base content
-        const sentences = baseContent.split(/[.!?]+/).filter(s => s.trim().length > 10);
-        const keyConcepts = sentences.slice(0, 3).map(s => s.trim());
-        
-        // Generate new content incorporating key concepts
-        let polishedContent = this.generateMockContent(prompt, style, tone, wordCount);
-        
-        // Try to incorporate key concepts from original content
-        if (keyConcepts.length > 0) {
-            const conceptIntegration = keyConcepts.join('. ');
-            polishedContent = polishedContent.replace(
-                /This comprehensive analysis examines/,
-                `Building upon previous insights, this analysis examines`
-            );
-            
-            // Add a paragraph incorporating original concepts
-            const paragraphs = polishedContent.split('\n\n');
-            if (paragraphs.length > 2) {
-                paragraphs.splice(2, 0, `Previous research has established that ${conceptIntegration}. These foundational insights provide valuable context for understanding the current analysis.`);
-                polishedContent = paragraphs.join('\n\n');
-            }
-        }
-        
-        return polishedContent;
+        // When LLM service is unavailable, throw an error instead of returning hardcoded content
+        throw new Error('Content polishing service is currently unavailable. Please try again later or contact support if the issue persists.');
     }
 
     /**

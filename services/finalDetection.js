@@ -4,7 +4,14 @@ const admin = require('firebase-admin');
 class FinalDetectionService {
   constructor() {
     this.originalityDetection = new OriginalityDetection();
-    this.db = admin.firestore();
+    
+    // Handle Firebase initialization in mock mode
+    try {
+      this.db = admin.firestore();
+    } catch (error) {
+      console.warn('⚠️  Firebase not initialized, using mock database for final detection');
+      this.db = null;
+    }
   }
 
   /**

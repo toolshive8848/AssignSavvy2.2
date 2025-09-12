@@ -6,6 +6,8 @@
   <title>Prompt Engineer - AssignSavvy</title>
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
   <link rel="stylesheet" href="./styles/main.css">
+  <script src="js/userSession.js"></script>
+  <script src="js/authCheck.js"></script>
 </head>
 <body>
   <div class="dashboard-layout">
@@ -15,10 +17,21 @@
         <button class="sidebar-toggle" id="sidebar-toggle">
           <i class="fas fa-bars"></i>
         </button>
-        <div class="logo">AssignSavvy</div>
+        <div class="topbar-logo">
+          AssignSavvy
+        </div>
       </div>
-      <div>Prompt Engineer</div>
-      <a href="index.html" class="btn btn-outline">Back to Home</a>
+      <div class="topbar-title">Prompt Engineer</div>
+      <div class="topbar-actions">
+        <button class="notification-btn" id="notification-btn">
+          <i class="fas fa-bell"></i>
+          <div class="notification-badge"></div>
+        </button>
+        <a href="index.html" class="home-btn">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </a>
+      </div>
     </div>
     
     <!-- Sidebar -->
@@ -46,7 +59,7 @@
         <li>
           <a href="detector.html" class="sidebar-nav-item">
             <i class="fas fa-shield-halved"></i>
-            <span>Detector</span>
+            <span>Originality Detector</span>
           </a>
         </li>
         <li>
@@ -70,7 +83,7 @@
             <i class="fas fa-user-circle"></i>
           </div>
           <div class="user-details">
-            <h4 id="user-name">John Doe</h4>
+            <h4 id="user-name">User Name</h4>
             <p class="user-plan" id="user-plan">Free Plan</p>
             <div class="user-credits">
               <i class="fas fa-coins"></i>
@@ -84,8 +97,11 @@
     <!-- Main Content -->
     <div class="dashboard-content">
       <!-- Header -->
-      <div class="flex justify-between items-center mb-6">
-        <h2>Prompt Engineer - Optimize Your AI Prompts</h2>
+      <div class="section-header">
+        <h2>Prompt Engineer</h2>
+        <button class="btn btn-outline" id="open-history-btn">
+          <i class="fas fa-history"></i> History
+        </button>
       </div>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -120,9 +136,14 @@
             </div>
           </div>
           
-          <button class="btn btn-primary w-full">
-            <i class="fas fa-wand-magic-sparkles"></i> Optimize Prompt
-          </button>
+          <div class="flex gap-2">
+            <button class="btn btn-outline flex-1" onclick="analyzePromptWithCredits(document.getElementById('original-prompt').value.trim())">
+              <i class="fas fa-chart-line"></i> Analyze (Credits)
+            </button>
+            <button class="btn btn-primary flex-1">
+              <i class="fas fa-wand-magic-sparkles"></i> Optimize Prompt
+            </button>
+          </div>
         </div>
         
         <!-- Optimization Info Section -->
@@ -140,7 +161,7 @@
                 </button>
               </div>
             </div>
-            <textarea class="form-input" rows="8" readonly>Write a comprehensive analysis of renewable energy adoption trends in developing countries over the past decade. Include statistical data on growth rates, challenges faced in implementation, successful case studies, and policy recommendations for accelerating adoption. Structure the response with clear headings, bullet points for key statistics, and conclude with the most promising areas for future growth.</textarea>
+            <textarea class="form-input" rows="8" readonly id="optimized-prompt" placeholder="Your optimized prompt will appear here after optimization..."></textarea>
           </div>
           
           <!-- Optimization Tips -->
@@ -155,45 +176,20 @@
             </ul>
           </div>
           
-          <!-- Daily Usage Statistics -->
-          <div class="card mb-6">
-            <h3 class="mb-4">Daily Usage</h3>
-            
-            <!-- Input Usage -->
-            <div class="usage-input mb-4">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium">Input Words Today</span>
-                <span class="text-sm text-gray">0/1000</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 0%; background-color: #27ae60"></div>
-              </div>
-            </div>
-            
-            <!-- Output Usage -->
-            <div class="usage-output">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium">Output Words Today</span>
-                <span class="text-sm text-gray">0/500</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 0%; background-color: #27ae60"></div>
-              </div>
-            </div>
-          </div>
+
           
           <!-- Quality Metrics -->
-          <div class="card mb-6">
+          <div class="card mb-6" id="quality-metrics">
             <h3 class="mb-4">Quality Metrics</h3>
             
             <!-- Clarity Metric -->
             <div class="mb-4">
               <div class="flex justify-between mb-1">
                 <span>Clarity</span>
-                <span>70%</span>
+                <span id="clarity-score">--</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill" style="width: 70%;"></div>
+                <div class="progress-fill" id="clarity-progress" style="width: 0%;"></div>
               </div>
             </div>
             
@@ -201,10 +197,10 @@
             <div class="mb-4">
               <div class="flex justify-between mb-1">
                 <span>Specificity</span>
-                <span>55%</span>
+                <span id="specificity-score">--</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill" style="width: 55%;"></div>
+                <div class="progress-fill" id="specificity-progress" style="width: 0%;"></div>
               </div>
             </div>
             
@@ -212,10 +208,10 @@
             <div class="mb-4">
               <div class="flex justify-between mb-1">
                 <span>Context</span>
-                <span>40%</span>
+                <span id="context-score">--</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill" style="width: 40%;"></div>
+                <div class="progress-fill" id="context-progress" style="width: 0%;"></div>
               </div>
             </div>
             
@@ -223,10 +219,10 @@
             <div>
               <div class="flex justify-between mb-1">
                 <span>Overall Score</span>
-                <span>55%</span>
+                <span id="overall-score">--</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill bg-primary" style="width: 55%;"></div>
+                <div class="progress-fill bg-primary" id="overall-progress" style="width: 0%;"></div>
               </div>
             </div>
           </div>
@@ -234,14 +230,9 @@
           <!-- Recent Optimizations -->
           <div class="card mb-6">
             <h3 class="mb-4">Recent Optimizations</h3>
-            <div class="space-y-4">
+            <div class="space-y-4" id="recent-optimizations">
               <div class="optimization-example">
-                <h5>Original: "Write about climate change"</h5>
-                <p class="text-sm text-gray">Optimized: "Write a 500-word analysis of the economic impacts of climate change on coastal communities, including specific examples from the past decade and potential mitigation strategies."</p>
-              </div>
-              <div class="optimization-example">
-                <h5>Original: "Help with math homework"</h5>
-                <p class="text-sm text-gray">Optimized: "Explain how to solve quadratic equations using the quadratic formula. Include step-by-step instructions, the formula itself, and 3 example problems with solutions."</p>
+                <p class="text-sm text-gray">Your recent optimizations will appear here after you start using the tool.</p>
               </div>
             </div>
           </div>
@@ -264,7 +255,7 @@
             <i class="fas fa-user-circle text-6xl text-primary"></i>
           </div>
           <div class="profile-info">
-            <h4 id="modal-user-name">John Doe</h4>
+            <h4 id="modal-user-name">User Name</h4>
             <p class="text-gray" id="modal-user-email">john.doe@example.com</p>
             <div class="plan-info">
               <span class="plan-badge" id="modal-user-plan">Free Plan</span>
@@ -320,158 +311,505 @@
   </div>
   
   <style>
+    /* Modern CSS Variables */
+    :root {
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --gradient-success: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      --gradient-warning: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.1);
+      --border-glass: 1px solid rgba(255, 255, 255, 0.18);
+      --backdrop-blur: blur(20px);
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --border-radius-modern: 16px;
+    }
+
+    /* Enhanced Body and Layout */
+    body {
+      background: white;
+      min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .dashboard-layout {
+      background: white;
+    }
+
+    .dashboard-content {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: var(--border-radius-modern);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      margin: 20px;
+      transition: var(--transition-smooth);
+    }
+
+    /* Modern Headers */
+    h2 {
+      background: var(--gradient-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Enhanced Cards */
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: var(--border-radius-modern);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--gradient-accent);
+      opacity: 0.6;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+      background: #f9fafb;
+    }
+
+    h3 {
+      color: #1f2937;
+      font-weight: 600;
+      font-size: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Enhanced Form Inputs */
+    .form-input {
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      color: #1f2937;
+      padding: 1rem;
+      transition: var(--transition-smooth);
+      font-size: 0.95rem;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border: 1px solid #3b82f6;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: #9ca3af;
+    }
+
+    /* Enhanced Buttons */
+    .btn {
+      border-radius: 12px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+      border: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-outline {
+      background: white;
+      border: 1px solid #d1d5db;
+      color: #374151;
+    }
+
+    .btn-outline:hover {
+      background: #f9fafb;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+      background: var(--gradient-secondary);
+      color: white;
+      box-shadow: 0 8px 16px rgba(245, 87, 108, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(245, 87, 108, 0.4);
+    }
+
     /* Progress Bar */
     .progress-bar {
       height: 8px;
-      background-color: var(--bg-gray-100);
-      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
       overflow: hidden;
+      backdrop-filter: var(--backdrop-blur);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .progress-fill {
       height: 100%;
-      background-color: var(--primary-purple);
+      background: var(--gradient-success);
+      border-radius: 20px;
+      transition: var(--transition-smooth);
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
     }
     
     .bg-primary {
-      background-color: var(--primary-purple);
+      background: var(--gradient-primary);
     }
     
-    /* Button States */
+    /* Enhanced Button States */
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      border-radius: 10px;
+      transition: var(--transition-smooth);
+      background: white;
+      border: 1px solid #d1d5db;
+      color: #6b7280;
+    }
+
+    .btn-sm:hover {
+      background: #f9fafb;
+      transform: translateY(-1px);
+      color: #374151;
+    }
+
     .btn-sm.active {
-      background-color: var(--primary-purple);
+      background: var(--gradient-accent);
       color: white;
+      box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.3);
     }
     
-    /* Optimization Example */
+    /* Enhanced Optimization Example */
     .optimization-example {
-      padding-bottom: var(--space-3);
-      border-bottom: 1px solid var(--bg-gray-100);
+      padding: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      transition: var(--transition-smooth);
+    }
+
+    .optimization-example:hover {
+      background: #f3f4f6;
+      transform: translateX(5px);
     }
     
     .optimization-example:last-child {
       border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .optimization-example h5 {
+      color: #1f2937;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .optimization-example p {
+      color: #6b7280;
+      line-height: 1.5;
     }
     
-    /* Icon Button */
+    /* Enhanced Icon Button */
     .btn-icon {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: var(--radius-md);
-      background-color: var(--bg-gray-100);
-      color: var(--text-gray);
-      border: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      border: var(--border-glass);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: var(--transition-smooth);
+      backdrop-filter: var(--backdrop-blur);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-icon::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--gradient-accent);
+      opacity: 0;
+      transition: var(--transition-smooth);
     }
     
     .btn-icon:hover {
-      background-color: var(--bg-gray-200);
-      color: var(--text-dark);
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-icon:hover::before {
+      opacity: 0.1;
+    }
+
+    .btn-icon i {
+      position: relative;
+      z-index: 1;
     }
     
-    /* Modal Styles */
+    /* Enhanced Modal Styles */
     .modal {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+      }
+      to {
+        opacity: 1;
+        backdrop-filter: blur(10px);
+      }
     }
     
     .modal-content {
-      background-color: white;
-      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: var(--backdrop-blur);
+      border: var(--border-glass);
+      border-radius: var(--border-radius-modern);
       width: 90%;
       max-width: 600px;
-      box-shadow: var(--shadow-lg);
+      box-shadow: var(--shadow-glass);
+      animation: modalSlideIn 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--gradient-accent);
+      opacity: 0.8;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
     
     .modal-header {
-      padding: var(--space-4);
-      border-bottom: 1px solid var(--bg-gray-100);
+      padding: 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
+    .modal-header h3 {
+      color: white;
+      margin: 0;
+      font-weight: 600;
+    }
     
     .modal-body {
-      padding: var(--space-4);
+      padding: 2rem;
       max-height: 70vh;
       overflow-y: auto;
+      color: white;
     }
     
     .btn-close {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: var(--border-glass);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      font-size: 1.2rem;
       cursor: pointer;
-      color: var(--text-gray);
+      color: rgba(255, 255, 255, 0.8);
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-close:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      transform: scale(1.1);
     }
     
     .project-list {
       list-style: none;
+      padding: 0;
+      margin: 0;
     }
     
     .project-item {
-      padding: var(--space-4);
-      border-bottom: 1px solid var(--bg-gray-100);
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.5rem;
+      border-radius: 12px;
+      transition: var(--transition-smooth);
+    }
+
+    .project-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(5px);
     }
     
     .project-item:last-child {
       border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .project-item h4 {
+      color: white;
+      margin: 0 0 0.25rem 0;
+      font-weight: 600;
+    }
+
+    .project-item p {
+      color: rgba(255, 255, 255, 0.85);
+      margin: 0;
+      font-size: 0.875rem;
     }
     
-    /* Alert Styles */
+    /* Enhanced Alert Styles */
     .alert {
-      padding: var(--space-3);
-      border-radius: var(--radius-sm);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
       font-size: 0.875rem;
       display: flex;
       align-items: center;
-      gap: var(--space-2);
+      gap: 0.75rem;
+      backdrop-filter: var(--backdrop-blur);
+      border: var(--border-glass);
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .alert::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: currentColor;
+      opacity: 0.8;
     }
     
     .alert-error {
-      background-color: #fee2e2;
-      color: #dc2626;
-      border: 1px solid #fecaca;
+      background: rgba(220, 38, 38, 0.1);
+      color: #fca5a5;
+      border-color: rgba(220, 38, 38, 0.2);
     }
     
     .alert-warning {
-      background-color: #fef3c7;
-      color: #d97706;
-      border: 1px solid #fed7aa;
+      background: rgba(217, 119, 6, 0.1);
+      color: #fcd34d;
+      border-color: rgba(217, 119, 6, 0.2);
     }
     
     .alert-info {
-      background-color: #dbeafe;
-      color: #2563eb;
-      border: 1px solid #bfdbfe;
+      background: rgba(37, 99, 235, 0.1);
+      color: #93c5fd;
+      border-color: rgba(37, 99, 235, 0.2);
+    }
+
+    .alert:hover {
+      transform: translateX(5px);
+      background: rgba(255, 255, 255, 0.05);
     }
     
-    /* Utility Classes */
+    /* Enhanced Utility Classes */
     .mt-2 {
-      margin-top: var(--space-2);
+      margin-top: 0.5rem;
     }
     
     .mb-4 {
-      margin-bottom: var(--space-4);
+      margin-bottom: 1rem;
     }
     
     .space-y-1 > * + * {
-      margin-top: var(--space-1);
+      margin-top: 0.25rem;
     }
     
     .grid {
@@ -483,45 +821,150 @@
     }
     
     .gap-2 {
-      gap: var(--space-2);
+      gap: 0.5rem;
     }
     
     .gap-4 {
-      gap: var(--space-4);
+      gap: 1rem;
+    }
+
+    /* Text Styling */
+    .text-sm {
+      font-size: 0.875rem;
+    }
+
+    .text-gray {
+      color: #6b7280;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .font-medium {
+      font-weight: 500;
+    }
+
+    .font-semibold {
+      font-weight: 600;
+    }
+
+    /* Enhanced Labels */
+    label {
+      color: #374151;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .dashboard-content {
+        margin: 10px;
+        padding: 1rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+      }
+
+      .grid-cols-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+      }
+
+      .modal-content {
+        width: 95%;
+        margin: 1rem;
+      }
+
+      .modal-header,
+      .modal-body {
+        padding: 1.5rem;
+      }
+
+      .flex {
+        flex-wrap: wrap;
+      }
+
+      .flex.gap-2 {
+        gap: 0.5rem;
+      }
+
+      .btn-sm {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .dashboard-content {
+        margin: 5px;
+        padding: 1rem;
+      }
+
+      h2 {
+        font-size: 1.25rem;
+      }
+
+      .card {
+        padding: 1rem;
+      }
+
+      .btn {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.8rem;
+      }
+
+      .form-input {
+        padding: 0.75rem;
+        font-size: 0.875rem;
+      }
+
+      .modal-header,
+      .modal-body {
+        padding: 1rem;
+      }
+
+      .project-item {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .optimization-example {
+        padding: 1rem;
+      }
     }
   </style>
   
+  <!-- User Session Manager -->
+  <script src="js/userSession.js"></script>
+  
   <script>
-    // User profile functionality
-    let currentUser = {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      plan: 'free',
-      credits: 145,
-      maxCredits: 200
-    };
-
+    // Load user profile data
     function loadUserProfile() {
-      // Update sidebar user info
-      document.getElementById('user-name').textContent = currentUser.name;
-      document.getElementById('user-plan').textContent = currentUser.plan === 'free' ? 'Free Plan' : 'Pro Plan';
-      document.getElementById('user-credits').textContent = `${currentUser.credits}/${currentUser.maxCredits} Credits`;
-      
-      // Update modal user info
-      document.getElementById('modal-user-name').textContent = currentUser.name;
-      document.getElementById('modal-user-email').textContent = currentUser.email;
-      document.getElementById('modal-user-plan').textContent = currentUser.plan === 'free' ? 'Free Plan' : 'Pro Plan';
-      document.getElementById('modal-user-credits').textContent = `${currentUser.credits}/${currentUser.maxCredits} Credits`;
+      // Now handled by UserSessionManager
+      window.userSession.updateAllDisplays();
+    }
+
+    // Get current user data
+    function getCurrentUser() {
+      return window.userSession.getCurrentUser();
     }
 
     function logout() {
-      if (confirm('Are you sure you want to logout?')) {
-        // Clear user data
-        localStorage.removeItem('userToken');
-        localStorage.removeItem('userData');
-        // Redirect to auth page
-        window.location.href = 'auth.html';
-      }
+      window.userSession.logout();
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -575,6 +1018,9 @@
         // Validate word count limits
         validateWordCount(wordCount);
         
+        // Update credit cost preview
+        updateCreditCostPreview();
+        
         // Auto-analyze on input (debounced)
         clearTimeout(this.analyzeTimeout);
         this.analyzeTimeout = setTimeout(() => {
@@ -585,7 +1031,6 @@
       });
       
       // Load initial data
-      loadDailyUsage();
       updateCreditsDisplay();
       
       // Modal functionality
@@ -660,8 +1105,12 @@
     }
     
     async function getCurrentUserToken() {
-      // Return mock token for now - replace with actual Firebase auth
-      return 'mock-token';
+      // Get token from localStorage (set during login)
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+      return token;
     }
     
     // Free prompt analysis (no authentication required)
@@ -681,6 +1130,34 @@
           updateQualityMetrics(data.analysis);
         } else {
           console.error('Analysis failed:', data.error);
+        }
+      } catch (error) {
+        console.error('Error analyzing prompt:', error);
+      }
+    }
+    
+    // Analyze prompt with authentication and credit deduction
+    async function analyzePromptWithCredits(prompt) {
+      try {
+        const response = await makeAuthenticatedRequest('/api/prompt/analyze', {
+          method: 'POST',
+          body: JSON.stringify({ prompt })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          updateQualityMetrics(data.analysis);
+          // Update credits display after successful analysis
+          updateCreditsDisplay();
+        } else {
+          if (data.limitExceeded) {
+            showUpgradeModal(data.error || 'Daily word limit exceeded. Please upgrade to continue.');
+          } else if (data.insufficientCredits) {
+            alert('Insufficient credits: ' + data.error);
+          } else {
+            console.error('Analysis failed:', data.error);
+          }
         }
       } catch (error) {
         console.error('Error analyzing prompt:', error);
@@ -712,11 +1189,7 @@
         if (data.success) {
           displayOptimizedPrompt(data);
           
-          // Update daily usage if provided
-          if (data.dailyUsage) {
-            dailyUsage = data.dailyUsage;
-            updateUsageDisplay();
-          }
+          // Credits are automatically deducted by the backend
           
           updateCreditsDisplay();
         } else {
@@ -756,42 +1229,48 @@
     
     // Update quality metrics display
     function updateQualityMetrics(analysis) {
-      const metrics = {
-        'Clarity': analysis.clarity || { score: 70 },
-        'Specificity': analysis.specificity || { score: 55 },
-        'Context': analysis.context || { score: 40 },
-        'Overall Score': analysis.overall || { score: 55 }
-      };
+      // Update clarity metric
+      const clarityScore = analysis.clarity?.score || 0;
+      document.getElementById('clarity-score').textContent = `${clarityScore}%`;
+      const clarityProgress = document.getElementById('clarity-progress');
+      clarityProgress.style.width = `${clarityScore}%`;
+      clarityProgress.style.backgroundColor = getScoreColor(clarityScore);
       
-      Object.keys(metrics).forEach(metricName => {
-        const metricElements = document.querySelectorAll('.flex.justify-between');
-        metricElements.forEach(element => {
-          if (element.querySelector('span')?.textContent === metricName) {
-            const scoreSpan = element.querySelectorAll('span')[1];
-            const progressBar = element.nextElementSibling?.querySelector('.progress-fill');
-            
-            if (scoreSpan && progressBar) {
-              const score = metrics[metricName].score;
-              scoreSpan.textContent = `${score}%`;
-              progressBar.style.width = `${score}%`;
-              
-              // Update color based on score
-              if (score >= 80) {
-                progressBar.style.backgroundColor = '#27ae60';
-              } else if (score >= 60) {
-                progressBar.style.backgroundColor = '#f39c12';
-              } else {
-                progressBar.style.backgroundColor = '#e74c3c';
-              }
-            }
-          }
-        });
-      });
+      // Update specificity metric
+      const specificityScore = analysis.specificity?.score || 0;
+      document.getElementById('specificity-score').textContent = `${specificityScore}%`;
+      const specificityProgress = document.getElementById('specificity-progress');
+      specificityProgress.style.width = `${specificityScore}%`;
+      specificityProgress.style.backgroundColor = getScoreColor(specificityScore);
+      
+      // Update context metric
+      const contextScore = analysis.context?.score || 0;
+      document.getElementById('context-score').textContent = `${contextScore}%`;
+      const contextProgress = document.getElementById('context-progress');
+      contextProgress.style.width = `${contextScore}%`;
+      contextProgress.style.backgroundColor = getScoreColor(contextScore);
+      
+      // Update overall score
+      const overallScore = analysis.overall?.score || 0;
+      document.getElementById('overall-score').textContent = `${overallScore}%`;
+      const overallProgress = document.getElementById('overall-progress');
+      overallProgress.style.width = `${overallScore}%`;
+      overallProgress.style.backgroundColor = getScoreColor(overallScore);
+    }
+    
+    function getScoreColor(score) {
+      if (score >= 80) {
+        return '#27ae60'; // Green
+      } else if (score >= 60) {
+        return '#f39c12'; // Orange
+      } else {
+        return '#e74c3c'; // Red
+      }
     }
     
     // Display optimized prompt
     function displayOptimizedPrompt(data) {
-      const outputArea = document.querySelector('.card:last-child textarea');
+      const outputArea = document.getElementById('optimized-prompt');
       if (outputArea) {
         outputArea.value = data.optimizedPrompt;
       }
@@ -875,60 +1354,13 @@
       alert(`${message}\n\nPlease upgrade your plan to continue using this feature.`);
     }
     
-    // Load daily usage statistics
-    async function loadDailyUsage() {
-      try {
-        const response = await makeAuthenticatedRequest('/api/prompt/usage');
-        const data = await response.json();
-        
-        if (data.success) {
-          dailyUsage = data.usage;
-          userPlan = data.plan;
-          dailyLimits = data.limits;
-          updateUsageDisplay();
-        }
-      } catch (error) {
-        console.error('Error loading daily usage:', error);
-      }
-    }
+    // Credit-based system - no daily usage tracking needed
     
-    // Update usage display in UI
-    function updateUsageDisplay() {
-      // Update input usage
-      const inputUsage = document.querySelector('.usage-input');
-      if (inputUsage) {
-        const percentage = Math.round((dailyUsage.inputWords / dailyLimits.inputWords) * 100);
-        inputUsage.innerHTML = `
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-sm font-medium">Input Words Today</span>
-            <span class="text-sm text-gray">${dailyUsage.inputWords}/${dailyLimits.inputWords}</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${percentage}%; background-color: ${percentage > 90 ? '#e74c3c' : percentage > 70 ? '#f39c12' : '#27ae60'}"></div>
-          </div>
-        `;
-      }
-      
-      // Update output usage
-      const outputUsage = document.querySelector('.usage-output');
-      if (outputUsage) {
-        const percentage = Math.round((dailyUsage.outputWords / dailyLimits.outputWords) * 100);
-        outputUsage.innerHTML = `
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-sm font-medium">Output Words Today</span>
-            <span class="text-sm text-gray">${dailyUsage.outputWords}/${dailyLimits.outputWords}</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${percentage}%; background-color: ${percentage > 90 ? '#e74c3c' : percentage > 70 ? '#f39c12' : '#27ae60'}"></div>
-          </div>
-        `;
-      }
-    }
+    // Credit-based system - no usage display needed
     
     // Validate word count against limits
     function validateWordCount(wordCount) {
-      const maxInputWords = userPlan === 'free' ? 1000 : 10000;
-      const remainingInputWords = dailyLimits.inputWords - dailyUsage.inputWords;
+      const maxInputWords = 1000; // One-time limit for all users
       
       const optimizeBtn = document.querySelector('.btn-primary');
       const warningDiv = document.getElementById('word-count-warning');
@@ -947,27 +1379,21 @@
         originalPrompt.parentNode.appendChild(warning);
         
         if (optimizeBtn) optimizeBtn.disabled = true;
-      } else if (wordCount > remainingInputWords && userPlan === 'free') {
-        // Exceeds daily limit for free users
-        const warning = document.createElement('div');
-        warning.id = 'word-count-warning';
-        warning.className = 'alert alert-warning mt-2';
-        warning.innerHTML = `⚠️ This will exceed your daily limit of ${dailyLimits.inputWords} words. Please upgrade to continue.`;
-        originalPrompt.parentNode.appendChild(warning);
-        
-        if (optimizeBtn) optimizeBtn.disabled = true;
-      } else if (wordCount > remainingInputWords && userPlan === 'paid') {
-        // Will use credits for paid users
-        const creditsNeeded = Math.ceil((wordCount - remainingInputWords) / 100);
-        const warning = document.createElement('div');
-        warning.id = 'word-count-warning';
-        warning.className = 'alert alert-info mt-2';
-        warning.innerHTML = `ℹ️ This will use ${creditsNeeded} credits (${wordCount - remainingInputWords} words beyond daily limit).`;
-        originalPrompt.parentNode.appendChild(warning);
-        
-        if (optimizeBtn) optimizeBtn.disabled = false;
       } else {
-        // Within limits
+        // Calculate and show credits needed
+        const inputCredits = Math.ceil(wordCount / 20);
+        const estimatedOutputWords = Math.min(wordCount * 1.5, 1000);
+        const outputCredits = Math.ceil(estimatedOutputWords / 10);
+        const totalCredits = inputCredits + outputCredits;
+        
+        if (totalCredits > 0) {
+          const warning = document.createElement('div');
+          warning.id = 'word-count-warning';
+          warning.className = 'alert alert-info mt-2';
+          warning.innerHTML = `ℹ️ This will use approximately ${totalCredits} credits (${inputCredits} for input + ${outputCredits} for output).`;
+          originalPrompt.parentNode.appendChild(warning);
+        }
+        
         if (optimizeBtn) optimizeBtn.disabled = false;
       }
     }
@@ -1021,11 +1447,51 @@
         if (data.success) {
           const creditsElement = document.querySelector('.user-credits span');
           if (creditsElement) {
-            creditsElement.textContent = `${data.used}/${data.total} Credits`;
+            const remaining = data.total - data.used;
+            creditsElement.textContent = `${remaining}/${data.total} Credits`;
+            
+            // Add visual indicator for low credits
+            if (remaining < 10) {
+              creditsElement.style.color = '#e74c3c'; // Red for low credits
+            } else if (remaining < 50) {
+              creditsElement.style.color = '#f39c12'; // Orange for medium credits
+            } else {
+              creditsElement.style.color = '#27ae60'; // Green for good credits
+            }
+          }
+          
+          // Update modal credits display if it exists
+          const modalCreditsElement = document.getElementById('modal-user-credits');
+          if (modalCreditsElement) {
+            modalCreditsElement.textContent = `${data.total - data.used}/${data.total} Credits`;
           }
         }
       } catch (error) {
         console.error('Error updating credits:', error);
+      }
+    }
+    
+    // Calculate and display estimated credit cost
+    function updateCreditCostPreview() {
+      const promptTextarea = document.getElementById('original-prompt');
+      const prompt = promptTextarea?.value?.trim();
+      
+      if (prompt) {
+        const wordCount = prompt.split(/\s+/).filter(word => word.length > 0).length;
+        const inputCredits = Math.ceil(wordCount / 20); // 1 credit = 20 words for input
+        const estimatedOutputCredits = Math.ceil((wordCount * 1.5) / 10); // Estimated output credits
+        const totalCredits = inputCredits + estimatedOutputCredits;
+        
+        // Update cost preview in UI
+        let costPreview = document.getElementById('credit-cost-preview');
+        if (!costPreview) {
+          costPreview = document.createElement('div');
+          costPreview.id = 'credit-cost-preview';
+          costPreview.className = 'text-sm text-gray mt-2';
+          promptTextarea.parentNode.appendChild(costPreview);
+        }
+        
+        costPreview.innerHTML = `<i class="fas fa-coins"></i> Estimated cost: ${totalCredits} credits (${wordCount} words)`;
       }
     }
     

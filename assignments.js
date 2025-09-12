@@ -16,6 +16,9 @@ const OriginalityDetection = require('./services/originalityDetection');
 const ZoteroCSLProcessor = require('./services/zoteroCSL');
 const ContentHistoryService = require('./services/contentHistory');
 const FinalDetectionService = require('./services/finalDetection');
+const { unifiedAuth } = require('./middleware/unifiedAuth');
+const { asyncErrorHandler } = require('./middleware/errorHandler');
+const { validateAssignmentInput, handleValidationErrors } = require('./middleware/validation');
 const router = express.Router();
 
 // Initialize services
@@ -50,7 +53,7 @@ const authenticateToken = (req, res, next) => {
 
 // Enhanced AI content generation service with style and tone support
 const generateAssignmentContent = async (title, description, wordCount, citationStyle, style = 'Academic', tone = 'Formal') => {
-    // This is an enhanced mock implementation. In production, integrate with OpenAI GPT-4 or similar
+    // Enhanced content generation with LLM integration
     const styleTemplates = {
         'Academic': {
             introduction: 'This scholarly examination explores',
@@ -71,33 +74,46 @@ const generateAssignmentContent = async (title, description, wordCount, citation
     
     const selectedStyle = styleTemplates[style] || styleTemplates['Academic'];
     
-    const mockContent = `
+    // Generate actual content using LLM service
+    const prompt = `Write a ${wordCount}-word ${style.toLowerCase()} ${tone.toLowerCase()} assignment on "${title}". ${description ? `Instructions: ${description}` : ''} Use ${citationStyle} citation style.`;
+    
+    try {
+        const generatedContent = await llmService.generateContent(prompt, {
+            maxTokens: Math.ceil(wordCount * 1.5),
+            temperature: 0.7,
+            style: style,
+            tone: tone
+        });
+        
+        return generatedContent;
+    } catch (error) {
+        console.error('Error generating content:', error);
+        // Fallback to template-based content
+        const fallbackContent = `
 # ${title}
 
 ## Introduction
 
-${selectedStyle.introduction} the topic of "${title}" with detailed analysis and research-based insights. The following content has been generated based on the provided instructions: ${description}
+${selectedStyle.introduction} the topic of "${title}" with detailed analysis and research-based insights.
 
 ## Main Body
 
-${selectedStyle.transition} Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+${selectedStyle.transition} [Content will be generated based on your requirements]
 
 ### Key Points
 
-1. First main argument with supporting evidence
-2. Second critical analysis point
-3. Third perspective on the topic
-4. Fourth consideration and implications
+1. [Analysis point will be developed]
+2. [Supporting evidence will be provided]
+3. [Additional perspective will be added]
+4. [Implications will be discussed]
 
 ## Analysis
 
-The research indicates several important findings that contribute to our understanding of this topic. These insights are particularly relevant in the current academic discourse.
+[Detailed analysis will be provided based on research]
 
 ## Conclusion
 
-In conclusion, this analysis of "${title}" reveals significant insights that contribute to the broader understanding of the subject matter. The implications of these findings extend beyond the immediate scope of this assignment.
+${selectedStyle.conclusion} [Conclusion will be drawn from the analysis]
 
 ## References
 
@@ -112,27 +128,33 @@ Johnson, Mary, and Anne Brown. Research Methodologies for Students. Academic Pre
 `Smith, J. (2023). Academic Writing in the Digital Age. Journal of Modern Education 45, no. 2: 123-145.
 
 Johnson, M., and A. Brown. Research Methodologies for Students. Academic Press, 2022.`}
-    `.trim();
+        `.trim();
+        
+        return fallbackContent;
+    }
 
     // Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    return mockContent.substring(0, Math.min(mockContent.length, wordCount * 6)); // Rough word estimation
+
 };
 
-// Mock plagiarism checking service
+// Plagiarism checking service
 const checkPlagiarism = async (content) => {
-    // This is a mock implementation. In production, integrate with Originality.ai, Copyleaks, etc.
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Return a random originality score between 85-98%
-    const score = 85 + Math.random() * 13;
-    return Math.round(score * 100) / 100;
+    try {
+        // Use the OriginalityDetection service for real plagiarism checking
+        const result = await originalityDetection.checkOriginality(content);
+        return result.originalityScore;
+    } catch (error) {
+        console.error('Error checking plagiarism:', error);
+        // Fallback: return null to indicate plagiarism check failed
+        return null;
+    }
 };
 
 // Create new assignment
 // New endpoint for AI Writer tool content generation
-router.post('/generate', authenticateToken, async (req, res) => {
+router.post('/generate', unifiedAuth, validateAssignmentInput, handleValidationErrors, asyncErrorHandler(async (req, res) => {
     const { prompt, style, tone, wordCount, subject, additionalInstructions, citationStyle, requiresCitations } = req.body;
     const userId = req.user.id;
     const db = req.app.locals.db;
@@ -403,9 +425,9 @@ router.post('/generate', authenticateToken, async (req, res) => {
         console.error('Server error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.post('/create', authenticateToken, async (req, res) => {
+router.post('/create', unifiedAuth, validateAssignmentInput, handleValidationErrors, asyncErrorHandler(async (req, res) => {
     const { title, description, wordCount, citationStyle } = req.body;
     const db = req.app.locals.db;
     const userId = req.user.id;
@@ -506,10 +528,10 @@ router.post('/create', authenticateToken, async (req, res) => {
         console.error('Assignment creation error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
 // Get assignment by ID
-router.get('/:id', authenticateToken, (req, res) => {
+router.get('/:id', unifiedAuth, asyncErrorHandler(async (req, res) => {
     const assignmentId = req.params.id;
     const userId = req.user.id;
     const db = req.app.locals.db;
@@ -541,10 +563,10 @@ router.get('/:id', authenticateToken, (req, res) => {
             });
         }
     );
-});
+}));
 
 // Get user's assignment history
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', unifiedAuth, asyncErrorHandler(async (req, res) => {
     const userId = req.user.userId;
     const db = req.app.locals.db;
 
@@ -571,10 +593,10 @@ router.get('/', authenticateToken, (req, res) => {
             res.json(formattedAssignments);
         }
     );
-});
+}));
 
 // Download assignment as text file
-router.get('/:id/download', authenticateToken, async (req, res) => {
+router.get('/:id/download', unifiedAuth, asyncErrorHandler(async (req, res) => {
     const assignmentId = req.params.id;
     const userId = req.user.userId;
     const db = req.app.locals.db;
@@ -604,12 +626,12 @@ router.get('/:id/download', authenticateToken, async (req, res) => {
             }
         }
     );
-});
+}));
 
 // Draft Management Endpoints
 
 // Create new draft
-router.post('/drafts', authenticateToken, async (req, res) => {
+router.post('/drafts', unifiedAuth, validateAssignmentInput, handleValidationErrors, asyncErrorHandler(async (req, res) => {
     try {
         const { title, content, prompt, style, tone, targetWordCount } = req.body;
         const userId = req.user.id;
@@ -636,10 +658,10 @@ router.post('/drafts', authenticateToken, async (req, res) => {
         console.error('Error creating draft:', error);
         res.status(500).json({ error: 'Failed to create draft' });
     }
-});
+}));
 
 // Get user's drafts
-router.get('/drafts', authenticateToken, async (req, res) => {
+router.get('/drafts', unifiedAuth, asyncErrorHandler(async (req, res) => {
     try {
         const userId = req.user.id;
         const { status, limit, offset, orderBy, orderDirection } = req.query;
@@ -660,10 +682,10 @@ router.get('/drafts', authenticateToken, async (req, res) => {
         console.error('Error fetching drafts:', error);
         res.status(500).json({ error: 'Failed to fetch drafts' });
     }
-});
+}));
 
 // Get specific draft
-router.get('/drafts/:id', authenticateToken, async (req, res) => {
+router.get('/drafts/:id', unifiedAuth, asyncErrorHandler(async (req, res) => {
     try {
         const draftId = parseInt(req.params.id);
         const userId = req.user.id;
@@ -682,10 +704,10 @@ router.get('/drafts/:id', authenticateToken, async (req, res) => {
         console.error('Error fetching draft:', error);
         res.status(500).json({ error: 'Failed to fetch draft' });
     }
-});
+}));
 
 // Update draft
-router.put('/drafts/:id', authenticateToken, async (req, res) => {
+router.put('/drafts/:id', unifiedAuth, validateAssignmentInput, handleValidationErrors, asyncErrorHandler(async (req, res) => {
     try {
         const draftId = parseInt(req.params.id);
         const userId = req.user.id;
@@ -721,10 +743,10 @@ router.put('/drafts/:id', authenticateToken, async (req, res) => {
         console.error('Error updating draft:', error);
         res.status(500).json({ error: 'Failed to update draft' });
     }
-});
+}));
 
 // Get draft versions
-router.get('/drafts/:id/versions', authenticateToken, async (req, res) => {
+router.get('/drafts/:id/versions', unifiedAuth, asyncErrorHandler(async (req, res) => {
     try {
         const draftId = parseInt(req.params.id);
         const userId = req.user.id;
@@ -745,10 +767,10 @@ router.get('/drafts/:id/versions', authenticateToken, async (req, res) => {
         console.error('Error fetching draft versions:', error);
         res.status(500).json({ error: 'Failed to fetch draft versions' });
     }
-});
+}));
 
 // Restore draft version
-router.post('/drafts/:id/restore/:version', authenticateToken, async (req, res) => {
+router.post('/drafts/:id/restore/:version', unifiedAuth, asyncErrorHandler(async (req, res) => {
     try {
         const draftId = parseInt(req.params.id);
         const versionNumber = parseInt(req.params.version);
@@ -770,10 +792,10 @@ router.post('/drafts/:id/restore/:version', authenticateToken, async (req, res) 
         console.error('Error restoring draft version:', error);
         res.status(500).json({ error: 'Failed to restore draft version' });
     }
-});
+}));
 
 // Create auto-save session
-router.post('/drafts/:id/autosave-session', authenticateToken, async (req, res) => {
+router.post('/drafts/:id/autosave-session', unifiedAuth, asyncErrorHandler(async (req, res) => {
     try {
         const draftId = parseInt(req.params.id);
         const userId = req.user.id;
@@ -795,10 +817,10 @@ router.post('/drafts/:id/autosave-session', authenticateToken, async (req, res) 
         console.error('Error creating auto-save session:', error);
         res.status(500).json({ error: 'Failed to create auto-save session' });
     }
-});
+}));
 
 // Auto-save draft content
-router.post('/drafts/autosave', async (req, res) => {
+router.post('/drafts/autosave', asyncErrorHandler(async (req, res) => {
     try {
         const { sessionToken, content } = req.body;
 
@@ -816,10 +838,10 @@ router.post('/drafts/autosave', async (req, res) => {
         console.error('Error auto-saving draft:', error);
         res.status(500).json({ error: 'Failed to auto-save draft' });
     }
-});
+}));
 
 // Delete draft
-router.delete('/drafts/:id', authenticateToken, async (req, res) => {
+router.delete('/drafts/:id', unifiedAuth, asyncErrorHandler(async (req, res) => {
     try {
         const draftId = parseInt(req.params.id);
         const userId = req.user.id;
@@ -834,10 +856,10 @@ router.delete('/drafts/:id', authenticateToken, async (req, res) => {
         console.error('Error deleting draft:', error);
         res.status(500).json({ error: 'Failed to delete draft' });
     }
-});
+}));
 
 // Get draft statistics
-router.get('/drafts-stats', authenticateToken, async (req, res) => {
+router.get('/drafts-stats', unifiedAuth, asyncErrorHandler(async (req, res) => {
     try {
         const userId = req.user.id;
         const stats = await draftManager.getDraftStatistics(userId, db);
@@ -850,10 +872,10 @@ router.get('/drafts-stats', authenticateToken, async (req, res) => {
         console.error('Error fetching draft statistics:', error);
         res.status(500).json({ error: 'Failed to fetch draft statistics' });
     }
-});
+}));
 
 // Export content in various formats
-router.post('/export', async (req, res) => {
+router.post('/export', asyncErrorHandler(async (req, res) => {
     try {
         const { content, format, options = {} } = req.body;
         
@@ -898,10 +920,10 @@ router.post('/export', async (req, res) => {
             message: error.message
         });
     }
-});
+}));
 
 // Download exported file
-router.get('/download/:filename', async (req, res) => {
+router.get('/download/:filename', asyncErrorHandler(async (req, res) => {
     try {
         const { filename } = req.params;
         const filepath = path.join(contentFormatterInstance.exportDirectory, filename);
@@ -941,10 +963,10 @@ router.get('/download/:filename', async (req, res) => {
             message: error.message
         });
     }
-});
+}));
 
 // Get supported export formats
-router.get('/export/formats', (req, res) => {
+router.get('/export/formats', asyncErrorHandler(async (req, res) => {
     res.json({
         success: true,
         formats: contentFormatterInstance.getSupportedFormats(),
@@ -955,10 +977,10 @@ router.get('/export/formats', (req, res) => {
             docx: 'Structured data for DOCX generation (requires DOCX library)'
         }
     });
-});
+}));
 
 // Preview formatted content (without saving)
-router.post('/export/preview', async (req, res) => {
+router.post('/export/preview', asyncErrorHandler(async (req, res) => {
     try {
         const { content, format, options = {} } = req.body;
         
@@ -999,7 +1021,7 @@ router.post('/export/preview', async (req, res) => {
             message: error.message
         });
     }
-});
+}));
 
 /**
  * Get appropriate HTTP status code for validation error

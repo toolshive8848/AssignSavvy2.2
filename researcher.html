@@ -6,6 +6,7 @@
   <title>Researcher - AssignSavvy</title>
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
   <link rel="stylesheet" href="./styles/main.css">
+  <script src="js/authCheck.js"></script>
 </head>
 <body>
   <div class="dashboard-layout">
@@ -15,10 +16,21 @@
         <button class="sidebar-toggle" id="sidebar-toggle">
           <i class="fas fa-bars"></i>
         </button>
-        <div class="logo">AssignSavvy</div>
+        <div class="topbar-logo">
+          AssignSavvy
+        </div>
       </div>
-      <div>Research Assistant</div>
-      <a href="index.html" class="btn btn-outline">Back to Home</a>
+      <div class="topbar-title">Research Assistant</div>
+      <div class="topbar-actions">
+        <button class="notification-btn" id="notification-btn">
+          <i class="fas fa-bell"></i>
+          <div class="notification-badge"></div>
+        </button>
+        <a href="index.html" class="home-btn">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </a>
+      </div>
     </div>
     
     <!-- Sidebar -->
@@ -46,7 +58,7 @@
         <li>
           <a href="detector.html" class="sidebar-nav-item">
             <i class="fas fa-shield-halved"></i>
-            <span>Detector</span>
+            <span>Originality Detector</span>
           </a>
         </li>
         <li>
@@ -70,11 +82,11 @@
             <i class="fas fa-user-circle"></i>
           </div>
           <div class="user-details">
-            <h4 id="user-name">John Doe</h4>
+            <h4 id="user-name">User Name</h4>
             <p class="user-plan" id="user-plan">Free Plan</p>
             <div class="user-credits">
               <i class="fas fa-coins"></i>
-              <span id="user-credits">145/200 Credits</span>
+              <span id="user-credits">Loading...</span>
             </div>
           </div>
         </div>
@@ -82,7 +94,7 @@
     </div>
     
     <!-- Main Content -->
-    <div class="dashboard-main">
+    <div class="dashboard-content">
       <div class="researcher-container">
         
         <!-- Research Section -->
@@ -157,149 +169,57 @@
         <!-- Tab Content Containers -->
         <div class="tab-content active" id="sources-content">
           <div class="results-container">
-            <!-- Result Item 1 -->
-            <div class="result-item">
-              <h4>Climate Change Effects on Global Agriculture</h4>
-              <p class="text-sm">Journal of Environmental Science, 2024</p>
-              <p>This comprehensive study examines the impact of climate change on agricultural systems worldwide, with a focus on crop yields, water resources, and adaptation strategies.</p>
-              <div class="flex gap-2 mt-2">
-                <span class="badge">Climate Change</span>
-                <span class="badge">Agriculture</span>
-                <span class="badge">Sustainability</span>
-              </div>
-              <div class="flex justify-between mt-4">
-                <div>
-                  <span class="text-sm text-gray">Relevance: 98%</span>
-                </div>
-                <div class="flex gap-2">
-                  <button class="btn btn-outline btn-sm">
-                    <i class="fas fa-bookmark"></i>
-                  </button>
-                  <button class="btn btn-outline btn-sm">
-                    <i class="fas fa-quote-right"></i>
-                  </button>
-                  <button class="btn btn-primary btn-sm">
-                    <i class="fas fa-file-arrow-down"></i> PDF
-                  </button>
-                </div>
-              </div>
+            <div id="sources-loading" style="text-align: center; padding: 3rem; display: none;">
+              <i class="fas fa-spinner fa-spin text-2xl"></i>
+              <p class="mt-2">Loading research sources...</p>
             </div>
             
-            <!-- Result Item 2 -->
-            <div class="result-item">
-              <h4>Renewable Energy Transition: Challenges and Opportunities</h4>
-              <p class="text-sm">Energy Policy Review, 2023</p>
-              <p>An analysis of the global transition to renewable energy sources, examining policy frameworks, economic implications, and technological innovations driving the shift.</p>
-              <div class="flex gap-2 mt-2">
-                <span class="badge">Renewable Energy</span>
-                <span class="badge">Policy</span>
-                <span class="badge">Economics</span>
-              </div>
-              <div class="flex justify-between mt-4">
-                <div>
-                  <span class="text-sm text-gray">Relevance: 85%</span>
-                </div>
-                <div class="flex gap-2">
-                  <button class="btn btn-outline btn-sm">
-                    <i class="fas fa-bookmark"></i>
-                  </button>
-                  <button class="btn btn-outline btn-sm">
-                    <i class="fas fa-quote-right"></i>
-                  </button>
-                  <button class="btn btn-primary btn-sm">
-                    <i class="fas fa-file-arrow-down"></i> PDF
-                  </button>
-                </div>
-              </div>
+            <div id="sources-list">
+              <!-- Dynamic research sources will be loaded here -->
             </div>
             
-            <!-- Result Item 3 -->
-            <div class="result-item">
-              <h4>Digital Transformation in Higher Education</h4>
-              <p class="text-sm">Journal of Educational Technology, 2024</p>
-              <p>This paper explores how digital technologies are reshaping higher education institutions, teaching methodologies, and student learning experiences.</p>
-              <div class="flex gap-2 mt-2">
-                <span class="badge">Education</span>
-                <span class="badge">Technology</span>
-                <span class="badge">Digital Transformation</span>
-              </div>
-              <div class="flex justify-between mt-4">
-                <div>
-                  <span class="text-sm text-gray">Relevance: 72%</span>
-                </div>
-                <div class="flex gap-2">
-                  <button class="btn btn-outline btn-sm">
-                    <i class="fas fa-bookmark"></i>
-                  </button>
-                  <button class="btn btn-outline btn-sm">
-                    <i class="fas fa-quote-right"></i>
-                  </button>
-                  <button class="btn btn-primary btn-sm">
-                    <i class="fas fa-file-arrow-down"></i> PDF
-                  </button>
-                </div>
-              </div>
+            <div id="no-sources" style="text-align: center; padding: 3rem;">
+              <i class="fas fa-search text-4xl text-gray mb-4"></i>
+              <h4 class="text-gray">No Sources Available</h4>
+              <p class="text-gray">Start a research query to see sources and results here</p>
             </div>
           </div>
         </div>
         
         <div class="tab-content" id="citations-content">
           <div class="results-container">
-            <div class="result-item">
-              <h4>Generated Citations</h4>
-              <div class="citation-list">
-                <div class="citation-item">
-                  <p><strong>APA:</strong> Smith, J. (2024). Climate Change Effects on Global Agriculture. <em>Journal of Environmental Science</em>, 45(3), 123-145.</p>
-                  <button class="btn btn-outline btn-sm mt-2">
-                    <i class="fas fa-copy"></i> Copy
-                  </button>
-                </div>
-                <div class="citation-item mt-4">
-                  <p><strong>MLA:</strong> Smith, John. "Climate Change Effects on Global Agriculture." <em>Journal of Environmental Science</em>, vol. 45, no. 3, 2024, pp. 123-145.</p>
-                  <button class="btn btn-outline btn-sm mt-2">
-                    <i class="fas fa-copy"></i> Copy
-                  </button>
-                </div>
-                <div class="citation-item mt-4">
-                  <p><strong>Chicago:</strong> Smith, John. "Climate Change Effects on Global Agriculture." Journal of Environmental Science 45, no. 3 (2024): 123-145.</p>
-                  <button class="btn btn-outline btn-sm mt-2">
-                    <i class="fas fa-copy"></i> Copy
-                  </button>
-                </div>
-              </div>
+            <div id="citations-loading" style="text-align: center; padding: 3rem; display: none;">
+              <i class="fas fa-spinner fa-spin text-2xl"></i>
+              <p class="mt-2">Generating citations...</p>
+            </div>
+            
+            <div id="citations-list">
+              <!-- Dynamic citations will be loaded here -->
+            </div>
+            
+            <div id="no-citations" style="text-align: center; padding: 3rem;">
+              <i class="fas fa-quote-left text-4xl text-gray mb-4"></i>
+              <h4 class="text-gray">No Citations Available</h4>
+              <p class="text-gray">Citations will appear here after conducting research</p>
             </div>
           </div>
         </div>
         
         <div class="tab-content" id="notes-content">
           <div class="results-container">
-            <div class="result-item">
-              <h4>Research Notes</h4>
-              <div class="notes-container">
-                <div class="note-item">
-                  <h5>Key Findings</h5>
-                  <ul>
-                    <li>Climate change significantly impacts crop yields globally</li>
-                    <li>Water resource management is critical for adaptation</li>
-                    <li>Sustainable farming practices show promise for mitigation</li>
-                  </ul>
-                </div>
-                <div class="note-item mt-4">
-                  <h5>Important Quotes</h5>
-                  <blockquote>
-                    "The transition to renewable energy sources represents one of the most significant challenges and opportunities of our time."
-                  </blockquote>
-                  <p class="text-sm text-gray">- Energy Policy Review, 2023</p>
-                </div>
-                <div class="note-item mt-4">
-                  <h5>Research Questions</h5>
-                  <ul>
-                    <li>How can digital transformation improve educational outcomes?</li>
-                    <li>What are the long-term effects of climate change on food security?</li>
-                    <li>Which renewable energy policies are most effective?</li>
-                  </ul>
-                </div>
-              </div>
+            <div id="notes-loading" style="text-align: center; padding: 3rem; display: none;">
+              <i class="fas fa-spinner fa-spin text-2xl"></i>
+              <p class="mt-2">Loading research notes...</p>
+            </div>
+            
+            <div id="notes-list">
+              <!-- Dynamic research notes will be loaded here -->
+            </div>
+            
+            <div id="no-notes" style="text-align: center; padding: 3rem;">
+              <i class="fas fa-sticky-note text-4xl text-gray mb-4"></i>
+              <h4 class="text-gray">No Research Notes</h4>
+              <p class="text-gray">Your research notes and key findings will appear here</p>
             </div>
           </div>
         </div>
@@ -325,13 +245,13 @@
             <i class="fas fa-user-circle text-6xl text-primary"></i>
           </div>
           <div class="profile-info">
-            <h4 id="modal-user-name">John Doe</h4>
+            <h4 id="modal-user-name">User Name</h4>
             <p class="text-gray" id="modal-user-email">john.doe@example.com</p>
             <div class="plan-info">
               <span class="plan-badge" id="modal-user-plan">Free Plan</span>
               <div class="credits-info">
                 <i class="fas fa-coins text-orange"></i>
-                <span id="modal-user-credits">145/200 Credits</span>
+                <span id="modal-user-credits">Loading...</span>
               </div>
             </div>
           </div>
@@ -353,34 +273,93 @@
         <button id="close-modal-btn" class="btn-close">&times;</button>
       </div>
       <div class="modal-body">
-        <ul class="project-list">
-          <li class="project-item">
-            <div>
-              <h4>Climate Change Research</h4>
-              <p class="text-sm text-gray">May 15, 2025 • 12 sources</p>
-            </div>
-            <button class="btn btn-outline" disabled>Open</button>
-          </li>
-          <li class="project-item">
-            <div>
-              <h4>Renewable Energy Sources</h4>
-              <p class="text-sm text-gray">May 14, 2025 • 8 sources</p>
-            </div>
-            <button class="btn btn-outline" disabled>Open</button>
-          </li>
-          <li class="project-item">
-            <div>
-              <h4>Digital Education Trends</h4>
-              <p class="text-sm text-gray">May 12, 2025 • 15 sources</p>
-            </div>
-            <button class="btn btn-outline" disabled>Open</button>
-          </li>
+        <div id="research-history-loading" style="text-align: center; padding: 2rem;">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading research history...</p>
+        </div>
+        <ul id="research-history-list" class="project-list" style="display: none;">
+          <!-- Research history will be loaded dynamically -->
         </ul>
+        <div id="no-research-history" style="display: none; text-align: center; padding: 2rem;">
+          <i class="fas fa-search text-gray"></i>
+          <p class="text-gray">No research history found</p>
+          <p class="text-sm text-gray">Start your first research to see it here</p>
+        </div>
       </div>
     </div>
   </div>
   
   <style>
+    :root {
+      /* Modern Color Palette */
+      --primary-purple: #6366f1;
+      --primary-purple-dark: #4f46e5;
+      --primary-purple-light: #a5b4fc;
+      --secondary-blue: #3b82f6;
+      --accent-green: #10b981;
+      --accent-orange: #f59e0b;
+      --accent-red: #ef4444;
+      
+      /* Enhanced Gradients */
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --gradient-warm: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      --gradient-cool: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      --gradient-dark: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+      
+      /* Glass Effects */
+      --glass-bg: rgba(255, 255, 255, 0.25);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      --backdrop-blur: blur(20px);
+      
+      /* Text Colors */
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --text-gray: #9ca3af;
+      --text-light: #d1d5db;
+      
+      /* Background Colors */
+      --bg-white: #ffffff;
+      --bg-gray-50: #f9fafb;
+      --bg-gray-100: #f3f4f6;
+      --bg-gray-200: #e5e7eb;
+      --bg-gray-800: #1f2937;
+      --bg-gray-900: #111827;
+      
+      /* Enhanced Spacing */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --space-20: 5rem;
+      
+      /* Modern Border Radius */
+      --radius-sm: 0.5rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.5rem;
+      --radius-2xl: 2rem;
+      
+      /* Enhanced Shadows */
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+      --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.15);
+      --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.1);
+      --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
+      
+      /* Smooth Transitions */
+      --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     /* Modal Styles */
     .modal {
       position: fixed;
@@ -445,14 +424,21 @@
     .researcher-container {
       height: calc(100vh - 120px);
       padding: var(--space-6);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border-radius: var(--radius-2xl);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      margin: var(--space-6);
     }
     
     .research-section {
       width: 100%;
-      background: white;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--bg-gray-100);
-      box-shadow: var(--shadow-sm);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-lg);
       padding: var(--space-6);
       overflow-y: auto;
     }
@@ -462,8 +448,19 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: var(--space-6);
-      padding-bottom: var(--space-4);
-      border-bottom: 1px solid var(--bg-gray-100);
+      padding-bottom: var(--space-5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .section-header h2 {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 1.75rem;
+      font-weight: 700;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
     /* Chat Interface Styles */
@@ -472,26 +469,79 @@
       overflow-y: auto;
       padding: var(--space-4);
       margin-bottom: var(--space-4);
-      background: var(--bg-gray-50);
+      background: transparent;
       border-radius: var(--radius-md);
       min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
     }
     
     .welcome-message {
-      background: white;
-      border-radius: var(--radius-md);
-      padding: var(--space-4);
-      border-left: 4px solid var(--primary-purple);
-      margin-bottom: var(--space-4);
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-8);
+      padding: var(--space-8);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-md);
     }
     
     .message-content h3 {
-      margin-bottom: var(--space-2);
-      color: var(--primary-purple);
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--space-4);
+      font-size: 1.75rem;
+      font-weight: 700;
     }
     
     .example-queries {
-      margin-top: var(--space-3);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+    }
+    
+    .example-query {
+      padding: var(--space-4) var(--space-5);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: var(--transition-normal);
+      font-size: 0.95rem;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .example-query::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient-accent);
+      opacity: 0;
+      transition: var(--transition-normal);
+      z-index: -1;
+    }
+    
+    .example-query:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .example-query:hover::before {
+      left: 0;
+      opacity: 0.1;
     }
     
     .example-queries ul {
@@ -505,81 +555,154 @@
     }
     
     .typing-indicator {
-      display: flex;
+      display: none;
       align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-3);
-      background: white;
-      border-radius: var(--radius-md);
-      margin-bottom: var(--space-2);
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-4);
+      color: var(--text-secondary);
+      font-style: italic;
+      box-shadow: var(--shadow-sm);
+      animation: slideIn 0.3s ease-out;
     }
     
     .typing-dots {
       display: flex;
-      gap: 4px;
+      gap: 6px;
     }
     
     .typing-dots span {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
-      background: var(--primary-purple);
+      background: var(--gradient-primary);
       animation: typing 1.4s infinite ease-in-out;
+      box-shadow: var(--shadow-sm);
     }
     
     .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
     .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
     
     @keyframes typing {
-      0%, 80%, 100% { transform: scale(0); }
-      40% { transform: scale(1); }
+      0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.4;
+      }
+      40% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     
     .chat-input-container {
-      background: white;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--bg-gray-100);
-      padding: var(--space-3);
-      display: flex;
-      align-items: flex-end;
-      gap: var(--space-3);
+      padding: var(--space-5);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
     }
     
     .input-wrapper {
       display: flex;
-      gap: var(--space-2);
+      gap: var(--space-3);
       align-items: flex-end;
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3);
+      box-shadow: var(--shadow-md);
       flex: 1;
     }
     
     #research-input {
       flex: 1;
-      border: 1px solid var(--bg-gray-200);
-      border-radius: var(--radius-md);
-      padding: var(--space-3);
+      border: none;
+      background: transparent;
+      padding: var(--space-4) var(--space-5);
       resize: none;
       font-family: inherit;
-      font-size: 14px;
+      font-size: 1rem;
       line-height: 1.4;
-      max-height: 120px;
+      max-height: 150px;
+      min-height: 60px;
+      color: var(--text-primary);
+      transition: var(--transition-normal);
+    }
+    
+    #research-input:focus {
+      outline: none;
+    }
+    
+    #research-input::placeholder {
+      color: var(--text-gray);
+      opacity: 0.8;
     }
     
     .send-btn {
-      background: var(--primary-purple);
+      background: var(--gradient-primary);
       color: white;
       border: none;
-      border-radius: var(--radius-md);
-      padding: var(--space-3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-5);
       cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition-normal);
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: var(--space-2);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
       min-width: 40px;
       height: 40px;
     }
     
+    .send-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient-secondary);
+      transition: var(--transition-normal);
+      z-index: -1;
+    }
+    
     .send-btn:hover {
-      background: var(--primary-purple-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .send-btn:hover::before {
+      left: 0;
+    }
+    
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .send-btn:disabled:hover::before {
+      left: -100%;
     }
     
     .research-filters {
@@ -587,27 +710,38 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+      margin-top: var(--space-4);
     }
     
     .filter-toggle {
-      background: var(--bg-gray-100);
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: var(--space-2) var(--space-3);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
       cursor: pointer;
-      font-size: 12px;
-      color: var(--text-gray);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
       margin-bottom: var(--space-3);
-      transition: all 0.2s ease;
+      transition: var(--transition-normal);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      box-shadow: var(--shadow-sm);
+      font-weight: 500;
     }
     
     .filter-toggle:hover {
-      background: var(--bg-gray-200);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+      border-color: rgba(255, 255, 255, 0.3);
     }
     
     .filter-toggle.active {
-      background: var(--primary-purple);
+      background: var(--gradient-primary);
       color: white;
+      border-color: transparent;
+      box-shadow: var(--shadow-lg);
     }
     
     /* Tab content styles */
@@ -660,24 +794,56 @@
       position: absolute;
       bottom: 100%;
       left: 0;
-      background: white;
-      border: 1px solid var(--bg-gray-200);
-      border-radius: var(--radius-md);
-      padding: var(--space-3);
-      box-shadow: var(--shadow-lg);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-md);
       display: flex;
-      gap: var(--space-2);
+      gap: var(--space-5);
       flex-wrap: wrap;
       min-width: 400px;
       margin-bottom: var(--space-2);
       z-index: 10;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      flex: 1;
+    }
+    
+    .filter-group label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
     .filter-options select {
       flex: 1;
       min-width: 120px;
-      font-size: 12px;
-      padding: var(--space-2);
+      font-size: 0.9rem;
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      color: var(--text-primary);
+      transition: var(--transition-normal);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .filter-group select:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: var(--shadow-md);
     }
     
     .results-card {
@@ -771,57 +937,261 @@
     
     /* Responsive Design */
     @media (max-width: 768px) {
+      body {
+        padding: var(--space-2);
+      }
+      
       .researcher-container {
+        flex-direction: column;
+        gap: var(--space-4);
         padding: var(--space-4);
+        margin: var(--space-2);
+        height: auto;
+        min-height: calc(100vh - var(--space-4));
       }
       
       .research-section {
+        width: 100%;
         height: auto;
+        min-height: 60vh;
+      }
+      
+      .section-header {
+        padding: var(--space-4) var(--space-5);
+      }
+      
+      .section-header h2 {
+        font-size: 1.5rem;
+      }
+      
+      .chat-messages {
+        padding: var(--space-4);
+        min-height: 250px;
+      }
+      
+      .welcome-message {
+        padding: var(--space-6);
+        margin-bottom: var(--space-6);
+      }
+      
+      .welcome-message h3 {
+        font-size: 1.5rem;
+      }
+      
+      .example-queries {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+      }
+      
+      .example-query {
+        padding: var(--space-3) var(--space-4);
+        font-size: 0.9rem;
       }
       
       .chat-input-container {
+        padding: var(--space-4);
         flex-direction: column;
         align-items: stretch;
-        gap: var(--space-2);
+        gap: var(--space-3);
+      }
+      
+      .input-wrapper {
+        padding: var(--space-2);
+        order: 1;
+      }
+      
+      .research-input {
+        min-height: 50px;
+        padding: var(--space-3) var(--space-4);
+        font-size: 0.95rem;
+      }
+      
+      .send-btn {
+        padding: var(--space-2) var(--space-4);
+        min-width: 50px;
+        height: 50px;
       }
       
       .research-filters {
         order: 2;
       }
       
-      .input-wrapper {
-        order: 1;
+      .filter-toggle {
+        padding: var(--space-2) var(--space-3);
+        font-size: 0.85rem;
       }
       
       .filter-options {
         position: static;
-        min-width: auto;
-        margin-bottom: 0;
         flex-direction: column;
+        gap: var(--space-3);
+        padding: var(--space-4);
+        min-width: auto;
+        width: 100%;
+        margin-bottom: 0;
+      }
+      
+      .filter-group {
         gap: var(--space-2);
       }
       
-      .filter-options select {
+      .filter-group select {
         width: 100%;
+        padding: var(--space-2) var(--space-3);
+        font-size: 0.85rem;
+      }
+      
+      .results-section {
+        min-height: 50vh;
+      }
+      
+      .results-header {
+        padding: var(--space-4) var(--space-5);
+      }
+      
+      .results-header h3 {
+        font-size: 1.25rem;
+      }
+      
+      .tab {
+        padding: var(--space-3) var(--space-4);
+        font-size: 0.9rem;
+      }
+      
+      .tab-content {
+        padding: var(--space-4);
+      }
+      
+      .result-item {
+        padding: var(--space-4);
+        margin-bottom: var(--space-3);
+      }
+      
+      .result-badges {
+        gap: var(--space-1);
+      }
+      
+      .result-badges .badge {
+        padding: var(--space-1) var(--space-2);
+        font-size: 0.75rem;
+      }
+      
+      .user-message .message-content {
+        max-width: 90%;
+        padding: var(--space-3) var(--space-4);
+      }
+      
+      .assistant-message .message-content {
+        padding: var(--space-4);
+      }
+      
+      .typing-indicator {
+        padding: var(--space-3) var(--space-4);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .researcher-container {
+        padding: var(--space-3);
+        gap: var(--space-3);
+        margin: var(--space-1);
+      }
+      
+      .section-header h2 {
+        font-size: 1.25rem;
+      }
+      
+      .welcome-message {
+        padding: var(--space-4);
+      }
+      
+      .welcome-message h3 {
+        font-size: 1.25rem;
+      }
+      
+      .example-query {
+        padding: var(--space-2) var(--space-3);
+        font-size: 0.85rem;
+      }
+      
+      .research-input {
+        min-height: 45px;
+        font-size: 0.9rem;
+      }
+      
+      .send-btn {
+        min-width: 45px;
+        height: 45px;
+      }
+      
+      .tab {
+        padding: var(--space-2) var(--space-3);
+        font-size: 0.85rem;
+      }
+      
+      .result-item {
+        padding: var(--space-3);
+      }
+      
+      .research-results h5 {
+        font-size: 1rem;
       }
     }
     
     /* Tabs */
     .tabs {
       display: flex;
-      border-bottom: 1px solid var(--bg-gray-100);
-      margin-bottom: var(--space-4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: var(--space-6);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
     }
     
     .tab {
-      padding: var(--space-3) var(--space-6);
+      padding: var(--space-4) var(--space-6);
       cursor: pointer;
-      border-bottom: 2px solid transparent;
+      border-bottom: 3px solid transparent;
+      transition: var(--transition-normal);
+      font-weight: 500;
+      color: var(--text-secondary);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .tab::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient-primary);
+      opacity: 0.1;
+      transition: var(--transition-normal);
+      z-index: -1;
+    }
+    
+    .tab:hover {
+      color: var(--text-primary);
+      transform: translateY(-2px);
+    }
+    
+    .tab:hover::before {
+      left: 0;
     }
     
     .tab.active {
-      border-bottom: 2px solid var(--primary-purple);
+      border-bottom: 3px solid var(--primary-purple);
       color: var(--primary-purple);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      box-shadow: var(--shadow-md);
+      font-weight: 600;
+    }
+    
+    .tab.active::before {
+      left: 0;
+      opacity: 0.2;
     }
     
     /* Results */
@@ -831,107 +1201,309 @@
     }
     
     .result-item {
-      padding: var(--space-4);
-      border-bottom: 1px solid var(--bg-gray-100);
+      padding: var(--space-5);
+      margin-bottom: var(--space-4);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .result-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient-accent);
+      opacity: 0;
+      transition: var(--transition-normal);
+      z-index: -1;
+    }
+    
+    .result-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .result-item:hover::before {
+      left: 0;
+      opacity: 0.1;
     }
     
     .result-item:last-child {
-      border-bottom: none;
+      margin-bottom: 0;
     }
     
     /* Chat Messages */
     .user-message {
-      margin-bottom: var(--space-3);
+      margin-bottom: var(--space-4);
       text-align: right;
+      animation: slideIn 0.3s ease-out;
     }
     
     .user-message .message-content {
       display: inline-block;
-      background: var(--primary-purple);
+      background: var(--gradient-primary);
       color: white;
-      padding: var(--space-3) var(--space-4);
-      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-5);
+      border-radius: var(--radius-lg);
       max-width: 80%;
       word-wrap: break-word;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .user-message .message-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient-secondary);
+      opacity: 0.3;
+      transition: var(--transition-normal);
+      z-index: -1;
+    }
+    
+    .user-message .message-content:hover::before {
+      left: 0;
     }
     
     .assistant-message {
-      margin-bottom: var(--space-4);
+      margin-bottom: var(--space-5);
+      animation: slideIn 0.3s ease-out;
     }
     
     .assistant-message .message-content {
-      background: white;
-      border: 1px solid var(--bg-gray-100);
-      border-radius: var(--radius-md);
-      padding: var(--space-4);
-      box-shadow: var(--shadow-sm);
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-md);
+      transition: var(--transition-normal);
+    }
+    
+    .assistant-message .message-content:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(255, 255, 255, 0.3);
     }
     
     .research-results {
-      margin-top: var(--space-3);
+      margin-top: var(--space-4);
     }
     
     .research-results .result-item {
-      margin-bottom: var(--space-3);
-      border-left: 4px solid var(--primary-purple);
+      margin-bottom: var(--space-4);
+      border-left: 4px solid transparent;
+      background: linear-gradient(90deg, var(--primary-purple), transparent 4px), var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
     }
     
     .research-results h5 {
-      color: var(--primary-purple);
-      margin-bottom: var(--space-2);
-      font-size: 16px;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--space-3);
+      font-size: 1.1rem;
+      font-weight: 600;
     }
     
     .result-badges {
       display: flex;
       gap: var(--space-2);
-      margin: var(--space-2) 0;
+      margin: var(--space-3) 0;
       flex-wrap: wrap;
     }
     
     .result-badges .badge {
-      background: var(--bg-gray-100);
-      color: var(--text-gray);
-      padding: 4px 8px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      color: var(--text-primary);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      font-size: 0.8rem;
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-sm);
+      font-weight: 500;
+      transition: var(--transition-normal);
+    }
+    
+    .result-badges .badge:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+      background: var(--gradient-accent);
+      color: white;
     }
     
     .badge {
-      background-color: var(--bg-gray-100);
-      color: var(--text-gray);
-      padding: var(--space-1) var(--space-2);
-      border-radius: var(--radius-sm);
-      font-size: 0.75rem;
+      background: var(--glass-bg);
+      backdrop-filter: var(--backdrop-blur);
+      color: var(--text-primary);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      font-size: 0.8rem;
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-sm);
+      font-weight: 500;
     }
     
     .btn-sm {
-      padding: var(--space-1) var(--space-2);
+      padding: var(--space-2) var(--space-3);
       font-size: 0.875rem;
+      border-radius: var(--radius-md);
+      transition: var(--transition-normal);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .btn-sm:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
     }
   </style>
   
   <script>
-    // User profile data
-    const currentUser = {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      plan: 'Free Plan',
-      credits: '145/200 Credits'
+    // User profile data - will be loaded from backend
+    let currentUser = {
+      name: 'Loading...',
+      email: 'Loading...',
+      plan: 'Loading...',
+      credits: 'Loading...'
     };
 
-    // Load user profile data
-    function loadUserProfile() {
-      // Update sidebar user info
+    // Load user profile data from backend
+    async function loadUserProfile() {
+      try {
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+        if (!token) {
+          console.log('No token found, skipping profile load for testing');
+          return;
+        }
+
+        const response = await fetch('/api/users/test-profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load user profile');
+        }
+
+        const userData = await response.json();
+        currentUser = {
+          name: userData.name || 'User',
+          email: userData.email || 'user@example.com',
+          plan: userData.plan || 'Free Plan',
+          credits: `${userData.credits || 0}/${userData.maxCredits || 200} Credits`
+        };
+
+        // Update sidebar user info
+        document.getElementById('user-name').textContent = currentUser.name;
+        document.getElementById('user-plan').textContent = currentUser.plan;
+        document.getElementById('user-credits').textContent = currentUser.credits;
+        
+        // Update modal user info
+        document.getElementById('modal-user-name').textContent = currentUser.name;
+        document.getElementById('modal-user-email').textContent = currentUser.email;
+        document.getElementById('modal-user-plan').textContent = currentUser.plan;
+        document.getElementById('modal-user-credits').textContent = currentUser.credits;
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+        // Fallback to default values
+        currentUser = {
+          name: 'User',
+          email: 'user@example.com',
+          plan: 'Free Plan',
+          credits: '0/200 Credits'
+        };
+        updateUserDisplay();
+      }
+    }
+
+    function updateUserDisplay() {
       document.getElementById('user-name').textContent = currentUser.name;
       document.getElementById('user-plan').textContent = currentUser.plan;
       document.getElementById('user-credits').textContent = currentUser.credits;
-      
-      // Update modal user info
       document.getElementById('modal-user-name').textContent = currentUser.name;
       document.getElementById('modal-user-email').textContent = currentUser.email;
       document.getElementById('modal-user-plan').textContent = currentUser.plan;
       document.getElementById('modal-user-credits').textContent = currentUser.credits;
+    }
+
+    // Update user credits dynamically
+    async function updateUserCredits() {
+      try {
+        console.log('Updating user credits...');
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+        console.log('Token found:', !!token);
+        
+        // For testing, call without token requirement
+        const response = await fetch('/api/users/test-profile');
+
+        if (response.ok) {
+          const userData = await response.json();
+          currentUser.credits = `${userData.credits || 0}/${userData.maxCredits || 200} Credits`;
+          
+          // Update display immediately
+          document.getElementById('user-credits').textContent = currentUser.credits;
+          document.getElementById('modal-user-credits').textContent = currentUser.credits;
+          
+          // Show low credits warning if needed
+          if (userData.credits <= 10) {
+            showLowCreditsWarning(userData.credits);
+          }
+        }
+      } catch (error) {
+        console.error('Error updating user credits:', error);
+      }
+    }
+
+    // Show low credits warning
+    function showLowCreditsWarning(remainingCredits) {
+      const warningDiv = document.createElement('div');
+      warningDiv.className = 'credit-warning';
+      warningDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1001;
+        max-width: 300px;
+      `;
+      warningDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div>
+            <strong>Low Credits Warning</strong>
+            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem;">You have ${remainingCredits} credits remaining. Consider upgrading your plan.</p>
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
+      `;
+      document.body.appendChild(warningDiv);
+      
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        if (warningDiv.parentElement) {
+          warningDiv.remove();
+        }
+      }, 5000);
     }
 
     // Logout function
@@ -942,7 +1514,43 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, starting initialization...');
+      // Load credits first, independently
+      console.log('Calling updateUserCredits...');
+      updateUserCredits();
+      // Then load profile
+      console.log('Calling loadUserProfile...');
       loadUserProfile();
+      
+      // Initialize tab functionality for Sources, Citations, and Research Notes
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const targetTab = this.getAttribute('data-tab');
+          
+          // Remove active class from all tabs and contents
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+          
+          // Add active class to clicked tab
+          this.classList.add('active');
+          
+          // Show corresponding content
+          const targetContent = document.getElementById(targetTab);
+          if (targetContent) {
+            targetContent.classList.add('active');
+          }
+          
+          console.log(`Switched to tab: ${targetTab}`);
+        });
+      });
+      
+      // Initialize first tab as active
+      if (tabButtons.length > 0) {
+        tabButtons[0].click();
+      }
       
       // Show modal when user profile card is clicked
       document.getElementById('user-profile-card').addEventListener('click', function() {
@@ -960,12 +1568,295 @@
           this.style.display = 'none';
         }
       });
+      // Load research history from backend
+      window.loadResearchHistory = async function() {
+        try {
+          const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+          if (!token) return;
+
+          document.getElementById('research-history-loading').style.display = 'block';
+          document.getElementById('research-history-list').style.display = 'none';
+          document.getElementById('no-research-history').style.display = 'none';
+
+          const response = await fetch('/api/research/history', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to load research history');
+          }
+
+          const data = await response.json();
+          const historyList = document.getElementById('research-history-list');
+          
+          document.getElementById('research-history-loading').style.display = 'none';
+          
+          if (data.history && data.history.length > 0) {
+            historyList.innerHTML = '';
+            data.history.forEach(research => {
+              const listItem = document.createElement('li');
+              listItem.className = 'project-item';
+              listItem.innerHTML = `
+                <div>
+                  <h4>${research.query || 'Untitled Research'}</h4>
+                  <p class="text-sm text-gray">${new Date(research.createdAt).toLocaleDateString()} • ${research.sourceCount || 0} sources</p>
+                </div>
+                <button class="btn btn-outline" onclick="loadResearchById('${research.id}')">
+                  <i class="fas fa-external-link-alt"></i> Open
+                </button>
+              `;
+              historyList.appendChild(listItem);
+            });
+            historyList.style.display = 'block';
+          } else {
+            document.getElementById('no-research-history').style.display = 'block';
+          }
+        } catch (error) {
+          console.error('Error loading research history:', error);
+          document.getElementById('research-history-loading').style.display = 'none';
+          document.getElementById('no-research-history').style.display = 'block';
+        }
+      }
+
+      // Load specific research by ID
+      window.loadResearchById = async function(researchId) {
+        try {
+          const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+          if (!token) return;
+
+          const response = await fetch(`/api/research/${researchId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to load research');
+          }
+
+          const research = await response.json();
+          
+          // Close history modal
+          document.getElementById('history-modal').style.display = 'none';
+          
+          // Display research results
+          displayResearchResults(research);
+          
+        } catch (error) {
+          console.error('Error loading research:', error);
+          alert('Failed to load research. Please try again.');
+        }
+      }
+
+      // Action functions for research results
+      window.bookmarkSource = async function(sourceId) {
+        try {
+          const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+          if (!token) {
+            alert('Please log in to bookmark sources.');
+            return;
+          }
+
+          const response = await fetch('/api/research/bookmark', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ sourceId })
+          });
+
+          if (response.ok) {
+            alert('Source bookmarked successfully!');
+          } else {
+            throw new Error('Failed to bookmark source');
+          }
+        } catch (error) {
+          console.error('Bookmark error:', error);
+          alert('Failed to bookmark source. Please try again.');
+        }
+      }
+
+      window.quoteSource = async function(sourceId) {
+        try {
+          const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+          if (!token) {
+            alert('Please log in to quote sources.');
+            return;
+          }
+
+          const response = await fetch(`/api/research/quote/${sourceId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (response.ok) {
+            const quoteData = await response.json();
+            navigator.clipboard.writeText(quoteData.quote);
+            alert('Quote copied to clipboard!');
+          } else {
+            throw new Error('Failed to get quote');
+          }
+        } catch (error) {
+          console.error('Quote error:', error);
+          alert('Failed to get quote. Please try again.');
+        }
+      }
+
+      window.generatePDF = async function(sourceId) {
+        try {
+          const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+          if (!token) {
+            alert('Please log in to generate PDFs.');
+            return;
+          }
+
+          const response = await fetch(`/api/research/pdf/${sourceId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `source-${sourceId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          } else {
+            throw new Error('Failed to generate PDF');
+          }
+        } catch (error) {
+          console.error('PDF generation error:', error);
+          alert('Failed to generate PDF. Please try again.');
+        }
+      }
+
+      window.copyCitation = function(citationText) {
+        navigator.clipboard.writeText(citationText).then(() => {
+          alert('Citation copied to clipboard!');
+        }).catch(err => {
+          console.error('Failed to copy citation:', err);
+          alert('Failed to copy citation. Please try again.');
+        });
+      }
+
+      // Display research results in the UI
+      function displayResearchResults(researchData) {
+        // Hide loading indicators
+        document.getElementById('sources-loading').style.display = 'none';
+        document.getElementById('citations-loading').style.display = 'none';
+        document.getElementById('notes-loading').style.display = 'none';
+        
+        // Display sources
+        const sourcesList = document.getElementById('sources-list');
+        if (researchData.sources && researchData.sources.length > 0) {
+          sourcesList.innerHTML = '';
+          researchData.sources.forEach(source => {
+            const sourceItem = document.createElement('div');
+            sourceItem.className = 'result-item';
+            sourceItem.innerHTML = `
+              <div class="result-header">
+                <h3>${source.title || 'Untitled Source'}</h3>
+                <div class="result-meta">
+                  <span class="publication">${source.publication || 'Unknown Publication'}</span>
+                  <span class="date">${source.date || 'No date'}</span>
+                </div>
+              </div>
+              <p class="result-description">${source.description || source.summary || 'No description available'}</p>
+              <div class="result-badges">
+                ${source.type ? `<span class="badge">${source.type}</span>` : ''}
+                ${source.category ? `<span class="badge">${source.category}</span>` : ''}
+              </div>
+              <div class="result-footer">
+                <div class="relevance-score">
+                  <span class="score-label">Relevance:</span>
+                  <span class="score-value">${source.relevance || '85'}%</span>
+                </div>
+                <div class="result-actions">
+                  <button class="action-btn" onclick="bookmarkSource('${source.id}')">
+                    <i class="fas fa-bookmark"></i> Bookmark
+                  </button>
+                  <button class="action-btn" onclick="quoteSource('${source.id}')">
+                    <i class="fas fa-quote-right"></i> Quote
+                  </button>
+                  <button class="action-btn" onclick="generatePDF('${source.id}')">
+                    <i class="fas fa-file-pdf"></i> PDF
+                  </button>
+                </div>
+              </div>
+            `;
+            sourcesList.appendChild(sourceItem);
+          });
+          sourcesList.style.display = 'block';
+          document.getElementById('no-sources').style.display = 'none';
+        } else {
+          document.getElementById('no-sources').style.display = 'block';
+        }
+        
+        // Display citations
+        const citationsList = document.getElementById('citations-list');
+        if (researchData.citations && researchData.citations.length > 0) {
+          citationsList.innerHTML = '';
+          researchData.citations.forEach(citation => {
+            const citationItem = document.createElement('div');
+            citationItem.className = 'citation-item';
+            citationItem.innerHTML = `
+              <div class="citation-style">
+                <h4>${citation.style || 'APA'}</h4>
+                <p class="citation-text">${citation.text}</p>
+                <button class="copy-btn" onclick="copyCitation('${citation.text}')">
+                  <i class="fas fa-copy"></i> Copy
+                </button>
+              </div>
+            `;
+            citationsList.appendChild(citationItem);
+          });
+          citationsList.style.display = 'block';
+          document.getElementById('no-citations').style.display = 'none';
+        } else {
+          document.getElementById('no-citations').style.display = 'block';
+        }
+        
+        // Display research notes
+        const notesList = document.getElementById('notes-list');
+        if (researchData.notes && researchData.notes.length > 0) {
+          notesList.innerHTML = '';
+          const notesContainer = document.createElement('div');
+          notesContainer.className = 'result-item';
+          notesContainer.innerHTML = `
+            <h4>Research Notes</h4>
+            <div class="notes-container">
+              ${researchData.notes.map(note => `
+                <div class="note-item">
+                  <h5>${note.title || 'Note'}</h5>
+                  <div>${note.content}</div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+          notesList.appendChild(notesContainer);
+          notesList.style.display = 'block';
+          document.getElementById('no-notes').style.display = 'none';
+        } else {
+          document.getElementById('no-notes').style.display = 'block';
+        }
+      }
+
       // Modal functionality
       const openHistoryBtn = document.getElementById('open-history-btn');
       const historyModal = document.getElementById('history-modal');
       const closeModalBtn = document.getElementById('close-modal-btn');
       
       openHistoryBtn.addEventListener('click', function() {
+        loadResearchHistory();
         historyModal.style.display = 'flex';
       });
       
@@ -1034,65 +1925,156 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
       
-      function simulateResearch(query) {
+      async function simulateResearch(query) {
         // Show typing indicator
         typingIndicator.style.display = 'flex';
         
-        setTimeout(() => {
+        setTimeout(async () => {
           typingIndicator.style.display = 'none';
           
-          // Mock research results
-          const results = `
-            <h4>Research Results for: "${query}"</h4>
-            <div class="research-results">
-              <div class="result-item">
-                <h5>Climate Change Effects on Global Agriculture</h5>
-                <p><em>Journal of Environmental Science, 2024</em></p>
-                <p>This comprehensive study examines the impact of climate change on agricultural systems worldwide, with a focus on crop yields, water resources, and adaptation strategies.</p>
-                <div class="result-badges">
-                  <span class="badge">Climate Change</span>
-                  <span class="badge">Agriculture</span>
-                  <span class="badge">Sustainability</span>
-                </div>
-                <p><strong>Relevance: 95%</strong></p>
+          // Perform actual research using the research service
+          try {
+            const response = await fetch('/api/research', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}`
+              },
+              body: JSON.stringify({ query })
+            });
+            
+            if (!response.ok) {
+              throw new Error('Research request failed');
+            }
+            
+            const data = await response.json();
+            const results = formatResearchResults(query, data.results);
+            addMessage(results);
+          } catch (error) {
+            console.error('Research error:', error);
+            const errorMessage = `
+              <div class="error-message">
+                <h4>Research Error</h4>
+                <p>Unable to complete research for: "${query}"</p>
+                <p>Please try again later or contact support if the issue persists.</p>
               </div>
-              
-              <div class="result-item">
-                <h5>Renewable Energy Transition Strategies</h5>
-                <p><em>Energy Policy Review, 2024</em></p>
-                <p>Analysis of global renewable energy adoption patterns and policy frameworks driving the transition from fossil fuels to sustainable energy sources.</p>
-                <div class="result-badges">
-                  <span class="badge">Renewable Energy</span>
-                  <span class="badge">Policy</span>
-                  <span class="badge">Sustainability</span>
-                </div>
-                <p><strong>Relevance: 88%</strong></p>
-              </div>
-              
-              <div class="result-item">
-                <h5>Digital Transformation in Higher Education</h5>
-                <p><em>Journal of Educational Technology, 2024</em></p>
-                <p>This paper explores how digital technologies are reshaping higher education institutions, teaching methodologies, and student learning experiences.</p>
-                <div class="result-badges">
-                  <span class="badge">Education</span>
-                  <span class="badge">Technology</span>
-                  <span class="badge">Digital Transformation</span>
-                </div>
-                <p><strong>Relevance: 82%</strong></p>
-              </div>
-            </div>
-          `;
-          
-          addMessage(results);
+            `;
+            addMessage(errorMessage);
+           }
         }, 2000);
       }
       
-      function handleResearchSubmit() {
+      function formatResearchResults(query, results) {
+        if (!results || results.length === 0) {
+          return `
+            <div class="no-results">
+              <h4>No Results Found</h4>
+              <p>No research results found for: "${query}"</p>
+              <p>Try refining your search terms or using different keywords.</p>
+            </div>
+          `;
+        }
+        
+        let html = `<h4>Research Results for: "${query}"</h4><div class="research-results">`;
+        
+        results.forEach(result => {
+          html += `
+            <div class="result-item">
+              <h5>${result.title}</h5>
+              <p><em>${result.source}, ${result.year || 'Recent'}</em></p>
+              <p>${result.summary}</p>
+              <div class="result-badges">`;
+              
+          if (result.tags) {
+            result.tags.forEach(tag => {
+              html += `<span class="badge">${tag}</span>`;
+            });
+          }
+          
+          html += `</div>
+              <p><strong>Relevance: ${result.relevance || 'N/A'}%</strong></p>
+            </div>
+          `;
+        });
+        
+        html += '</div>';
+        return html;
+      }
+      
+      async function handleResearchSubmit() {
         const query = researchInput.value.trim();
-        if (query) {
-          addMessage(query, true);
-          researchInput.value = '';
-          simulateResearch(query);
+        if (!query) return;
+        
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+        if (!token) {
+          alert('Please log in to conduct research.');
+          return;
+        }
+        
+        // Show loading state
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Researching...';
+        
+        // Add user message to chat
+        addMessage(query, true);
+        
+        // Clear input
+        researchInput.value = '';
+        
+        try {
+          // Show loading indicators
+          document.getElementById('sources-loading').style.display = 'block';
+          document.getElementById('sources-list').style.display = 'none';
+          document.getElementById('no-sources').style.display = 'none';
+          
+          document.getElementById('citations-loading').style.display = 'block';
+          document.getElementById('citations-list').style.display = 'none';
+          document.getElementById('no-citations').style.display = 'none';
+          
+          document.getElementById('notes-loading').style.display = 'block';
+          document.getElementById('notes-list').style.display = 'none';
+          document.getElementById('no-notes').style.display = 'none';
+          
+          // Call research API
+          const response = await fetch('/api/research/query', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ query })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Research request failed');
+          }
+          
+          const researchData = await response.json();
+          
+          // Add assistant response to chat
+          addMessage(researchData.summary || 'Research completed successfully!', false);
+          
+          // Display research results
+          displayResearchResults(researchData);
+          
+          // Update user credits after successful research
+          await updateUserCredits();
+          
+        } catch (error) {
+          console.error('Research error:', error);
+          addMessage('Sorry, there was an error conducting your research. Please try again.', false);
+          
+          // Hide loading indicators and show empty states
+          document.getElementById('sources-loading').style.display = 'none';
+          document.getElementById('no-sources').style.display = 'block';
+          document.getElementById('citations-loading').style.display = 'none';
+          document.getElementById('no-citations').style.display = 'block';
+          document.getElementById('notes-loading').style.display = 'none';
+          document.getElementById('no-notes').style.display = 'block';
+        } finally {
+          // Reset button
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
         }
       }
       
@@ -1132,43 +2114,83 @@
       const yearFilter = document.getElementById('year-filter');
       const sortFilter = document.getElementById('sort-filter');
       
-      [sourceFilter, yearFilter, sortFilter].forEach(filter => {
-           filter.addEventListener('change', function() {
-             console.log(`Filter changed: ${this.id} = ${this.value}`);
-             // Here you would implement actual filtering logic
-             // For now, just log the filter changes
-           });
-         });
+      let currentResearchData = null;
       
-      // Tab functionality for Sources, Citations, and Research Notes
-      const tabButtons = document.querySelectorAll('.tab-btn');
-      const tabContents = document.querySelectorAll('.tab-content');
-      
-      tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          const targetTab = this.getAttribute('data-tab');
-          
-          // Remove active class from all tabs and contents
-          tabButtons.forEach(btn => btn.classList.remove('active'));
-          tabContents.forEach(content => content.classList.remove('active'));
-          
-          // Add active class to clicked tab
-          this.classList.add('active');
-          
-          // Show corresponding content
-          const targetContent = document.getElementById(targetTab);
-          if (targetContent) {
-            targetContent.classList.add('active');
+      function applyFilters() {
+        if (!currentResearchData || !currentResearchData.sources) return;
+        
+        let filteredSources = [...currentResearchData.sources];
+        
+        // Apply source type filter
+        const sourceType = sourceFilter.value;
+        if (sourceType && sourceType !== 'all') {
+          filteredSources = filteredSources.filter(source => 
+            source.type && source.type.toLowerCase() === sourceType.toLowerCase()
+          );
+        }
+        
+        // Apply year filter
+        const yearRange = yearFilter.value;
+        if (yearRange && yearRange !== 'all') {
+          const currentYear = new Date().getFullYear();
+          filteredSources = filteredSources.filter(source => {
+            if (!source.date) return false;
+            const sourceYear = new Date(source.date).getFullYear();
+            
+            switch(yearRange) {
+              case 'recent': return currentYear - sourceYear <= 2;
+              case '5years': return currentYear - sourceYear <= 5;
+              case '10years': return currentYear - sourceYear <= 10;
+              default: return true;
+            }
+          });
+        }
+        
+        // Apply sorting
+        const sortBy = sortFilter.value;
+        if (sortBy) {
+          switch(sortBy) {
+            case 'relevance':
+              filteredSources.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
+              break;
+            case 'date':
+              filteredSources.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+              break;
+            case 'title':
+              filteredSources.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+              break;
           }
-          
-          console.log(`Switched to tab: ${targetTab}`);
-        });
+        }
+        
+        // Update display with filtered results
+        const filteredData = {
+          ...currentResearchData,
+          sources: filteredSources
+        };
+        displayResearchResults(filteredData);
+      }
+      
+      [sourceFilter, yearFilter, sortFilter].forEach(filter => {
+           filter.addEventListener('change', applyFilters);
       });
       
-      // Initialize first tab as active
-      if (tabButtons.length > 0) {
-        tabButtons[0].click();
-      }
+      // Notification button functionality
+      const notificationBtn = document.getElementById('notification-btn');
+      notificationBtn.addEventListener('click', function() {
+        // Toggle notification panel or show notifications
+        alert('No new notifications');
+        // In a real app, this would show a notification dropdown
+        console.log('Notification button clicked');
+      });
+      
+      // Store research data for filtering
+      const originalDisplayResearchResults = displayResearchResults;
+      displayResearchResults = function(researchData) {
+        currentResearchData = researchData;
+        originalDisplayResearchResults(researchData);
+      };
+      
+      // Tab functionality will be initialized in DOMContentLoaded
       
       // Citation copy functionality
       document.addEventListener('click', function(e) {
@@ -1239,7 +2261,7 @@
         }
       });
       
-      });
+    });
   </script>
 
 
