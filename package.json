@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node server.js",
+    "gcp-build": "npm install --production",
     "dev": "nodemon server.js",
     "dev-start": "powershell -ExecutionPolicy Bypass -File ./dev-start.ps1",
     "stop-all": "taskkill /f /im node.exe /t 2>nul || echo No Node processes found",
@@ -97,5 +98,9 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
