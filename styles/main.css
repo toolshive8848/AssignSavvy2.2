@@ -342,7 +342,9 @@ a:hover {
 }
 
 .logo-icon {
-  font-size: 1.8rem;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
 }
 
 .logo-text {

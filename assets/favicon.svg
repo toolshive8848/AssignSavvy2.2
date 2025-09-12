@@ -1,10 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <!-- Background Circle -->
-  <circle cx="50" cy="50" r="48" fill="#6B46C1" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Book outline -->
+  <path d="M40 50 L40 170 Q40 180 50 180 L150 180 Q160 180 160 170 L160 50 Q160 40 150 40 L50 40 Q40 40 40 50 Z" 
+        fill="none" stroke="#1976d2" stroke-width="8" stroke-linejoin="round"/>
   
-  <!-- Letter A stylized -->
-  <path d="M30 75 L45 25 L55 25 L70 75 M35 55 L65 55" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Book spine lines -->
+  <path d="M50 50 L50 170" fill="none" stroke="#1976d2" stroke-width="6"/>
+  <path d="M60 50 L60 170" fill="none" stroke="#1976d2" stroke-width="4"/>
   
-  <!-- Small dot for the 'i' in Savvy -->
-  <circle cx="50" cy="40" r="4" fill="white" />
+  <!-- Book pages -->
+  <path d="M70 60 L140 60 Q145 60 145 65 L145 155 Q145 160 140 160 L70 160 Q65 160 65 155 L65 65 Q65 60 70 60 Z" 
+        fill="none" stroke="#1976d2" stroke-width="4"/>
+  
+  <!-- Checkmark -->
+  <path d="M85 100 L100 115 L125 85" 
+        fill="none" stroke="#1976d2" stroke-width="8" 
+        stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
